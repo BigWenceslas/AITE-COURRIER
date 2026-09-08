@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_aite_ecm_dossier" name="Dossiers métier"
+              parent="aite_ecm_document.menu_aite_ecm_root"
+              action="action_aite_ecm_dossier" sequence="20"/>
+    <menuitem id="menu_aite_ecm_dossier_type" name="Types de dossiers"
+              parent="aite_ecm_document.menu_aite_ecm_config"
+              action="action_aite_ecm_dossier_type" sequence="40"/>
+</odoo>

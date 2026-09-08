@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Rapport de réponse : en-tête / pied société standard (external_layout),
+         bloc de référence puis corps fusionné. Le rapport n'est PAS lié au
+         menu Imprimer (pas de binding) : il n'est produit que par l'assistant
+         de réponse, qui lui transmet reponse_subject / reponse_body. -->
+    <record id="action_report_reponse" model="ir.actions.report">
+        <field name="name">Réponse courrier</field>
+        <field name="model">aite.courrier</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aite_courrier_reponse.report_reponse_document</field>
+        <field name="report_file">aite_courrier_reponse.report_reponse_document</field>
+        <field name="print_report_name">'Reponse - %s' % (object.reference or object.subject)</field>
+    </record>
+
+    <template id="report_reponse_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="text-end mb-4">
+                            <span t-out="reponse_date"/>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Objet :</strong>
+                            <span t-out="reponse_subject"/>
+                        </div>
+                        <div class="mb-4 text-muted">
+                            <span>Vos références :</span>
+                            <span t-field="o.reference"/>
+                            <t t-if="o.date_received">
+                                — courrier du <span t-field="o.date_received"/>
+                            </t>
+                        </div>
+                        <div t-out="reponse_body"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

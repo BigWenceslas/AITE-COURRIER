@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ Vues analytiques du courrier ============ -->
+    <record id="view_courrier_graph" model="ir.ui.view">
+        <field name="name">aite.courrier.graph</field>
+        <field name="model">aite.courrier</field>
+        <field name="arch" type="xml">
+            <graph string="Courriers" type="bar" sample="1">
+                <field name="current_step_id"/>
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_courrier_pivot" model="ir.ui.view">
+        <field name="name">aite.courrier.pivot</field>
+        <field name="model">aite.courrier</field>
+        <field name="arch" type="xml">
+            <pivot string="Courriers" sample="1">
+                <field name="category" type="row"/>
+                <field name="state" type="col"/>
+                <field name="current_sla_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============ Recherche dédiée au tableau de bord ============ -->
+    <record id="view_courrier_dashboard_search" model="ir.ui.view">
+        <field name="name">aite.courrier.dashboard.search</field>
+        <field name="model">aite.courrier</field>
+        <field name="arch" type="xml">
+            <search string="Tableau de bord du courrier">
+                <field name="reference" string="Référence / Objet"
+                       filter_domain="['|', ('reference', 'ilike', self), ('subject', 'ilike', self)]"/>
+                <filter name="active_courriers" string="En cours"
+                        domain="[('state', 'in', ('nw', 'pr', 'vl'))]"/>
+                <filter name="overdue" string="En retard (SLA)"
+                        domain="[('sla_deadline', '&lt;', datetime.datetime.now()), ('state', 'not in', ('ar', 'rj'))]"/>
+                <filter name="my_courriers" string="Mes courriers"
+                        domain="[('responsible_id', '=', uid)]"/>
+                <separator/>
+                <filter name="this_month" string="Reçus ce mois"
+                        domain="[('date_received', '&gt;=', (context_today() + relativedelta(day=1)))]"/>
+                <group expand="1" string="Regrouper par">
+                    <filter name="g_state" string="Statut" context="{'group_by': 'state'}"/>
+                    <filter name="g_category" string="Catégorie" context="{'group_by': 'category'}"/>
+                    <filter name="g_step" string="Étape courante" context="{'group_by': 'current_step_id'}"/>
+                    <filter name="g_dept" string="Service" context="{'group_by': 'department_id'}"/>
+                    <filter name="g_resp" string="Responsable" context="{'group_by': 'responsible_id'}"/>
+                    <filter name="g_month" string="Mois de réception"
+                            context="{'group_by': 'date_received:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Page personnalisée (composant OWL) combinant cartes KPI + accès aux
+         vues natives. -->
+    <record id="action_dashboard" model="ir.actions.client">
+        <field name="name">Tableau de bord</field>
+        <field name="tag">aite_courrier_dashboard</field>
+    </record>
+
+    <!-- Analyse détaillée : vues natives graphique / tableau croisé / liste,
+         ouverte depuis le bouton « Analyse détaillée » du tableau de bord. -->
+    <record id="action_courrier_analysis" model="ir.actions.act_window">
+        <field name="name">Analyse du courrier</field>
+        <field name="res_model">aite.courrier</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_courrier_dashboard_search"/>
+        <field name="context">{'search_default_active_courriers': 1, 'search_default_g_step': 1}</field>
+    </record>
+
+    <!-- Tableau de bord en tête du menu Courrier.
+         Réservé aux rôles de pilotage : Manager et Audit (l'Administrateur
+         AITE les implique et y accède donc aussi). -->
+    <menuitem id="menu_courrier_dashboard"
+              name="Tableau de bord"
+              parent="aite_courrier_base.menu_aite_courrier_root"
+              action="action_dashboard"
+              groups="aite_courrier_base.group_manager,aite_courrier_base.group_audit"
+              sequence="5"/>
+
+    <!-- Logo de l'application sur le menu racine « Courrier ».
+         Le name doit être redonné : sans lui, le menuitem écrase le libellé
+         par l'identifiant technique. -->
+    <menuitem id="aite_courrier_base.menu_aite_courrier_root"
+              name="Courrier"
+              web_icon="aite_courrier,static/description/icon.png"/>
+
+</odoo>

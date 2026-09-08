@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menu racine de l'application. -->
+    <menuitem id="menu_aite_courrier_root"
+              name="Courrier"
+              sequence="10"/>
+
+    <!-- Configuration : référentiels, réservé à l'administrateur fonctionnel. -->
+    <menuitem id="menu_aite_courrier_config"
+              name="Configuration"
+              parent="menu_aite_courrier_root"
+              sequence="90"
+              groups="aite_courrier_base.group_admin"/>
+
+    <menuitem id="menu_aite_courrier_type"
+              name="Types de courrier"
+              parent="menu_aite_courrier_config"
+              action="action_aite_courrier_type"
+              sequence="10"/>
+
+    <menuitem id="menu_aite_courrier_priority"
+              name="Priorités"
+              parent="menu_aite_courrier_config"
+              action="action_aite_courrier_priority"
+              sequence="20"/>
+
+    <menuitem id="menu_aite_courrier_confidentiality"
+              name="Niveaux de confidentialité"
+              parent="menu_aite_courrier_config"
+              action="action_aite_courrier_confidentiality"
+              sequence="30"/>
+
+    <!-- Audit : journal transverse, visible audit + admin (admin hérite d'audit). -->
+    <menuitem id="menu_aite_courrier_audit"
+              name="Audit"
+              parent="menu_aite_courrier_root"
+              sequence="80"
+              groups="aite_courrier_base.group_audit"/>
+
+    <menuitem id="menu_aite_courrier_audit_log"
+              name="Journal d'audit"
+              parent="menu_aite_courrier_audit"
+              action="action_aite_courrier_audit_log"
+              sequence="10"/>
+
+</odoo>

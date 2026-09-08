@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=1 : le client peut personnaliser le modèle sans qu'une MAJ
+         de module n'écrase ses adaptations. -->
+    <data noupdate="1">
+
+        <record id="mail_template_courrier_ack" model="mail.template">
+            <field name="name">AITE Courrier : accusé de réception</field>
+            <field name="model_id" ref="aite_courrier_core.model_aite_courrier"/>
+            <field name="subject">Accusé de réception — {{ object.reference or object.subject }}</field>
+            <field name="description">Envoyé automatiquement à l'expéditeur au lancement du circuit (types avec « Accusé de réception automatique »).</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #454748;">
+    <p>Bonjour,</p>
+    <p>
+        Nous accusons réception de votre courrier, enregistré sous la
+        référence <strong t-out="object.reference or ''"/>.
+    </p>
+    <table style="border-collapse: collapse; margin: 12px 0;">
+        <tr>
+            <td style="padding: 4px 12px 4px 0; color: #6c757d;">Référence</td>
+            <td style="padding: 4px 0;"><strong t-out="object.reference or ''"/></td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 12px 4px 0; color: #6c757d;">Objet</td>
+            <td style="padding: 4px 0;" t-out="object.subject or ''"/>
+        </tr>
+        <tr>
+            <td style="padding: 4px 12px 4px 0; color: #6c757d;">Date de réception</td>
+            <td style="padding: 4px 0;" t-out="format_date(object.date_received) if object.date_received else ''"/>
+        </tr>
+    </table>
+    <p>
+        Votre demande est en cours de traitement. Merci de rappeler la
+        référence ci-dessus dans toute correspondance ultérieure.
+    </p>
+    <p>Cordialement,</p>
+    <p t-out="object.company_id.name if 'company_id' in object._fields else user.company_id.name"/>
+</div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

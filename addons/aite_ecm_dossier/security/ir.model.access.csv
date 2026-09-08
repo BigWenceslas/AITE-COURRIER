@@ -1,0 +1,33 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dossier_type_agent,dossier type agent,model_aite_ecm_dossier_type,aite_courrier_base.group_agent,1,0,0,0
+access_dossier_type_assistant,dossier type assistant,model_aite_ecm_dossier_type,aite_courrier_base.group_assistant,1,0,0,0
+access_dossier_type_manager,dossier type manager,model_aite_ecm_dossier_type,aite_courrier_base.group_manager,1,1,1,0
+access_dossier_type_compta,dossier type compta,model_aite_ecm_dossier_type,aite_courrier_base.group_compta,1,0,0,0
+access_dossier_type_signer,dossier type signer,model_aite_ecm_dossier_type,aite_courrier_base.group_signer,1,0,0,0
+access_dossier_type_archive,dossier type archive,model_aite_ecm_dossier_type,aite_courrier_base.group_archive,1,0,0,0
+access_dossier_type_audit,dossier type audit,model_aite_ecm_dossier_type,aite_courrier_base.group_audit,1,0,0,0
+access_dossier_type_admin,dossier type admin,model_aite_ecm_dossier_type,aite_courrier_base.group_admin,1,1,1,1
+access_piece_tmpl_agent,piece tmpl agent,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_agent,1,0,0,0
+access_piece_tmpl_assistant,piece tmpl assistant,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_assistant,1,0,0,0
+access_piece_tmpl_manager,piece tmpl manager,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_manager,1,1,1,1
+access_piece_tmpl_compta,piece tmpl compta,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_compta,1,0,0,0
+access_piece_tmpl_signer,piece tmpl signer,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_signer,1,0,0,0
+access_piece_tmpl_archive,piece tmpl archive,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_archive,1,0,0,0
+access_piece_tmpl_audit,piece tmpl audit,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_audit,1,0,0,0
+access_piece_tmpl_admin,piece tmpl admin,model_aite_ecm_dossier_piece_template,aite_courrier_base.group_admin,1,1,1,1
+access_dossier_agent,dossier agent,model_aite_ecm_dossier,aite_courrier_base.group_agent,1,1,1,0
+access_dossier_assistant,dossier assistant,model_aite_ecm_dossier,aite_courrier_base.group_assistant,1,1,1,0
+access_dossier_manager,dossier manager,model_aite_ecm_dossier,aite_courrier_base.group_manager,1,1,1,1
+access_dossier_compta,dossier compta,model_aite_ecm_dossier,aite_courrier_base.group_compta,1,1,1,0
+access_dossier_signer,dossier signer,model_aite_ecm_dossier,aite_courrier_base.group_signer,1,1,1,0
+access_dossier_archive,dossier archive,model_aite_ecm_dossier,aite_courrier_base.group_archive,1,1,1,0
+access_dossier_audit,dossier audit,model_aite_ecm_dossier,aite_courrier_base.group_audit,1,0,0,0
+access_dossier_admin,dossier admin,model_aite_ecm_dossier,aite_courrier_base.group_admin,1,1,1,1
+access_piece_agent,piece agent,model_aite_ecm_dossier_piece,aite_courrier_base.group_agent,1,1,1,1
+access_piece_assistant,piece assistant,model_aite_ecm_dossier_piece,aite_courrier_base.group_assistant,1,1,1,1
+access_piece_manager,piece manager,model_aite_ecm_dossier_piece,aite_courrier_base.group_manager,1,1,1,1
+access_piece_compta,piece compta,model_aite_ecm_dossier_piece,aite_courrier_base.group_compta,1,1,1,1
+access_piece_signer,piece signer,model_aite_ecm_dossier_piece,aite_courrier_base.group_signer,1,1,1,1
+access_piece_archive,piece archive,model_aite_ecm_dossier_piece,aite_courrier_base.group_archive,1,1,1,1
+access_piece_audit,piece audit,model_aite_ecm_dossier_piece,aite_courrier_base.group_audit,1,0,0,0
+access_piece_admin,piece admin,model_aite_ecm_dossier_piece,aite_courrier_base.group_admin,1,1,1,1

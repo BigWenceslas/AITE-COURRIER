@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Alias entrant : courrier@<domaine>. Tout e-mail reçu crée un
+             courrier en brouillon (cf. aite.courrier.message_new). Le domaine
+             d'alias et le serveur entrant (fetchmail) se configurent dans
+             Paramètres > Technique > E-mail. -->
+        <record id="mail_alias_courrier" model="mail.alias">
+            <field name="alias_name">courrier</field>
+            <field name="alias_model_id" ref="aite_courrier_core.model_aite_courrier"/>
+            <field name="alias_contact">everyone</field>
+        </record>
+
+    </data>
+</odoo>

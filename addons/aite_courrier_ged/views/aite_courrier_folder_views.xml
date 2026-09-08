@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_folder_list" model="ir.ui.view">
+        <field name="name">aite.courrier.folder.list</field>
+        <field name="model">aite.courrier.folder</field>
+        <field name="arch" type="xml">
+            <list string="Dossiers">
+                <field name="complete_name"/>
+                <field name="parent_id" optional="show"/>
+                <field name="description" optional="show"/>
+                <field name="document_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_folder_form" model="ir.ui.view">
+        <field name="name">aite.courrier.folder.form</field>
+        <field name="model">aite.courrier.folder</field>
+        <field name="arch" type="xml">
+            <form string="Dossier">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nom du dossier"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parent_id"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="color" widget="color_picker"/>
+                            <field name="document_count"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Documents" name="documents">
+                            <field name="document_ids" readonly="1">
+                                <list string="Documents">
+                                    <field name="name"/>
+                                    <field name="courrier_id"/>
+                                    <field name="file_extension"/>
+                                    <field name="version_count"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_folder_search" model="ir.ui.view">
+        <field name="name">aite.courrier.folder.search</field>
+        <field name="model">aite.courrier.folder</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="parent_id"/>
+                <filter name="filter_root" string="Dossiers racine"
+                        domain="[('parent_id', '=', False)]"/>
+                <filter name="filter_inactive" string="Archivés"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_parent" string="Dossier parent"
+                            context="{'group_by': 'parent_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_folder" model="ir.actions.act_window">
+        <field name="name">Dossiers</field>
+        <field name="res_model">aite.courrier.folder</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_folder_search"/>
+    </record>
+
+    <!-- ============ Étiquettes de documents ============ -->
+    <record id="view_document_tag_list" model="ir.ui.view">
+        <field name="name">aite.courrier.document.tag.list</field>
+        <field name="model">aite.courrier.document.tag</field>
+        <field name="arch" type="xml">
+            <list string="Étiquettes" editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_document_tag" model="ir.actions.act_window">
+        <field name="name">Étiquettes</field>
+        <field name="res_model">aite.courrier.document.tag</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

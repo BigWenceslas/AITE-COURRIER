@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_aite_ecm_document_form" model="ir.ui.view">
+        <field name="name">aite.ecm.document.form</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="arch" type="xml">
+            <form string="Document ECM">
+                <header>
+                    <button name="action_mark_final" string="Finaliser" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_mark_archived" string="Archiver" type="object"
+                            invisible="state != 'final'"
+                            groups="aite_courrier_base.group_archive,aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+                    <button name="action_reset_draft" string="Remettre en brouillon"
+                            type="object" invisible="state == 'draft'"
+                            groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+                    <button name="action_checkout" string="Réserver" type="object"
+                            icon="fa-lock" invisible="is_checked_out or state != 'draft'"/>
+                    <button name="action_checkin" string="Libérer" type="object"
+                            icon="fa-unlock" class="btn-warning"
+                            invisible="not is_checked_out"/>
+                    <button name="action_preview_latest" string="Prévisualiser"
+                            type="object" icon="fa-eye" invisible="version_count == 0"/>
+                    <button name="action_trash" string="Corbeille" type="object"
+                            icon="fa-trash" invisible="not active"
+                            confirm="Mettre ce document à la corbeille ? Il pourra être restauré avant purge automatique."/>
+                    <button name="action_restore" string="Restaurer" type="object"
+                            class="btn-success" invisible="active"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,final,archived"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_linked_record" type="object"
+                                class="oe_stat_button" icon="fa-external-link"
+                                invisible="not res_model" string="Enregistrement lié"/>
+                        <button name="action_view_duplicates" type="object"
+                                class="oe_stat_button" icon="fa-clone"
+                                invisible="duplicate_count == 0">
+                            <field name="duplicate_count" widget="statinfo" string="Doublons"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Corbeille" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-secondary"
+                            invisible="state != 'archived' or not active"/>
+                    <div class="alert alert-warning mb-3" role="status"
+                         invisible="not is_checked_out">
+                        <i class="fa fa-lock me-1"/>Réservé par
+                        <field name="checkout_user_id" readonly="1" class="fw-bold"/>
+                        jusqu'au <field name="checkout_expiry" readonly="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="reference"/>
+                        <h3><field name="reference" readonly="1"/></h3>
+                        <h1><field name="name" placeholder="Titre du document"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="type_id" options="{'no_create': True}"/>
+                            <field name="folder_id" options="{'no_create': True}"/>
+                            <field name="tag_ids" widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                            <field name="confidentiality_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="owner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="res_display" invisible="not res_model"/>
+                            <field name="res_model" invisible="1"/>
+                            <field name="res_id" invisible="1"/>
+                            <field name="file_name" invisible="not file_name"/>
+                            <field name="is_checked_out" invisible="1"/>
+                            <field name="checked_out_by_me" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Métadonnées" invisible="not type_id">
+                        <field name="properties" nolabel="1" colspan="2" columns="2"/>
+                    </group>
+                    <notebook>
+                        <page string="Versions" name="versions">
+                            <group string="Téléverser une nouvelle version"
+                                   invisible="state != 'draft'">
+                                <field name="upload_file" filename="upload_filename"/>
+                                <field name="upload_filename" invisible="1"/>
+                                <field name="upload_comment"/>
+                                <button name="action_upload_version" string="Ajouter la version"
+                                        type="object" class="btn-primary" icon="fa-upload"
+                                        colspan="2"/>
+                            </group>
+                            <field name="version_ids" readonly="1">
+                                <list>
+                                    <field name="version"/>
+                                    <field name="file_name"/>
+                                    <field name="comment"/>
+                                    <field name="file_size" widget="integer"/>
+                                    <field name="uploaded_by"/>
+                                    <field name="upload_date"/>
+                                    <field name="sha256" optional="hide"/>
+                                    <button name="action_open_file" type="object"
+                                            string="Ouvrir" icon="fa-eye"/>
+                                    <button name="action_download" type="object"
+                                            string="Télécharger" icon="fa-download"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Relations" name="links">
+                            <field name="link_ids">
+                                <list editable="bottom">
+                                    <field name="link_type_id" options="{'no_create': True}"/>
+                                    <field name="target_id"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                            <separator string="Documents qui pointent vers celui-ci"/>
+                            <field name="reverse_link_ids" readonly="1">
+                                <list>
+                                    <field name="document_id"/>
+                                    <field name="inverse_label" string="Relation"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Accès" name="access">
+                            <div class="alert alert-info" role="status">
+                                <i class="fa fa-shield me-1"/><field name="access_summary" nolabel="1" readonly="1" class="d-inline"/>
+                            </div>
+                            <group>
+                                <group string="Partage nominatif">
+                                    <field name="shared_user_ids" widget="many2many_tags"
+                                           options="{'no_create': True}"/>
+                                    <field name="editor_user_ids" widget="many2many_tags"
+                                           options="{'no_create': True}"/>
+                                </group>
+                                <group string="Règles générales">
+                                    <field name="confidentiality_id" options="{'no_create': True}"/>
+                                    <field name="folder_id" options="{'no_create': True}"/>
+                                    <field name="owner_id"/>
+                                </group>
+                            </group>
+                            <p class="text-muted small">
+                                Les managers et administrateurs ont toujours accès. Les droits du dossier
+                                de classement se règlent sur le dossier (ECM › Plan de classement) et
+                                s'appliquent à toute sa branche ; le partage nominatif s'ajoute à ces règles.
+                            </p>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description" nolabel="1"
+                                   placeholder="Résumé, contexte, consignes…"/>
+                        </page>
+                        <page string="Corbeille" name="trash" invisible="active">
+                            <group>
+                                <field name="trashed_uid"/>
+                                <field name="trashed_date"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_document_list" model="ir.ui.view">
+        <field name="name">aite.ecm.document.list</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="arch" type="xml">
+            <list string="Documents" decoration-muted="state == 'archived'"
+                  decoration-info="is_checked_out">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="folder_id"/>
+                <field name="tag_ids" widget="many2many_tags" optional="show"
+                       options="{'color_field': 'color'}"/>
+                <field name="owner_id" optional="show"/>
+                <field name="confidentiality_id" optional="hide"/>
+                <field name="res_display" optional="hide"/>
+                <field name="version_count" string="Vers." optional="show"/>
+                <field name="checkout_user_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'final'"
+                       decoration-muted="state == 'archived'"/>
+                <field name="is_checked_out" invisible="1"/>
+                <field name="write_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_document_kanban" model="ir.ui.view">
+        <field name="name">aite.ecm.document.kanban</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="file_name"/>
+                <field name="is_checked_out"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-column p-2">
+                            <strong><field name="name"/></strong>
+                            <small class="text-muted"><field name="reference"/> · <field name="type_id"/></small>
+                            <small t-if="record.file_name.raw_value"><i class="fa fa-paperclip me-1"/><field name="file_name"/></small>
+                            <span t-if="record.is_checked_out.raw_value" class="badge text-bg-warning mt-1">Réservé</span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_document_search" model="ir.ui.view">
+        <field name="name">aite.ecm.document.search</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher un document">
+                <field name="name" string="Référence / Titre"
+                       filter_domain="['|', ('reference', 'ilike', self), ('name', 'ilike', self)]"/>
+                <field name="content_fulltext" string="Contenu des pièces (plein texte)"/>
+                <field name="type_id"/>
+                <field name="folder_id"/>
+                <field name="tag_ids"/>
+                <field name="owner_id"/>
+                <field name="res_display" string="Enregistrement lié"
+                       filter_domain="[('res_model', 'ilike', self)]"/>
+                <filter name="filter_mine" string="Mes documents"
+                        domain="[('owner_id', '=', uid)]"/>
+                <filter name="filter_checked_out" string="Réservés par moi"
+                        domain="[('checkout_user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_draft" string="Brouillons" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_final" string="Finalisés" domain="[('state', '=', 'final')]"/>
+                <filter name="filter_archived" string="Archivés" domain="[('state', '=', 'archived')]"/>
+                <separator/>
+                <filter name="filter_no_type" string="Sans type" domain="[('type_id', '=', False)]"/>
+                <filter name="filter_no_version" string="Sans fichier" domain="[('version_ids', '=', False)]"/>
+                <filter name="filter_trashed" string="Corbeille" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_type" string="Type" context="{'group_by': 'type_id'}"/>
+                    <filter name="group_folder" string="Dossier" context="{'group_by': 'folder_id'}"/>
+                    <filter name="group_state" string="Statut" context="{'group_by': 'state'}"/>
+                    <filter name="group_owner" string="Propriétaire" context="{'group_by': 'owner_id'}"/>
+                    <filter name="group_month" string="Mois de création" context="{'group_by': 'create_date:month'}"/>
+                </group>
+                <searchpanel>
+                    <field name="folder_id" string="Plan de classement" icon="fa-folder"
+                           enable_counters="1" hierarchize="1" expand="1"/>
+                    <field name="type_id" string="Types" icon="fa-file-text-o"
+                           select="multi" enable_counters="1" expand="1"/>
+                    <field name="tag_ids" string="Étiquettes" icon="fa-tag"
+                           select="multi" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- Analyse du fonds (F1) -->
+    <record id="view_aite_ecm_document_graph" model="ir.ui.view">
+        <field name="name">aite.ecm.document.graph</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="arch" type="xml">
+            <graph string="Fonds documentaire" type="bar" stacked="1">
+                <field name="type_id"/>
+                <field name="state" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_document_pivot" model="ir.ui.view">
+        <field name="name">aite.ecm.document.pivot</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="arch" type="xml">
+            <pivot string="Fonds documentaire">
+                <field name="folder_id" type="row"/>
+                <field name="type_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_document" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">aite.ecm.document</field>
+        <field name="view_mode">list,kanban,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_aite_ecm_document_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créez votre premier document</p>
+            <p>Choisissez un type : ses métadonnées, son dossier de classement et sa
+               confidentialité par défaut s'appliquent automatiquement.</p>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_document_mine" model="ir.actions.act_window">
+        <field name="name">Mes documents</field>
+        <field name="res_model">aite.ecm.document</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_aite_ecm_document_search"/>
+        <field name="context">{'search_default_filter_mine': 1}</field>
+    </record>
+
+    <record id="action_aite_ecm_document_trash" model="ir.actions.act_window">
+        <field name="name">Corbeille</field>
+        <field name="res_model">aite.ecm.document</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('active', '=', False)]</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">La corbeille est vide</p>
+            <p>Les documents mis à la corbeille y restent jusqu'à leur restauration
+               ou leur purge automatique (30 jours par défaut).</p>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_document_analysis" model="ir.actions.act_window">
+        <field name="name">Analyse du fonds</field>
+        <field name="res_model">aite.ecm.document</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_aite_ecm_document_search"/>
+        <field name="context">{'search_default_group_type': 1}</field>
+    </record>
+
+</odoo>

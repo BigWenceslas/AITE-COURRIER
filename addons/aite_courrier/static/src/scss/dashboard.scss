@@ -1,0 +1,152 @@
+.o_aite_dashboard {
+    padding: 24px;
+    background: #f6f7fb;
+    min-height: 100%;
+    overflow: auto;
+
+    .o_aite_topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px;
+
+        .o_aite_title {
+            margin: 0;
+            font-weight: 600;
+            color: #16294d;
+        }
+    }
+
+    .o_aite_loading {
+        text-align: center;
+        color: #16294d;
+        padding: 64px 0;
+    }
+
+    /* ----- Cartes KPI ----- */
+    .o_aite_kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .o_aite_card {
+        position: relative;
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 20px 20px 18px;
+        box-shadow: 0 4px 14px rgba(22, 41, 77, 0.08);
+        cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+        border-left: 5px solid #16294d;
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(22, 41, 77, 0.16);
+        }
+
+        .o_aite_icon {
+            position: absolute;
+            top: 18px;
+            right: 20px;
+            font-size: 26px;
+            opacity: 0.18;
+        }
+        .o_aite_val {
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #16294d;
+        }
+        .o_aite_lbl {
+            margin-top: 4px;
+            font-size: 13px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+    }
+
+    .o_aite_blue   { border-left-color: #2f6fed; .o_aite_icon { color: #2f6fed; } }
+    .o_aite_red    { border-left-color: #e8503a; .o_aite_icon { color: #e8503a; } }
+    .o_aite_green  { border-left-color: #1f9d57; .o_aite_icon { color: #1f9d57; } }
+    .o_aite_teal   { border-left-color: #0d9488; .o_aite_icon { color: #0d9488; } }
+    .o_aite_amber  { border-left-color: #f2a92d; .o_aite_icon { color: #f2a92d; } }
+    .o_aite_indigo { border-left-color: #5b53d6; .o_aite_icon { color: #5b53d6; } cursor: default;
+        &:hover { transform: none; } }
+
+    /* ----- Panneaux de répartition ----- */
+    .o_aite_panels {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+
+        @media (max-width: 992px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .o_aite_panel {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 14px rgba(22, 41, 77, 0.08);
+
+        .o_aite_panel_title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #16294d;
+            margin: 0 0 16px;
+        }
+    }
+
+    .o_aite_barrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+
+        .o_aite_barlabel {
+            flex: 0 0 140px;
+            font-size: 13px;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .o_aite_bar {
+            flex: 1;
+            height: 12px;
+            background: #eef1f6;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .o_aite_barfill {
+            height: 100%;
+            background: linear-gradient(90deg, #2f6fed, #5b53d6);
+            border-radius: 6px;
+            min-width: 2px;
+        }
+        .o_aite_barcount {
+            flex: 0 0 36px;
+            text-align: right;
+            font-weight: 600;
+            color: #16294d;
+        }
+    }
+
+    .o_aite_catrow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eef1f6;
+
+        &:last-child { border-bottom: none; }
+        .o_aite_catlabel { color: #374151; }
+        .o_aite_catcount { font-weight: 700; color: #16294d; }
+    }
+}

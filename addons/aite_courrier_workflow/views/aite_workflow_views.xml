@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ Transition (vues de sélection / recherche) ============ -->
+    <record id="view_aite_workflow_transition_list" model="ir.ui.view">
+        <field name="name">aite.workflow.transition.list</field>
+        <field name="model">aite.workflow.transition</field>
+        <field name="arch" type="xml">
+            <list string="Transitions">
+                <field name="circuit_id"/>
+                <field name="label"/>
+                <field name="step_from_id"/>
+                <field name="step_to_id"/>
+                <field name="direction"/>
+                <field name="comment_required"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_workflow_transition_search" model="ir.ui.view">
+        <field name="name">aite.workflow.transition.search</field>
+        <field name="model">aite.workflow.transition</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="label"/>
+                <field name="circuit_id"/>
+                <field name="step_from_id"/>
+                <field name="step_to_id"/>
+                <filter name="filter_forward" string="En avant"
+                        domain="[('direction', '=', 'forward')]"/>
+                <filter name="filter_backward" string="En arrière"
+                        domain="[('direction', '=', 'backward')]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_circuit" string="Circuit"
+                            context="{'group_by': 'circuit_id'}"/>
+                    <filter name="group_from" string="Étape de départ"
+                            context="{'group_by': 'step_from_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============ Circuit ============ -->
+    <record id="view_aite_workflow_circuit_list" model="ir.ui.view">
+        <field name="name">aite.workflow.circuit.list</field>
+        <field name="model">aite.workflow.circuit</field>
+        <field name="arch" type="xml">
+            <list string="Circuits de traitement">
+                <field name="name"/>
+                <field name="type_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_workflow_circuit_form" model="ir.ui.view">
+        <field name="name">aite.workflow.circuit.form</field>
+        <field name="model">aite.workflow.circuit</field>
+        <field name="arch" type="xml">
+            <form string="Circuit de traitement">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="type_id"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Étapes" name="steps">
+                            <field name="step_ids">
+                                <list string="Étapes" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="role_ids" widget="many2many_tags"/>
+                                    <field name="user_ids" widget="many2many_tags"/>
+                                    <field name="sla_hours"/>
+                                    <field name="is_initial"/>
+                                    <field name="is_final"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Transitions" name="transitions">
+                            <div class="alert alert-info" role="status">
+                                Les étapes de départ et d'arrivée sont limitées
+                                aux étapes de ce circuit. Enregistrez d'abord le
+                                circuit et ses étapes pour pouvoir les sélectionner.
+                            </div>
+                            <field name="transition_ids">
+                                <list string="Transitions" editable="bottom">
+                                    <field name="step_from_id"
+                                           domain="[('circuit_id', '=', parent.id)]"
+                                           options="{'no_create': True}"/>
+                                    <field name="step_to_id"
+                                           domain="[('circuit_id', '=', parent.id)]"
+                                           options="{'no_create': True}"/>
+                                    <field name="label"/>
+                                    <field name="direction"/>
+                                    <field name="comment_required"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_workflow_circuit_search" model="ir.ui.view">
+        <field name="name">aite.workflow.circuit.search</field>
+        <field name="model">aite.workflow.circuit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="type_id"/>
+                <filter name="filter_inactive" string="Archivés"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_type" string="Type de courrier"
+                            context="{'group_by': 'type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_aite_workflow_circuit" model="ir.actions.act_window">
+        <field name="name">Circuits de traitement</field>
+        <field name="res_model">aite.workflow.circuit</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

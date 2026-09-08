@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_ecm" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.ecm</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="AITE ECM" string="AITE ECM" name="aite_ecm" groups="base.group_system">
+                    <block title="Numérisation" name="ecm_scan_block">
+                        <setting string="Dossier de dépôt surveillé" id="ecm_hotfolder"
+                                 help="Configurez votre scanner réseau en « scan vers dossier » (SMB/FTP) sur un répertoire du serveur : la tâche planifiée « AITE ECM : import du dossier de dépôt » en fait des documents.">
+                            <div class="row mt8">
+                                <label for="ecm_hotfolder_path" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_hotfolder_path" placeholder="/srv/scans"/>
+                            </div>
+                            <div class="row">
+                                <label for="ecm_hotfolder_folder_id" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_hotfolder_folder_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="ecm_hotfolder_type_id" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_hotfolder_type_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="ecm_hotfolder_user_id" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_hotfolder_user_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="ecm_hotfolder_min_age" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_hotfolder_min_age"/>
+                            </div>
+                        </setting>
+                        <setting string="Scan vers e-mail et appareil photo" id="ecm_scan_mail"
+                                 help="Les pièces reçues sur l'alias deviennent des documents. Sur mobile, le bouton « Numériser » de l'explorateur assemble les photos en un PDF.">
+                            <div class="row mt8">
+                                <label for="ecm_scan_alias" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_scan_alias" readonly="1"/>
+                            </div>
+                            <div class="text-muted">
+                                Le domaine d'alias se définit dans Paramètres › Discussion. Un scanner
+                                « scan vers e-mail » envoie ses PDF à cette adresse.
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Documents" name="ecm_document_block">
+                        <setting string="Réservation et corbeille" id="ecm_document_settings">
+                            <div class="row mt8">
+                                <label for="ecm_checkout_hours" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_checkout_hours"/>
+                            </div>
+                            <div class="row">
+                                <label for="ecm_trash_retention_days" class="col-lg-4 o_light_label"/>
+                                <field name="ecm_trash_retention_days"/>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_settings" model="ir.actions.act_window">
+        <field name="name">Paramètres</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'aite_ecm_document'}</field>
+    </record>
+
+    <menuitem id="menu_aite_ecm_settings" name="Paramètres"
+              parent="menu_aite_ecm_config" action="action_aite_ecm_settings"
+              sequence="5" groups="base.group_system"/>
+</odoo>

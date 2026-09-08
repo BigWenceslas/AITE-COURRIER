@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Objet gouverné sur la fiche circuit ; type de courrier conditionnel. -->
+    <record id="view_aite_workflow_circuit_form_ecm" model="ir.ui.view">
+        <field name="name">aite.workflow.circuit.form.ecm</field>
+        <field name="model">aite.workflow.circuit</field>
+        <field name="inherit_id" ref="aite_courrier_workflow.view_aite_workflow_circuit_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type_id']" position="before">
+                <field name="res_model"/>
+            </xpath>
+            <xpath expr="//field[@name='type_id']" position="attributes">
+                <attribute name="invisible">res_model != 'aite.courrier'</attribute>
+                <attribute name="required">res_model == 'aite.courrier'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_aite_workflow_history_list" model="ir.ui.view">
+        <field name="name">aite.workflow.history.list</field>
+        <field name="model">aite.workflow.history</field>
+        <field name="arch" type="xml">
+            <list string="Historique de circuit" create="false" edit="false">
+                <field name="res_ref"/>
+                <field name="step_id"/>
+                <field name="entered_date"/>
+                <field name="left_date"/>
+                <field name="duration_hours" widget="float_time" optional="show"/>
+                <field name="user_id"/>
+                <field name="transition_id"/>
+                <field name="comment"/>
+            </list>
+        </field>
+    </record>
+</odoo>

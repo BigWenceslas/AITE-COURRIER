@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_document"
+              name="Espace documentaire"
+              parent="aite_courrier_base.menu_aite_courrier_root"
+              action="action_document"
+              sequence="50"/>
+
+    <menuitem id="menu_folder"
+              name="Dossiers"
+              parent="aite_courrier_base.menu_aite_courrier_config"
+              action="action_folder"
+              sequence="50"/>
+
+    <menuitem id="menu_document_tag"
+              name="Étiquettes de documents"
+              parent="aite_courrier_base.menu_aite_courrier_config"
+              action="action_document_tag"
+              sequence="60"/>
+
+</odoo>

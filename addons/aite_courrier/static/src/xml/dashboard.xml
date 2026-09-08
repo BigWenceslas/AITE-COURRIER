@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="aite_courrier.Dashboard">
+        <div class="o_aite_dashboard">
+            <div class="o_aite_topbar">
+                <h2 class="o_aite_title">
+                    <i class="fa fa-tachometer me-2"/>Tableau de bord — Courrier
+                </h2>
+                <div class="o_aite_actions">
+                    <button class="btn btn-light btn-sm me-2" t-on-click="() => this.load()">
+                        <i class="fa fa-refresh me-1"/>Actualiser
+                    </button>
+                    <button class="btn btn-primary btn-sm" t-on-click="openAnalysis">
+                        <i class="fa fa-bar-chart me-1"/>Analyse détaillée
+                    </button>
+                </div>
+            </div>
+
+            <div t-if="state.loading" class="o_aite_loading">
+                <i class="fa fa-circle-o-notch fa-spin fa-2x"/>
+            </div>
+
+            <t t-else="">
+                <!-- Cartes KPI -->
+                <div class="o_aite_kpis">
+                    <div class="o_aite_card o_aite_blue" t-on-click="openActive">
+                        <i class="fa fa-inbox o_aite_icon"/>
+                        <div class="o_aite_val" t-esc="state.data.active"/>
+                        <div class="o_aite_lbl">En cours</div>
+                    </div>
+                    <div class="o_aite_card o_aite_red" t-on-click="openOverdue">
+                        <i class="fa fa-exclamation-triangle o_aite_icon"/>
+                        <div class="o_aite_val" t-esc="state.data.overdue"/>
+                        <div class="o_aite_lbl">En retard (SLA)</div>
+                    </div>
+                    <div class="o_aite_card o_aite_green" t-on-click="openReceivedMonth">
+                        <i class="fa fa-download o_aite_icon"/>
+                        <div class="o_aite_val" t-esc="state.data.received_month"/>
+                        <div class="o_aite_lbl">Reçus ce mois</div>
+                    </div>
+                    <div class="o_aite_card o_aite_teal" t-on-click="openArchivedMonth">
+                        <i class="fa fa-archive o_aite_icon"/>
+                        <div class="o_aite_val" t-esc="state.data.archived_month"/>
+                        <div class="o_aite_lbl">Archivés ce mois</div>
+                    </div>
+                    <div class="o_aite_card o_aite_amber" t-on-click="openRejected">
+                        <i class="fa fa-times-circle o_aite_icon"/>
+                        <div class="o_aite_val"><t t-esc="state.data.reject_rate"/>%</div>
+                        <div class="o_aite_lbl">Taux de rejet</div>
+                    </div>
+                    <div class="o_aite_card o_aite_indigo">
+                        <i class="fa fa-clock-o o_aite_icon"/>
+                        <div class="o_aite_val"><t t-esc="state.data.avg_days"/> j</div>
+                        <div class="o_aite_lbl">Délai moyen de traitement</div>
+                    </div>
+                </div>
+
+                <!-- Répartitions -->
+                <div class="o_aite_panels">
+                    <div class="o_aite_panel">
+                        <h3 class="o_aite_panel_title">Charge par étape (en cours)</h3>
+                        <div t-if="!state.data.by_step.length" class="text-muted">
+                            Aucun courrier en cours.
+                        </div>
+                        <t t-foreach="state.data.by_step" t-as="row" t-key="row.label">
+                            <div class="o_aite_barrow">
+                                <span class="o_aite_barlabel" t-esc="row.label"/>
+                                <div class="o_aite_bar">
+                                    <div class="o_aite_barfill"
+                                         t-attf-style="width: {{ row.pct }}%;"/>
+                                </div>
+                                <span class="o_aite_barcount" t-esc="row.count"/>
+                            </div>
+                        </t>
+                    </div>
+
+                    <div class="o_aite_panel">
+                        <h3 class="o_aite_panel_title">Répartition par catégorie</h3>
+                        <div t-if="!state.data.by_category.length" class="text-muted">
+                            Aucune donnée.
+                        </div>
+                        <t t-foreach="state.data.by_category" t-as="row" t-key="row.label">
+                            <div class="o_aite_catrow">
+                                <span class="o_aite_catlabel" t-esc="row.label"/>
+                                <span class="o_aite_catcount" t-esc="row.count"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

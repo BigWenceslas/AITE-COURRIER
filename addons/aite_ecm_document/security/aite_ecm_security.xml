@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Utilisateurs ECM (rôles du socle, hors Manager/Admin) :
+             lecture = (dossier ouvert OU groupe de lecture effectif)
+                       ET (non confidentiel OU propriétaire/créateur).
+             Les règles d'un même groupe se combinant en OU, les deux
+             conditions sont réunies dans UNE règle (ET explicite). -->
+        <record id="rule_ecm_document_user_read" model="ir.rule">
+            <field name="name">Document ECM : lecture (droits de dossier + confidentialité)</field>
+            <field name="model_id" ref="model_aite_ecm_document"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_agent'),
+                ref('aite_courrier_base.group_assistant'),
+                ref('aite_courrier_base.group_compta'),
+                ref('aite_courrier_base.group_signer'),
+                ref('aite_courrier_base.group_archive'),
+                ref('aite_courrier_base.group_audit')])]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+            <field name="domain_force">['|', '|',
+                ('shared_user_ids', 'in', [user.id]), ('editor_user_ids', 'in', [user.id]),
+                '&amp;',
+                '|', ('folder_id', '=', False),
+                '|', '&amp;', ('folder_id.effective_read_group_ids', '=', False),
+                           ('folder_id.effective_read_user_ids', '=', False),
+                     '|', ('folder_id.effective_read_group_ids', 'in', user.groups_id.ids),
+                          ('folder_id.effective_read_user_ids', 'in', [user.id]),
+                '|', ('confidentiality_code', 'not in', ['CONF', 'SEC']),
+                '|', ('owner_id', '=', user.id), ('create_uid', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_ecm_document_user_write" model="ir.rule">
+            <field name="name">Document ECM : écriture (droits de dossier + confidentialité)</field>
+            <field name="model_id" ref="model_aite_ecm_document"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_agent'),
+                ref('aite_courrier_base.group_assistant'),
+                ref('aite_courrier_base.group_compta'),
+                ref('aite_courrier_base.group_signer'),
+                ref('aite_courrier_base.group_archive')])]"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">['|',
+                ('editor_user_ids', 'in', [user.id]),
+                '&amp;',
+                '|', ('folder_id', '=', False),
+                '|', '&amp;', ('folder_id.effective_write_group_ids', '=', False),
+                           ('folder_id.effective_write_user_ids', '=', False),
+                     '|', ('folder_id.effective_write_group_ids', 'in', user.groups_id.ids),
+                          ('folder_id.effective_write_user_ids', 'in', [user.id]),
+                '|', ('confidentiality_code', 'not in', ['CONF', 'SEC']),
+                '|', ('owner_id', '=', user.id), ('create_uid', '=', user.id)]</field>
+        </record>
+
+        <!-- Manager et Administrateur : accès complet (règle en OU). -->
+        <record id="rule_ecm_document_manager" model="ir.rule">
+            <field name="name">Document ECM : manager / administrateur</field>
+            <field name="model_id" ref="model_aite_ecm_document"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_manager'),
+                ref('aite_courrier_base.group_admin')])]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- Les versions suivent les droits de leur document. -->
+        <record id="rule_ecm_version_user" model="ir.rule">
+            <field name="name">Version ECM : suit le document</field>
+            <field name="model_id" ref="model_aite_ecm_document_version"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_agent'),
+                ref('aite_courrier_base.group_assistant'),
+                ref('aite_courrier_base.group_compta'),
+                ref('aite_courrier_base.group_signer'),
+                ref('aite_courrier_base.group_archive'),
+                ref('aite_courrier_base.group_audit')])]"/>
+            <field name="domain_force">['|', '|',
+                ('document_id.shared_user_ids', 'in', [user.id]),
+                ('document_id.editor_user_ids', 'in', [user.id]),
+                '&amp;',
+                '|', ('document_id.folder_id', '=', False),
+                '|', '&amp;', ('document_id.folder_id.effective_read_group_ids', '=', False),
+                           ('document_id.folder_id.effective_read_user_ids', '=', False),
+                     '|', ('document_id.folder_id.effective_read_group_ids', 'in', user.groups_id.ids),
+                          ('document_id.folder_id.effective_read_user_ids', 'in', [user.id]),
+                '|', ('document_id.confidentiality_code', 'not in', ['CONF', 'SEC']),
+                '|', ('document_id.owner_id', '=', user.id),
+                     ('document_id.create_uid', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_ecm_version_manager" model="ir.rule">
+            <field name="name">Version ECM : manager / administrateur</field>
+            <field name="model_id" ref="model_aite_ecm_document_version"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_manager'),
+                ref('aite_courrier_base.group_admin')])]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- Sociétés : documents de la société courante ou communs. -->
+        <record id="rule_ecm_document_company" model="ir.rule">
+            <field name="name">Document ECM : multi-société</field>
+            <field name="model_id" ref="model_aite_ecm_document"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False),
+                ('company_id', 'in', company_ids)]</field>
+        </record>
+
+    </data>
+</odoo>

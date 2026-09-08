@@ -1,0 +1,27 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_aite_courrier_type_agent,aite.courrier.type read agent,model_aite_courrier_type,aite_courrier_base.group_agent,1,0,0,0
+access_aite_courrier_type_assistant,aite.courrier.type read assistant,model_aite_courrier_type,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_courrier_type_manager,aite.courrier.type read manager,model_aite_courrier_type,aite_courrier_base.group_manager,1,0,0,0
+access_aite_courrier_type_compta,aite.courrier.type read compta,model_aite_courrier_type,aite_courrier_base.group_compta,1,0,0,0
+access_aite_courrier_type_signer,aite.courrier.type read signer,model_aite_courrier_type,aite_courrier_base.group_signer,1,0,0,0
+access_aite_courrier_type_archive,aite.courrier.type read archive,model_aite_courrier_type,aite_courrier_base.group_archive,1,0,0,0
+access_aite_courrier_type_audit,aite.courrier.type read audit,model_aite_courrier_type,aite_courrier_base.group_audit,1,0,0,0
+access_aite_courrier_type_admin,aite.courrier.type manage admin,model_aite_courrier_type,aite_courrier_base.group_admin,1,1,1,1
+access_aite_courrier_priority_agent,aite.courrier.priority read agent,model_aite_courrier_priority,aite_courrier_base.group_agent,1,0,0,0
+access_aite_courrier_priority_assistant,aite.courrier.priority read assistant,model_aite_courrier_priority,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_courrier_priority_manager,aite.courrier.priority read manager,model_aite_courrier_priority,aite_courrier_base.group_manager,1,0,0,0
+access_aite_courrier_priority_compta,aite.courrier.priority read compta,model_aite_courrier_priority,aite_courrier_base.group_compta,1,0,0,0
+access_aite_courrier_priority_signer,aite.courrier.priority read signer,model_aite_courrier_priority,aite_courrier_base.group_signer,1,0,0,0
+access_aite_courrier_priority_archive,aite.courrier.priority read archive,model_aite_courrier_priority,aite_courrier_base.group_archive,1,0,0,0
+access_aite_courrier_priority_audit,aite.courrier.priority read audit,model_aite_courrier_priority,aite_courrier_base.group_audit,1,0,0,0
+access_aite_courrier_priority_admin,aite.courrier.priority manage admin,model_aite_courrier_priority,aite_courrier_base.group_admin,1,1,1,1
+access_aite_courrier_confidentiality_agent,aite.courrier.confidentiality read agent,model_aite_courrier_confidentiality,aite_courrier_base.group_agent,1,0,0,0
+access_aite_courrier_confidentiality_assistant,aite.courrier.confidentiality read assistant,model_aite_courrier_confidentiality,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_courrier_confidentiality_manager,aite.courrier.confidentiality read manager,model_aite_courrier_confidentiality,aite_courrier_base.group_manager,1,0,0,0
+access_aite_courrier_confidentiality_compta,aite.courrier.confidentiality read compta,model_aite_courrier_confidentiality,aite_courrier_base.group_compta,1,0,0,0
+access_aite_courrier_confidentiality_signer,aite.courrier.confidentiality read signer,model_aite_courrier_confidentiality,aite_courrier_base.group_signer,1,0,0,0
+access_aite_courrier_confidentiality_archive,aite.courrier.confidentiality read archive,model_aite_courrier_confidentiality,aite_courrier_base.group_archive,1,0,0,0
+access_aite_courrier_confidentiality_audit,aite.courrier.confidentiality read audit,model_aite_courrier_confidentiality,aite_courrier_base.group_audit,1,0,0,0
+access_aite_courrier_confidentiality_admin,aite.courrier.confidentiality manage admin,model_aite_courrier_confidentiality,aite_courrier_base.group_admin,1,1,1,1
+access_aite_courrier_audit_log_audit,aite.courrier.audit.log read audit,model_aite_courrier_audit_log,aite_courrier_base.group_audit,1,0,0,0
+access_aite_courrier_audit_log_admin,aite.courrier.audit.log read admin,model_aite_courrier_audit_log,aite_courrier_base.group_admin,1,0,0,0

@@ -1,0 +1,57 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ecm_type_agent,ecm type agent,model_aite_ecm_document_type,aite_courrier_base.group_agent,1,0,0,0
+access_ecm_type_assistant,ecm type assistant,model_aite_ecm_document_type,aite_courrier_base.group_assistant,1,0,0,0
+access_ecm_type_manager,ecm type manager,model_aite_ecm_document_type,aite_courrier_base.group_manager,1,1,1,0
+access_ecm_type_compta,ecm type compta,model_aite_ecm_document_type,aite_courrier_base.group_compta,1,0,0,0
+access_ecm_type_signer,ecm type signer,model_aite_ecm_document_type,aite_courrier_base.group_signer,1,0,0,0
+access_ecm_type_archive,ecm type archive,model_aite_ecm_document_type,aite_courrier_base.group_archive,1,0,0,0
+access_ecm_type_audit,ecm type audit,model_aite_ecm_document_type,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_type_admin,ecm type admin,model_aite_ecm_document_type,aite_courrier_base.group_admin,1,1,1,1
+access_ecm_folder_agent,ecm folder agent,model_aite_ecm_folder,aite_courrier_base.group_agent,1,0,0,0
+access_ecm_folder_assistant,ecm folder assistant,model_aite_ecm_folder,aite_courrier_base.group_assistant,1,0,0,0
+access_ecm_folder_manager,ecm folder manager,model_aite_ecm_folder,aite_courrier_base.group_manager,1,1,1,0
+access_ecm_folder_compta,ecm folder compta,model_aite_ecm_folder,aite_courrier_base.group_compta,1,0,0,0
+access_ecm_folder_signer,ecm folder signer,model_aite_ecm_folder,aite_courrier_base.group_signer,1,0,0,0
+access_ecm_folder_archive,ecm folder archive,model_aite_ecm_folder,aite_courrier_base.group_archive,1,1,1,0
+access_ecm_folder_audit,ecm folder audit,model_aite_ecm_folder,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_folder_admin,ecm folder admin,model_aite_ecm_folder,aite_courrier_base.group_admin,1,1,1,1
+access_ecm_tag_agent,ecm tag agent,model_aite_ecm_tag,aite_courrier_base.group_agent,1,0,0,0
+access_ecm_tag_assistant,ecm tag assistant,model_aite_ecm_tag,aite_courrier_base.group_assistant,1,1,1,0
+access_ecm_tag_manager,ecm tag manager,model_aite_ecm_tag,aite_courrier_base.group_manager,1,1,1,0
+access_ecm_tag_compta,ecm tag compta,model_aite_ecm_tag,aite_courrier_base.group_compta,1,0,0,0
+access_ecm_tag_signer,ecm tag signer,model_aite_ecm_tag,aite_courrier_base.group_signer,1,0,0,0
+access_ecm_tag_archive,ecm tag archive,model_aite_ecm_tag,aite_courrier_base.group_archive,1,1,1,0
+access_ecm_tag_audit,ecm tag audit,model_aite_ecm_tag,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_tag_admin,ecm tag admin,model_aite_ecm_tag,aite_courrier_base.group_admin,1,1,1,1
+access_ecm_link_type_agent,ecm link type agent,model_aite_ecm_link_type,aite_courrier_base.group_agent,1,0,0,0
+access_ecm_link_type_assistant,ecm link type assistant,model_aite_ecm_link_type,aite_courrier_base.group_assistant,1,0,0,0
+access_ecm_link_type_manager,ecm link type manager,model_aite_ecm_link_type,aite_courrier_base.group_manager,1,1,1,0
+access_ecm_link_type_compta,ecm link type compta,model_aite_ecm_link_type,aite_courrier_base.group_compta,1,0,0,0
+access_ecm_link_type_signer,ecm link type signer,model_aite_ecm_link_type,aite_courrier_base.group_signer,1,0,0,0
+access_ecm_link_type_archive,ecm link type archive,model_aite_ecm_link_type,aite_courrier_base.group_archive,1,0,0,0
+access_ecm_link_type_audit,ecm link type audit,model_aite_ecm_link_type,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_link_type_admin,ecm link type admin,model_aite_ecm_link_type,aite_courrier_base.group_admin,1,1,1,1
+access_ecm_link_agent,ecm link agent,model_aite_ecm_document_link,aite_courrier_base.group_agent,1,1,1,1
+access_ecm_link_assistant,ecm link assistant,model_aite_ecm_document_link,aite_courrier_base.group_assistant,1,1,1,1
+access_ecm_link_manager,ecm link manager,model_aite_ecm_document_link,aite_courrier_base.group_manager,1,1,1,1
+access_ecm_link_compta,ecm link compta,model_aite_ecm_document_link,aite_courrier_base.group_compta,1,1,1,1
+access_ecm_link_signer,ecm link signer,model_aite_ecm_document_link,aite_courrier_base.group_signer,1,1,1,1
+access_ecm_link_archive,ecm link archive,model_aite_ecm_document_link,aite_courrier_base.group_archive,1,1,1,1
+access_ecm_link_audit,ecm link audit,model_aite_ecm_document_link,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_link_admin,ecm link admin,model_aite_ecm_document_link,aite_courrier_base.group_admin,1,1,1,1
+access_ecm_document_agent,ecm document agent,model_aite_ecm_document,aite_courrier_base.group_agent,1,1,1,0
+access_ecm_document_assistant,ecm document assistant,model_aite_ecm_document,aite_courrier_base.group_assistant,1,1,1,0
+access_ecm_document_manager,ecm document manager,model_aite_ecm_document,aite_courrier_base.group_manager,1,1,1,1
+access_ecm_document_compta,ecm document compta,model_aite_ecm_document,aite_courrier_base.group_compta,1,1,1,0
+access_ecm_document_signer,ecm document signer,model_aite_ecm_document,aite_courrier_base.group_signer,1,1,1,0
+access_ecm_document_archive,ecm document archive,model_aite_ecm_document,aite_courrier_base.group_archive,1,1,1,0
+access_ecm_document_audit,ecm document audit,model_aite_ecm_document,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_document_admin,ecm document admin,model_aite_ecm_document,aite_courrier_base.group_admin,1,1,1,1
+access_ecm_version_agent,ecm version agent,model_aite_ecm_document_version,aite_courrier_base.group_agent,1,1,1,0
+access_ecm_version_assistant,ecm version assistant,model_aite_ecm_document_version,aite_courrier_base.group_assistant,1,1,1,0
+access_ecm_version_manager,ecm version manager,model_aite_ecm_document_version,aite_courrier_base.group_manager,1,1,1,1
+access_ecm_version_compta,ecm version compta,model_aite_ecm_document_version,aite_courrier_base.group_compta,1,1,1,0
+access_ecm_version_signer,ecm version signer,model_aite_ecm_document_version,aite_courrier_base.group_signer,1,1,1,0
+access_ecm_version_archive,ecm version archive,model_aite_ecm_document_version,aite_courrier_base.group_archive,1,1,1,0
+access_ecm_version_audit,ecm version audit,model_aite_ecm_document_version,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_version_admin,ecm version admin,model_aite_ecm_document_version,aite_courrier_base.group_admin,1,1,1,1

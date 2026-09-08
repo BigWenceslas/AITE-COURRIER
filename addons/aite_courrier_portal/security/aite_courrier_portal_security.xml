@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Portail : lecture seule, limitée aux courriers dont le tiers
+             connecté (ou sa société) est l'expéditeur. Règle de groupe :
+             elle se combine en OU avec les règles internes, sans les élargir
+             (les utilisateurs portail n'appartiennent à aucun groupe
+             AITE Courrier interne). -->
+        <record id="rule_courrier_portal_own" model="ir.rule">
+            <field name="name">Courrier : portail (ses propres courriers)</field>
+            <field name="model_id" ref="aite_courrier_core.model_aite_courrier"/>
+            <field name="groups" eval="[(6, 0, [ref('base.group_portal')])]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+            <field name="domain_force">[
+                '|',
+                ('sender_partner_id', '=', user.partner_id.id),
+                ('sender_partner_id', '=', user.partner_id.commercial_partner_id.id),
+            ]</field>
+        </record>
+
+    </data>
+</odoo>

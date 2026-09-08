@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+
+    <!--
+        Catégorie de module regroupant tous les droits AITE Courrier.
+        Elle apparaît comme un bloc dédié dans Réglages > Utilisateurs.
+    -->
+    <record id="module_category_aite_courrier" model="ir.module.category">
+        <field name="name">AITE Courrier</field>
+        <field name="description">Droits d'accès de la solution de gestion du courrier AITE.</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <!--
+        Groupes opérationnels.
+        Au MVP, chaque groupe correspond à un rôle métier simple ; les
+        implications (hiérarchie) sont volontairement minimales.
+    -->
+
+    <record id="group_agent" model="res.groups">
+        <field name="name">Agent courrier</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Agent de saisie et de traitement courant du courrier.</field>
+    </record>
+
+    <record id="group_assistant" model="res.groups">
+        <field name="name">Assistant(e)</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Assistant(e) de direction : enregistrement et orientation du courrier.</field>
+    </record>
+
+    <record id="group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Responsable de service : supervision et affectation du courrier.</field>
+    </record>
+
+    <record id="group_compta" model="res.groups">
+        <field name="name">Comptabilité</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Traitement du courrier à dimension comptable/financière.</field>
+    </record>
+
+    <record id="group_signer" model="res.groups">
+        <field name="name">Signataire</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Personne habilitée à valider/signer les courriers sortants.</field>
+    </record>
+
+    <record id="group_archive" model="res.groups">
+        <field name="name">Archiviste</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Gestion du classement et de l'archivage documentaire (GED).</field>
+    </record>
+
+    <record id="group_audit" model="res.groups">
+        <field name="name">Audit</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Accès en lecture aux journaux d'audit et traces transverses.</field>
+    </record>
+
+    <!--
+        Administrateur fonctionnel AITE Courrier.
+        Implique l'ensemble des autres groupes opérationnels : un membre de
+        ce groupe dispose donc cumulativement de tous leurs droits.
+    -->
+    <record id="group_admin" model="res.groups">
+        <field name="name">Administrateur AITE Courrier</field>
+        <field name="category_id" ref="module_category_aite_courrier"/>
+        <field name="comment">Administration fonctionnelle complète de la solution AITE Courrier.</field>
+        <field name="implied_ids" eval="[(6, 0, [
+            ref('group_agent'),
+            ref('group_assistant'),
+            ref('group_manager'),
+            ref('group_compta'),
+            ref('group_signer'),
+            ref('group_archive'),
+            ref('group_audit'),
+        ])]"/>
+    </record>
+
+</odoo>

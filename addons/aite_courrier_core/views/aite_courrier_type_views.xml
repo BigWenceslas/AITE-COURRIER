@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Accusé de réception automatique : option ajoutée sur la fiche type. -->
+    <record id="view_aite_courrier_type_form_core" model="ir.ui.view">
+        <field name="name">aite.courrier.type.form.core</field>
+        <field name="model">aite.courrier.type</field>
+        <field name="inherit_id" ref="aite_courrier_base.view_aite_courrier_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category']" position="after">
+                <field name="send_acknowledgement"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

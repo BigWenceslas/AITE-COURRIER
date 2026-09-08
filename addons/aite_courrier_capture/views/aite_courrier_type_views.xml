@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_aite_courrier_type_form_capture" model="ir.ui.view">
+        <field name="name">aite.courrier.type.form.capture</field>
+        <field name="model">aite.courrier.type</field>
+        <field name="inherit_id" ref="aite_courrier_base.view_aite_courrier_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category']" position="after">
+                <field name="mail_capture_default"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

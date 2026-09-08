@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Lien vers le dossier Documents du courrier (onglet technique) -->
+    <record id="view_aite_courrier_form_ged_documents" model="ir.ui.view">
+        <field name="name">aite.courrier.form.ged.documents</field>
+        <field name="model">aite.courrier</field>
+        <field name="inherit_id" ref="aite_courrier_ged.view_aite_courrier_form_ged"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='documents']" position="inside">
+                <group groups="aite_courrier_base.group_admin">
+                    <field name="documents_folder_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

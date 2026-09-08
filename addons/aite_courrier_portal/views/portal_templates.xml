@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ Accueil portail : carte « Mes courriers » ============ -->
+    <template id="portal_my_home_courrier" inherit_id="portal.portal_my_home"
+              customize_show="True" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Mes courriers</t>
+                <t t-set="url" t-value="'/my/courriers'"/>
+                <t t-set="text">Suivez vos demandes et déposez-en de nouvelles</t>
+                <t t-set="placeholder_count" t-value="'courrier_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============ Fil d'Ariane ============ -->
+    <template id="portal_breadcrumbs_courrier"
+              inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'courrier'"
+                class="breadcrumb-item active">Courriers</li>
+            <li t-if="page_name in ('courrier_detail', 'courrier_new')"
+                class="breadcrumb-item">
+                <a href="/my/courriers">Courriers</a>
+            </li>
+            <li t-if="page_name == 'courrier_detail' and courrier"
+                class="breadcrumb-item active">
+                <t t-out="courrier.reference or courrier.subject"/>
+            </li>
+            <li t-if="page_name == 'courrier_new'"
+                class="breadcrumb-item active">Nouvelle demande</li>
+        </xpath>
+    </template>
+
+    <!-- ============ Liste « Mes courriers » ============ -->
+    <template id="portal_my_courriers" name="Mes courriers">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Mes courriers</h3>
+                <a href="/my/courriers/new" class="btn btn-primary">
+                    <i class="fa fa-plus me-1"/>Nouvelle demande
+                </a>
+            </div>
+            <t t-if="not courriers">
+                <div class="alert alert-info" role="status">
+                    Aucun courrier pour le moment. Déposez votre première
+                    demande avec le bouton ci-dessus.
+                </div>
+            </t>
+            <t t-else="">
+                <div class="table-responsive">
+                    <table class="table table-hover o_portal_my_doc_table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Objet</th>
+                                <th class="text-end">Date</th>
+                                <th class="text-end">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="courriers" t-as="courrier">
+                                <td>
+                                    <a t-attf-href="/my/courriers/#{courrier.id}">
+                                        <t t-out="courrier.reference or 'Brouillon'"/>
+                                    </a>
+                                </td>
+                                <td><t t-out="courrier.subject"/></td>
+                                <td class="text-end">
+                                    <span t-field="courrier.date_received"/>
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge text-bg-secondary"
+                                          t-out="state_labels.get(courrier.state, courrier.state)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="o_portal_pager d-flex justify-content-center">
+                    <t t-call="portal.pager"/>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- ============ Détail : suivi d'avancement ============ -->
+    <template id="portal_courrier_detail" name="Suivi du courrier">
+        <t t-call="portal.portal_layout">
+            <div t-if="submitted" class="alert alert-success" role="status">
+                <i class="fa fa-check me-1"/>Votre demande a bien été
+                enregistrée. Conservez sa référence pour vos échanges.
+            </div>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <t t-out="courrier.reference or 'Demande reçue'"/>
+                    </h4>
+                    <span class="badge text-bg-primary fs-6"
+                          t-out="state_labels.get(courrier.state, courrier.state)"/>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12 col-md-8">
+                            <div><strong>Objet :</strong>
+                                <t t-out="courrier.subject"/></div>
+                            <div class="text-muted">
+                                <strong>Nature :</strong>
+                                <t t-out="courrier.type_id.name"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 text-md-end">
+                            <div><strong>Reçu le :</strong>
+                                <span t-field="courrier.date_received"/></div>
+                        </div>
+                    </div>
+
+                    <!-- Parcours du circuit : étape courante en évidence. -->
+                    <t t-if="steps">
+                        <h5>Avancement</h5>
+                        <ul class="list-group list-group-flush mb-3">
+                            <t t-foreach="steps" t-as="step">
+                                <li t-attf-class="list-group-item d-flex align-items-center #{'list-group-item-primary fw-bold' if step.id == courrier.current_step_id.id else ''}">
+                                    <t t-if="step.id == courrier.current_step_id.id">
+                                        <i class="fa fa-arrow-right me-2"/>
+                                    </t>
+                                    <t t-out="step.name"/>
+                                    <span t-if="step.id == courrier.current_step_id.id"
+                                          class="badge text-bg-primary ms-2">
+                                        Étape en cours
+                                    </span>
+                                </li>
+                            </t>
+                        </ul>
+                    </t>
+                    <t t-else="">
+                        <div class="alert alert-secondary" role="status">
+                            Votre demande a été reçue et sera prochainement
+                            prise en charge par nos équipes.
+                        </div>
+                    </t>
+
+                    <!-- Pièces du dossier (jetons d'accès sécurisés). -->
+                    <t t-if="documents">
+                        <h5>Pièces du dossier</h5>
+                        <ul class="list-unstyled">
+                            <li t-foreach="documents" t-as="doc" class="mb-1">
+                                <i class="fa fa-paperclip me-1"/>
+                                <a t-att-href="doc['url']">
+                                    <t t-out="doc['filename'] or doc['name']"/>
+                                </a>
+                            </li>
+                        </ul>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ============ Dépôt d'une nouvelle demande ============ -->
+    <template id="portal_courrier_new" name="Nouvelle demande">
+        <t t-call="portal.portal_layout">
+            <h3>Nouvelle demande</h3>
+            <form action="/my/courriers/new" method="post"
+                  enctype="multipart/form-data" class="mt-3">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <div class="mb-3">
+                    <label class="form-label" for="subject">Objet
+                        <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="subject"
+                           name="subject" required="required"
+                           t-att-value="default.get('subject')"/>
+                    <div t-if="errors.get('subject')"
+                         class="text-danger small">
+                        <t t-out="errors['subject']"/>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="type_id">Nature de la
+                        demande <span class="text-danger">*</span></label>
+                    <select class="form-select" id="type_id" name="type_id"
+                            required="required">
+                        <option value="">— Choisir —</option>
+                        <t t-foreach="types" t-as="type">
+                            <option t-att-value="type.id"
+                                    t-att-selected="'selected' if str(type.id) == (default.get('type_id') or '') else None">
+                                <t t-out="type.name"/>
+                            </option>
+                        </t>
+                    </select>
+                    <div t-if="errors.get('type_id')"
+                         class="text-danger small">
+                        <t t-out="errors['type_id']"/>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="description">Votre
+                        message</label>
+                    <textarea class="form-control" id="description"
+                              name="description" rows="6"
+                              t-out="default.get('description')"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="attachments">Pièces
+                        jointes</label>
+                    <input type="file" class="form-control" id="attachments"
+                           name="attachments" multiple="multiple"/>
+                    <div class="form-text">
+                        Formats acceptés : PDF, Word, Excel, images —
+                        50 Mo maximum par fichier.
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-paper-plane me-1"/>Envoyer la demande
+                </button>
+                <a href="/my/courriers" class="btn btn-secondary">Annuler</a>
+            </form>
+        </t>
+    </template>
+
+</odoo>

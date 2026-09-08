@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Un seul point d'entrée « Courriers » ; le filtrage par catégorie
+         (entrants / sortants / internes) et statut (brouillons, …) se fait via
+         le panneau de sélection latéral et les filtres de recherche. -->
+    <menuitem id="menu_aite_courrier_all"
+              name="Courriers"
+              parent="aite_courrier_base.menu_aite_courrier_root"
+              action="action_aite_courrier"
+              sequence="10"/>
+
+</odoo>

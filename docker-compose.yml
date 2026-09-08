@@ -1,0 +1,44 @@
+# Environnement de développement AITE Courrier.
+# Odoo 18 Enterprise + PostgreSQL 16.
+#
+# Démarrage :   docker compose up -d
+# Installation du socle :
+#   docker compose exec odoo odoo -c /etc/odoo/odoo.conf -d aite_courrier \
+#     --stop-after-init -i aite_courrier_base
+services:
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  odoo:
+    image: odoo:18.0
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"   # interface web
+      - "8072:8072"   # longpolling / websockets
+    volumes:
+      - ./addons:/mnt/extra-addons:ro     # modules AITE Courrier
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+      - odoo-data:/var/lib/odoo
+    environment:
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
+    command: ["odoo", "-c", "/etc/odoo/odoo.conf"]
+
+volumes:
+  db-data:
+  odoo-data:

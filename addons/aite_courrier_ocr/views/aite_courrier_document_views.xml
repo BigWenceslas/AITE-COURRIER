@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Colonne d'état d'indexation + relance dans la liste des versions. -->
+    <record id="view_document_form_ocr" model="ir.ui.view">
+        <field name="name">aite.courrier.document.form.ocr</field>
+        <field name="model">aite.courrier.document</field>
+        <field name="inherit_id" ref="aite_courrier_ged.view_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='version_ids']/list/field[@name='upload_date']"
+                   position="after">
+                <field name="ocr_state" widget="badge"
+                       decoration-success="ocr_state == 'done'"
+                       decoration-warning="ocr_state == 'pending'"
+                       decoration-danger="ocr_state == 'error'"/>
+                <button name="action_reprocess_ocr" type="object"
+                        string="Réindexer" icon="fa-refresh"
+                        title="Relancer l'extraction plein texte"
+                        invisible="ocr_state in ('pending', 'none')"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

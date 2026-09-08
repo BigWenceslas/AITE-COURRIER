@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_aite_courrier_form_reponse" model="ir.ui.view">
+        <field name="name">aite.courrier.form.reponse</field>
+        <field name="model">aite.courrier</field>
+        <field name="inherit_id" ref="aite_courrier_core.view_aite_courrier_form"/>
+        <field name="arch" type="xml">
+
+            <!-- « Répondre » : dès que le courrier est enregistré. -->
+            <xpath expr="//header" position="inside">
+                <button name="action_open_reponse_wizard" string="Répondre"
+                        type="object" icon="fa-reply"
+                        invisible="state == 'draft'"/>
+            </xpath>
+
+            <!-- Boutons statistiques : réponses liées / courrier d'origine. -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="reply_to_courrier_id" invisible="1"/>
+                <button name="action_view_replies" type="object"
+                        class="oe_stat_button" icon="fa-reply-all"
+                        invisible="reply_count == 0">
+                    <field name="reply_count" widget="statinfo"
+                           string="Réponses"/>
+                </button>
+                <button type="object" name="action_open_reply_source"
+                        class="oe_stat_button" icon="fa-level-up"
+                        invisible="not reply_to_courrier_id"
+                        string="Courrier d'origine"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

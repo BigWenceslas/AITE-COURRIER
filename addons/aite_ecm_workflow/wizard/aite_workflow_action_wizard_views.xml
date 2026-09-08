@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_workflow_action_wizard_form" model="ir.ui.view">
+        <field name="name">aite.workflow.action.wizard.form</field>
+        <field name="model">aite.workflow.action.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Action de circuit">
+                <group>
+                    <field name="record_ref" readonly="1"/>
+                    <field name="step_name" readonly="1"/>
+                    <field name="action_kind" widget="radio"/>
+                    <field name="allowed_transition_ids" invisible="1"/>
+                    <field name="transition_id" invisible="action_kind != 'transition'"
+                           required="action_kind == 'transition'"
+                           domain="[('id', 'in', allowed_transition_ids)]"
+                           options="{'no_create': True}"/>
+                    <field name="comment_required" invisible="1"/>
+                    <field name="comment" required="action_kind == 'reject' or comment_required"
+                           placeholder="Commentaire (obligatoire pour un rejet ou un retour)"/>
+                    <field name="res_model" invisible="1"/>
+                    <field name="res_id" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" string="Valider" type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

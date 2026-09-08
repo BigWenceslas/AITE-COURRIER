@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_aite_ecm_root" name="ECM" sequence="16"
+              web_icon="aite_ecm_document,static/description/icon.png"
+              groups="aite_courrier_base.group_agent,aite_courrier_base.group_assistant,aite_courrier_base.group_manager,aite_courrier_base.group_compta,aite_courrier_base.group_signer,aite_courrier_base.group_archive,aite_courrier_base.group_audit,aite_courrier_base.group_admin"/>
+
+    <menuitem id="menu_aite_ecm_documents" name="Documents"
+              parent="menu_aite_ecm_root" sequence="10"/>
+    <menuitem id="menu_aite_ecm_explorer_native" name="Explorateur"
+              parent="menu_aite_ecm_documents" action="action_aite_ecm_explorer_native" sequence="5"/>
+    <menuitem id="menu_aite_ecm_document_all" name="Tous les documents"
+              parent="menu_aite_ecm_documents" action="action_aite_ecm_document" sequence="10"/>
+    <menuitem id="menu_aite_ecm_document_mine" name="Mes documents"
+              parent="menu_aite_ecm_documents" action="action_aite_ecm_document_mine" sequence="20"/>
+    <menuitem id="menu_aite_ecm_document_trash" name="Corbeille"
+              parent="menu_aite_ecm_documents" action="action_aite_ecm_document_trash" sequence="90"/>
+
+    <menuitem id="menu_aite_ecm_folder" name="Plan de classement"
+              parent="menu_aite_ecm_root" action="action_aite_ecm_folder" sequence="30"/>
+
+    <menuitem id="menu_aite_ecm_analysis" name="Analyse"
+              parent="menu_aite_ecm_root" sequence="50"/>
+    <menuitem id="menu_aite_ecm_analysis_fund" name="Analyse du fonds"
+              parent="menu_aite_ecm_analysis" action="action_aite_ecm_document_analysis" sequence="10"/>
+
+    <menuitem id="menu_aite_ecm_config" name="Configuration"
+              parent="menu_aite_ecm_root" sequence="90"
+              groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+    <menuitem id="menu_aite_ecm_document_type" name="Types de documents"
+              parent="menu_aite_ecm_config" action="action_aite_ecm_document_type" sequence="10"/>
+    <menuitem id="menu_aite_ecm_tag" name="Étiquettes"
+              parent="menu_aite_ecm_config" action="action_aite_ecm_tag" sequence="20"/>
+    <menuitem id="menu_aite_ecm_link_type" name="Types de relations"
+              parent="menu_aite_ecm_config" action="action_aite_ecm_link_type" sequence="30"/>
+</odoo>

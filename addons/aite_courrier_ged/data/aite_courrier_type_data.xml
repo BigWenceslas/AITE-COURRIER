@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Auto-classement : dossier GED par défaut associé à chaque type de
+        courrier. noupdate=0 pour pouvoir ajuster le mapping aux mises à jour
+        tant que l'administrateur ne l'a pas personnalisé via l'interface.
+    -->
+    <data noupdate="0">
+
+        <record id="aite_courrier_base.type_fact" model="aite.courrier.type">
+            <field name="default_folder_id" ref="folder_factures"/>
+        </record>
+        <record id="aite_courrier_base.type_devis" model="aite.courrier.type">
+            <field name="default_folder_id" ref="folder_devis"/>
+        </record>
+        <record id="aite_courrier_base.type_int" model="aite.courrier.type">
+            <field name="default_folder_id" ref="folder_direction"/>
+        </record>
+
+    </data>
+</odoo>

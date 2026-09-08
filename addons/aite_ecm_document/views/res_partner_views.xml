@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Bouton « Documents ECM » sur la fiche contact (démonstration du mixin). -->
+    <record id="view_partner_form_ecm" model="ir.ui.view">
+        <field name="name">res.partner.form.ecm</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_ecm_documents" type="object"
+                        class="oe_stat_button" icon="fa-file-text-o"
+                        groups="aite_courrier_base.group_agent,aite_courrier_base.group_assistant,aite_courrier_base.group_manager,aite_courrier_base.group_compta,aite_courrier_base.group_signer,aite_courrier_base.group_archive,aite_courrier_base.group_audit,aite_courrier_base.group_admin">
+                    <field name="ecm_document_count" widget="statinfo" string="Documents ECM"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

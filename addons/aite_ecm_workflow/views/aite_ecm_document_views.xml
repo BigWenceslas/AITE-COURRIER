@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fiche document : circuit de validation -->
+    <record id="view_aite_ecm_document_form_workflow" model="ir.ui.view">
+        <field name="name">aite.ecm.document.form.workflow</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_mark_final']" position="before">
+                <button name="action_wf_launch" string="Lancer le circuit" type="object"
+                        class="btn-primary" icon="fa-play"
+                        invisible="not wf_has_circuit or wf_status in ('running', 'done') or state != 'draft' or not active"/>
+                <button name="action_wf_open_wizard" string="Traiter" type="object"
+                        class="btn-primary" icon="fa-random"
+                        invisible="wf_status != 'running' or not wf_can_act"/>
+                <button name="action_wf_reset" string="Réinitialiser le circuit" type="object"
+                        invisible="wf_status == 'none'"
+                        groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"
+                        confirm="Réinitialiser le circuit de ce document ?"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_mark_final']" position="attributes">
+                <attribute name="invisible">state != 'draft' or wf_status == 'running'</attribute>
+            </xpath>
+            <xpath expr="//div[@class='oe_title']" position="before">
+                <div class="alert alert-info mb-3" role="status" invisible="wf_status != 'running'">
+                    <i class="fa fa-random me-1"/>Circuit en cours — étape
+                    <field name="wf_step_id" readonly="1" class="fw-bold"/>
+                    <span invisible="not wf_deadline"> · échéance <field name="wf_deadline" readonly="1"/></span>
+                    <span class="badge text-bg-danger ms-2" invisible="not wf_is_overdue">En retard</span>
+                </div>
+                <div class="alert alert-danger mb-3" role="status" invisible="wf_status != 'rejected'">
+                    <i class="fa fa-times-circle me-1"/>Rejeté : <field name="wf_reject_reason" readonly="1" class="d-inline"/>
+                </div>
+                <field name="wf_has_circuit" invisible="1"/>
+                <field name="wf_status" invisible="1"/>
+                <field name="wf_can_act" invisible="1"/>
+                <field name="wf_is_overdue" invisible="1"/>
+            </xpath>
+            <xpath expr="//page[@name='description']" position="before">
+                <page string="Circuit" name="workflow" invisible="not wf_has_circuit and wf_status == 'none'">
+                    <group>
+                        <group>
+                            <field name="wf_circuit_id"/>
+                            <field name="wf_status"/>
+                        </group>
+                        <group>
+                            <field name="wf_step_id"/>
+                            <field name="wf_deadline"/>
+                        </group>
+                    </group>
+                    <field name="wf_history_ids" readonly="1">
+                        <list>
+                            <field name="step_id"/>
+                            <field name="entered_date"/>
+                            <field name="left_date"/>
+                            <field name="duration_hours" widget="float_time"/>
+                            <field name="user_id"/>
+                            <field name="transition_id"/>
+                            <field name="comment"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_document_search_workflow" model="ir.ui.view">
+        <field name="name">aite.ecm.document.search.workflow</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_archived']" position="after">
+                <separator/>
+                <filter name="filter_wf_running" string="En circuit" domain="[('wf_status', '=', 'running')]"/>
+                <filter name="filter_wf_overdue" string="En retard (SLA)" domain="[('wf_is_overdue', '=', True)]"/>
+                <filter name="filter_wf_mine" string="À traiter par moi" domain="[('wf_status', '=', 'running'), ('wf_can_act', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Type de document : circuits -->
+    <record id="view_aite_ecm_document_type_form_workflow" model="ir.ui.view">
+        <field name="name">aite.ecm.document.type.form.workflow</field>
+        <field name="model">aite.ecm.document.type</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='allowed_extensions']" position="after">
+                <field name="active_circuit_id"/>
+                <field name="wf_finalize"/>
+            </xpath>
+            <xpath expr="//group[@string='Description']" position="before">
+                <group string="Circuits de validation">
+                    <field name="circuit_ids" nolabel="1" colspan="2"
+                           context="{'default_res_model': 'aite.ecm.document', 'default_document_type_id': id}">
+                        <list>
+                            <field name="name"/>
+                            <field name="active"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Circuit : type de document visible pour l'objet Document ECM -->
+    <record id="view_aite_workflow_circuit_form_ecm_document" model="ir.ui.view">
+        <field name="name">aite.workflow.circuit.form.ecm.document</field>
+        <field name="model">aite.workflow.circuit</field>
+        <field name="inherit_id" ref="view_aite_workflow_circuit_form_ecm"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type_id']" position="after">
+                <field name="document_type_id" invisible="res_model != 'aite.ecm.document'"
+                       required="res_model == 'aite.ecm.document'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

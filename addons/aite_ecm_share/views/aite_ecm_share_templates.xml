@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="share_layout" name="Partage ECM — gabarit">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <t t-call-assets="web.assets_frontend" t-js="false"/>
+            </t>
+            <div class="container py-5" style="max-width: 640px;">
+                <t t-out="0"/>
+                <p class="text-muted small mt-4">AITE ECM — diffusion contrôlée.</p>
+            </div>
+        </t>
+    </template>
+
+    <template id="share_landing" name="Partage ECM — document">
+        <t t-call="aite_ecm_share.share_layout">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title" t-out="document.name"/>
+                    <p class="text-muted mb-1">
+                        Référence <t t-out="document.reference"/>
+                        <t t-if="version"> · <t t-out="version.file_name"/>
+                            (<t t-out="'%.0f Ko' % (version.file_size / 1024.0)"/>)</t>
+                    </p>
+                    <p class="text-muted small">
+                        <t t-if="share.expiry_date">Lien valable jusqu'au
+                            <t t-out="share.expiry_date" t-options="{'widget': 'datetime'}"/>.</t>
+                        <t t-if="share.max_downloads"> Accès restants :
+                            <t t-out="share.max_downloads - share.download_count"/>.</t>
+                    </p>
+                    <a t-attf-href="/ecm/share/#{share.token}/file" class="btn btn-primary"
+                       t-att-target="'_blank' if share.view_only else None">
+                        <t t-if="share.view_only">Consulter le document</t>
+                        <t t-else="">Télécharger le document</t>
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="share_invalid" name="Partage ECM — lien invalide">
+        <t t-call="aite_ecm_share.share_layout">
+            <div class="alert alert-warning" role="status">
+                <strong>Lien indisponible.</strong>
+                <t t-if="reason"><t t-out="reason"/></t>
+                <t t-else="">Ce lien de partage a expiré, a atteint son quota
+                    d'accès ou a été désactivé.</t>
+            </div>
+        </t>
+    </template>
+</odoo>

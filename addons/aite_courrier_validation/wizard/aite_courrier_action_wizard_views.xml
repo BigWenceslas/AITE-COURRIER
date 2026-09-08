@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_action_wizard_form" model="ir.ui.view">
+        <field name="name">aite.courrier.action.wizard.form</field>
+        <field name="model">aite.courrier.action.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Action sur le courrier">
+                <field name="courrier_id" invisible="1"/>
+                <field name="allowed_transition_ids" invisible="1"/>
+                <field name="transition_comment_required" invisible="1"/>
+                <group>
+                    <field name="kind"/>
+                    <field name="transition_id"
+                           invisible="kind != 'validate'"
+                           required="kind == 'validate'"
+                           domain="[('id', 'in', allowed_transition_ids)]"/>
+                    <field name="comment"
+                           required="kind == 'reject' or transition_comment_required"
+                           placeholder="Commentaire (obligatoire pour le rejet ou les actions qui l'exigent)"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Confirmer"
+                            class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

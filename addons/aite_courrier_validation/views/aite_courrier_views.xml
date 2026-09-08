@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Boutons d'action dynamiques + repères d'état sur le formulaire courrier. -->
+    <record id="view_aite_courrier_form_validation" model="ir.ui.view">
+        <field name="name">aite.courrier.form.validation</field>
+        <field name="model">aite.courrier</field>
+        <field name="inherit_id" ref="aite_courrier_core.view_aite_courrier_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/field[@name='current_step_id']" position="before">
+                <field name="available_transition_ids" invisible="1"
+                       widget="many2many_tags"/>
+                <field name="can_act" invisible="1"/>
+                <button name="action_wizard_validate" type="object"
+                        string="Traiter" class="btn-primary"
+                        invisible="not available_transition_ids"/>
+                <button name="action_wizard_reject" type="object"
+                        string="Rejeter"
+                        invisible="not can_act"/>
+                <button name="action_wizard_comment" type="object"
+                        string="Commenter"
+                        invisible="state in ('ar', 'rj')"/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div class="alert alert-success" role="status"
+                     invisible="state != 'ar'">
+                    Circuit terminé — courrier archivé.
+                </div>
+                <div class="alert alert-danger" role="status"
+                     invisible="state != 'rj'">
+                    Courrier rejeté.
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

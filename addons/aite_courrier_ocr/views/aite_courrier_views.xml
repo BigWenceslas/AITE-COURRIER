@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Recherche plein texte sur le contenu extrait des pièces. -->
+    <record id="view_aite_courrier_search_ocr" model="ir.ui.view">
+        <field name="name">aite.courrier.search.ocr</field>
+        <field name="model">aite.courrier</field>
+        <field name="inherit_id" ref="aite_courrier_core.view_aite_courrier_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='responsible_id']" position="after">
+                <field name="document_fulltext"
+                       string="Contenu des pièces (plein texte)"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

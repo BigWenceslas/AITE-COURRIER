@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ Type de courrier ============ -->
+    <record id="view_aite_courrier_type_list" model="ir.ui.view">
+        <field name="name">aite.courrier.type.list</field>
+        <field name="model">aite.courrier.type</field>
+        <field name="arch" type="xml">
+            <list string="Types de courrier">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_courrier_type_form" model="ir.ui.view">
+        <field name="name">aite.courrier.type.form</field>
+        <field name="model">aite.courrier.type</field>
+        <field name="arch" type="xml">
+            <form string="Type de courrier">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="category"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_courrier_type_search" model="ir.ui.view">
+        <field name="name">aite.courrier.type.search</field>
+        <field name="model">aite.courrier.type</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="name"/>
+                <filter name="filter_inactive" string="Archivés"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_category" string="Catégorie"
+                            context="{'group_by': 'category'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_aite_courrier_type" model="ir.actions.act_window">
+        <field name="name">Types de courrier</field>
+        <field name="res_model">aite.courrier.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============ Priorité ============ -->
+    <record id="view_aite_courrier_priority_list" model="ir.ui.view">
+        <field name="name">aite.courrier.priority.list</field>
+        <field name="model">aite.courrier.priority</field>
+        <field name="arch" type="xml">
+            <list string="Priorités" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_courrier_priority_form" model="ir.ui.view">
+        <field name="name">aite.courrier.priority.form</field>
+        <field name="model">aite.courrier.priority</field>
+        <field name="arch" type="xml">
+            <form string="Priorité">
+                <sheet>
+                    <group>
+                        <field name="code"/>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="color" widget="color_picker"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_aite_courrier_priority" model="ir.actions.act_window">
+        <field name="name">Priorités</field>
+        <field name="res_model">aite.courrier.priority</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============ Confidentialité ============ -->
+    <record id="view_aite_courrier_confidentiality_list" model="ir.ui.view">
+        <field name="name">aite.courrier.confidentiality.list</field>
+        <field name="model">aite.courrier.confidentiality</field>
+        <field name="arch" type="xml">
+            <list string="Niveaux de confidentialité" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_courrier_confidentiality_form" model="ir.ui.view">
+        <field name="name">aite.courrier.confidentiality.form</field>
+        <field name="model">aite.courrier.confidentiality</field>
+        <field name="arch" type="xml">
+            <form string="Niveau de confidentialité">
+                <sheet>
+                    <group>
+                        <field name="code"/>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_aite_courrier_confidentiality" model="ir.actions.act_window">
+        <field name="name">Niveaux de confidentialité</field>
+        <field name="res_model">aite.courrier.confidentiality</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

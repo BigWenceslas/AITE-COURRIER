@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_document_form_nextcloud" model="ir.ui.view">
+        <field name="name">aite.courrier.document.form.nextcloud</field>
+        <field name="model">aite.courrier.document</field>
+        <field name="inherit_id" ref="aite_courrier_ged.view_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_nc_open" string="Ouvrir dans Nextcloud" type="object"
+                        icon="fa-cloud" invisible="not nc_file_id"/>
+                <button name="action_nc_push" string="Envoyer vers Nextcloud" type="object"
+                        icon="fa-cloud-upload" invisible="nc_file_id"
+                        groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Nextcloud" name="nextcloud" invisible="not nc_path">
+                    <group>
+                        <field name="nc_sync_state" widget="badge"/>
+                        <field name="nc_path"/>
+                        <field name="nc_url" widget="url"/>
+                        <field name="nc_sync_date"/>
+                        <field name="nc_error" invisible="not nc_error"/>
+                        <field name="nc_file_id" invisible="1"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

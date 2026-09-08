@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ Liste ============ -->
+    <record id="view_aite_courrier_list" model="ir.ui.view">
+        <field name="name">aite.courrier.list</field>
+        <field name="model">aite.courrier</field>
+        <field name="arch" type="xml">
+            <list string="Courriers"
+                  decoration-muted="state == 'ar'"
+                  decoration-info="state == 'draft'">
+                <field name="reference"/>
+                <field name="subject"/>
+                <field name="type_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="priority_id" optional="show"/>
+                <field name="current_step_id" optional="show"/>
+                <field name="current_sla_hours" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'vl'"
+                       decoration-danger="state == 'rj'"/>
+                <field name="date_received"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============ Formulaire ============ -->
+    <record id="view_aite_courrier_form" model="ir.ui.view">
+        <field name="name">aite.courrier.form</field>
+        <field name="model">aite.courrier</field>
+        <field name="arch" type="xml">
+            <form string="Courrier">
+                <header>
+                    <button name="action_launch_circuit"
+                            string="Enregistrer et lancer le circuit"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <field name="current_step_id" widget="statusbar"
+                           options="{'clickable': False}"
+                           domain="[('circuit_id', '=', circuit_id)]"
+                           invisible="state == 'draft'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_sender_history" type="object"
+                                class="oe_stat_button" icon="fa-history"
+                                invisible="not sender_partner_id"
+                                string="Historique expéditeur"/>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé"
+                            bg_color="text-bg-secondary" invisible="state != 'ar'"/>
+                    <div class="oe_title">
+                        <label for="reference"/>
+                        <h1>
+                            <field name="reference" readonly="1"
+                                   placeholder="Référence attribuée au lancement"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="subject" readonly="state == 'ar'"/>
+                            <field name="sender_partner_id" readonly="state == 'ar'"/>
+                            <field name="sender" readonly="state == 'ar'"/>
+                            <field name="sender_email" readonly="state == 'ar'"
+                                   widget="email"/>
+                            <field name="type_id" readonly="state == 'ar'"/>
+                            <field name="department_id" readonly="state == 'ar'"/>
+                        </group>
+                        <group>
+                            <field name="state" widget="badge"/>
+                            <field name="priority_id" readonly="state == 'ar'"/>
+                            <field name="confidentiality_id" readonly="state == 'ar'"/>
+                            <field name="date_received" readonly="state == 'ar'"/>
+                            <field name="responsible_id" readonly="state == 'ar'"/>
+                            <field name="circuit_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Aperçu du circuit" invisible="state != 'draft'">
+                        <field name="preview_circuit_id" readonly="1"/>
+                        <field name="preview_step_ids" nolabel="1" colspan="2">
+                            <list create="false" delete="false" edit="false">
+                                <field name="sequence"/>
+                                <field name="name" decoration-bf="is_initial"/>
+                                <field name="sla_hours"/>
+                                <field name="is_initial"/>
+                                <field name="is_final"/>
+                            </list>
+                        </field>
+                    </group>
+                    <notebook>
+                        <page string="Historique" name="history">
+                            <field name="step_history_ids" readonly="1">
+                                <list create="false" delete="false">
+                                    <field name="step_id"/>
+                                    <field name="entered_date"/>
+                                    <field name="left_date"/>
+                                    <field name="user_id"/>
+                                    <field name="transition_label"/>
+                                    <field name="comment"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============ Recherche ============ -->
+    <record id="view_aite_courrier_search" model="ir.ui.view">
+        <field name="name">aite.courrier.search</field>
+        <field name="model">aite.courrier</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="reference" string="Référence / Objet"
+                       filter_domain="['|', ('reference', 'ilike', self), ('subject', 'ilike', self)]"/>
+                <field name="type_id"/>
+                <field name="department_id"/>
+                <field name="responsible_id"/>
+                <field name="sender_partner_id"/>
+                <field name="sender" string="Expéditeur (texte)"
+                       filter_domain="['|', ('sender', 'ilike', self), ('sender_email', 'ilike', self)]"/>
+                <filter name="filter_draft" string="Brouillons"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_overdue" string="En retard (SLA)"
+                        domain="[('is_overdue', '=', True)]"/>
+                <filter name="filter_my" string="Mes courriers"
+                        domain="[('responsible_id', '=', uid)]"/>
+                <filter name="filter_month" string="Reçus ce mois"
+                        domain="[('date_received', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="filter_entrant" string="Entrants"
+                        domain="[('type_id.category', '=', 'entrant')]"/>
+                <filter name="filter_sortant" string="Sortants"
+                        domain="[('type_id.category', '=', 'sortant')]"/>
+                <filter name="filter_interne" string="Internes"
+                        domain="[('type_id.category', '=', 'interne')]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_type" string="Type"
+                            context="{'group_by': 'type_id'}"/>
+                    <filter name="group_state" string="Statut"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_priority" string="Priorité"
+                            context="{'group_by': 'priority_id'}"/>
+                    <filter name="group_department" string="Service"
+                            context="{'group_by': 'department_id'}"/>
+                </group>
+                <!-- Panneau de sélection latéral : filtrer par catégorie / statut. -->
+                <searchpanel>
+                    <field name="category" icon="fa-folder-open" enable_counters="1"/>
+                    <field name="state" select="multi" icon="fa-tasks" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============ Action ============ -->
+    <record id="action_aite_courrier" model="ir.actions.act_window">
+        <field name="name">Courriers</field>
+        <field name="res_model">aite.courrier</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_aite_courrier_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créez votre premier courrier</p>
+            <p>Utilisez le panneau latéral pour filtrer par catégorie
+               (entrants / sortants / internes) ou par statut (brouillons, …).</p>
+        </field>
+    </record>
+
+</odoo>

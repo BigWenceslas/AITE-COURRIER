@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Liste en lecture seule, tri chronologique inversé. -->
+    <record id="view_aite_courrier_audit_log_list" model="ir.ui.view">
+        <field name="name">aite.courrier.audit.log.list</field>
+        <field name="model">aite.courrier.audit.log</field>
+        <field name="arch" type="xml">
+            <list string="Journal d'audit" create="false" edit="false"
+                  delete="false" default_order="create_date desc">
+                <field name="create_date" string="Date/heure"/>
+                <field name="create_uid" string="Utilisateur"/>
+                <field name="name" string="Action"/>
+                <field name="action_type" string="Type"
+                       decoration-danger="action_type == 'err'"
+                       decoration-warning="action_type == 'warn'"
+                       decoration-success="action_type == 'ok'"
+                       widget="badge"/>
+                <field name="res_ref" string="Objet"/>
+                <field name="source"/>
+                <field name="detail" string="Détails"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Formulaire en lecture seule. -->
+    <record id="view_aite_courrier_audit_log_form" model="ir.ui.view">
+        <field name="name">aite.courrier.audit.log.form</field>
+        <field name="model">aite.courrier.audit.log</field>
+        <field name="arch" type="xml">
+            <form string="Entrée d'audit" create="false" edit="false" delete="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="create_date" string="Date/heure"/>
+                            <field name="create_uid" string="Utilisateur"/>
+                            <field name="name" string="Action"/>
+                            <field name="action_type"/>
+                        </group>
+                        <group>
+                            <field name="source"/>
+                            <field name="model_name"/>
+                            <field name="res_id"/>
+                            <field name="res_ref"/>
+                        </group>
+                    </group>
+                    <group string="Détails">
+                        <field name="detail" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Recherche : par utilisateur, type, référence et dates. -->
+    <record id="view_aite_courrier_audit_log_search" model="ir.ui.view">
+        <field name="name">aite.courrier.audit.log.search</field>
+        <field name="model">aite.courrier.audit.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="res_ref" string="Objet"/>
+                <field name="create_uid" string="Utilisateur"/>
+                <field name="name" string="Action"/>
+                <field name="model_name"/>
+                <separator/>
+                <filter name="type_info" string="Information"
+                        domain="[('action_type', '=', 'info')]"/>
+                <filter name="type_ok" string="Succès"
+                        domain="[('action_type', '=', 'ok')]"/>
+                <filter name="type_warn" string="Avertissement"
+                        domain="[('action_type', '=', 'warn')]"/>
+                <filter name="type_err" string="Erreur"
+                        domain="[('action_type', '=', 'err')]"/>
+                <separator/>
+                <filter name="today" string="Aujourd'hui"
+                        domain="[('create_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter name="last_7_days" string="7 derniers jours"
+                        domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_user" string="Utilisateur"
+                            context="{'group_by': 'create_uid'}"/>
+                    <filter name="group_type" string="Type"
+                            context="{'group_by': 'action_type'}"/>
+                    <filter name="group_source" string="Source"
+                            context="{'group_by': 'source'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_aite_courrier_audit_log" model="ir.actions.act_window">
+        <field name="name">Journal d'audit</field>
+        <field name="res_model">aite.courrier.audit.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucune entrée d'audit pour l'instant</p>
+            <p>Le journal d'audit trace les actions des modules AITE Courrier. Il est en lecture seule.</p>
+        </field>
+    </record>
+
+</odoo>

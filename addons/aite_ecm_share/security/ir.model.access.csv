@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ecm_share_agent,ecm share agent,model_aite_ecm_share,aite_courrier_base.group_agent,1,1,1,0
+access_ecm_share_assistant,ecm share assistant,model_aite_ecm_share,aite_courrier_base.group_assistant,1,1,1,0
+access_ecm_share_manager,ecm share manager,model_aite_ecm_share,aite_courrier_base.group_manager,1,1,1,1
+access_ecm_share_compta,ecm share compta,model_aite_ecm_share,aite_courrier_base.group_compta,1,1,1,0
+access_ecm_share_signer,ecm share signer,model_aite_ecm_share,aite_courrier_base.group_signer,1,1,1,0
+access_ecm_share_archive,ecm share archive,model_aite_ecm_share,aite_courrier_base.group_archive,1,1,1,0
+access_ecm_share_audit,ecm share audit,model_aite_ecm_share,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_share_admin,ecm share admin,model_aite_ecm_share,aite_courrier_base.group_admin,1,1,1,1

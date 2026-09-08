@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=0 : règles de sécurité mises à jour avec le module. -->
+    <data noupdate="0">
+
+        <!--
+            Confidentialité des documents : alignée sur celle héritée du courrier
+            (même logique que côté core). Deux règles complémentaires :
+            opérationnels « simples » restreints, manager accès complet
+            (l'admin implique manager => accès complet).
+        -->
+        <record id="rule_document_restricted" model="ir.rule">
+            <field name="name">Document : confidentialité (opérationnels)</field>
+            <field name="model_id" ref="model_aite_courrier_document"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_agent'),
+                ref('aite_courrier_base.group_assistant'),
+                ref('aite_courrier_base.group_compta'),
+                ref('aite_courrier_base.group_signer'),
+                ref('aite_courrier_base.group_archive'),
+                ref('aite_courrier_base.group_audit'),
+            ])]"/>
+            <field name="domain_force">[
+                '|', '|', '|', '|',
+                ('confidentiality_id', '=', False),
+                ('confidentiality_id.code', 'not in', ('CONF', 'SEC')),
+                ('courrier_id.responsible_id', '=', user.id),
+                ('courrier_id.create_uid', '=', user.id),
+                ('courrier_id.department_id.member_ids.user_id', '=', user.id),
+            ]</field>
+        </record>
+
+        <record id="rule_document_manager_all" model="ir.rule">
+            <field name="name">Document : accès complet (manager)</field>
+            <field name="model_id" ref="model_aite_courrier_document"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_manager'),
+            ])]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_version_restricted" model="ir.rule">
+            <field name="name">Version : confidentialité (opérationnels)</field>
+            <field name="model_id" ref="model_aite_courrier_document_version"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_agent'),
+                ref('aite_courrier_base.group_assistant'),
+                ref('aite_courrier_base.group_compta'),
+                ref('aite_courrier_base.group_signer'),
+                ref('aite_courrier_base.group_archive'),
+                ref('aite_courrier_base.group_audit'),
+            ])]"/>
+            <field name="domain_force">[
+                '|', '|', '|', '|',
+                ('document_id.confidentiality_id', '=', False),
+                ('document_id.confidentiality_id.code', 'not in', ('CONF', 'SEC')),
+                ('document_id.courrier_id.responsible_id', '=', user.id),
+                ('document_id.courrier_id.create_uid', '=', user.id),
+                ('document_id.courrier_id.department_id.member_ids.user_id', '=', user.id),
+            ]</field>
+        </record>
+
+        <record id="rule_version_manager_all" model="ir.rule">
+            <field name="name">Version : accès complet (manager)</field>
+            <field name="model_id" ref="model_aite_courrier_document_version"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_manager'),
+            ])]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+    </data>
+</odoo>

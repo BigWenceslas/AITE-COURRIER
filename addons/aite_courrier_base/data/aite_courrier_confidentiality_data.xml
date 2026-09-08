@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="confidentiality_public" model="aite.courrier.confidentiality">
+            <field name="code">PUB</field>
+            <field name="name">Public</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <record id="confidentiality_internal" model="aite.courrier.confidentiality">
+            <field name="code">INT</field>
+            <field name="name">Interne</field>
+            <field name="sequence">2</field>
+        </record>
+
+        <record id="confidentiality_confidential" model="aite.courrier.confidentiality">
+            <field name="code">CONF</field>
+            <field name="name">Confidentiel</field>
+            <field name="sequence">3</field>
+        </record>
+
+        <record id="confidentiality_secret" model="aite.courrier.confidentiality">
+            <field name="code">SEC</field>
+            <field name="name">Secret</field>
+            <field name="sequence">4</field>
+        </record>
+
+    </data>
+</odoo>

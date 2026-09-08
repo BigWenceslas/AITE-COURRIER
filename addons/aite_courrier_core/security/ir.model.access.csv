@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_aite_courrier_agent,aite.courrier agent,model_aite_courrier,aite_courrier_base.group_agent,1,1,1,0
+access_aite_courrier_assistant,aite.courrier assistant,model_aite_courrier,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_courrier_manager,aite.courrier manager,model_aite_courrier,aite_courrier_base.group_manager,1,0,0,0
+access_aite_courrier_compta,aite.courrier compta,model_aite_courrier,aite_courrier_base.group_compta,1,0,0,0
+access_aite_courrier_signer,aite.courrier signer,model_aite_courrier,aite_courrier_base.group_signer,1,0,0,0
+access_aite_courrier_archive,aite.courrier archive,model_aite_courrier,aite_courrier_base.group_archive,1,0,0,0
+access_aite_courrier_audit,aite.courrier audit,model_aite_courrier,aite_courrier_base.group_audit,1,0,0,0
+access_aite_courrier_admin,aite.courrier admin,model_aite_courrier,aite_courrier_base.group_admin,1,1,1,1
+access_aite_courrier_step_history_agent,aite.courrier.step.history agent,model_aite_courrier_step_history,aite_courrier_base.group_agent,1,1,1,0
+access_aite_courrier_step_history_assistant,aite.courrier.step.history assistant,model_aite_courrier_step_history,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_courrier_step_history_manager,aite.courrier.step.history manager,model_aite_courrier_step_history,aite_courrier_base.group_manager,1,0,0,0
+access_aite_courrier_step_history_compta,aite.courrier.step.history compta,model_aite_courrier_step_history,aite_courrier_base.group_compta,1,0,0,0
+access_aite_courrier_step_history_signer,aite.courrier.step.history signer,model_aite_courrier_step_history,aite_courrier_base.group_signer,1,0,0,0
+access_aite_courrier_step_history_archive,aite.courrier.step.history archive,model_aite_courrier_step_history,aite_courrier_base.group_archive,1,0,0,0
+access_aite_courrier_step_history_audit,aite.courrier.step.history audit,model_aite_courrier_step_history,aite_courrier_base.group_audit,1,0,0,0
+access_aite_courrier_step_history_admin,aite.courrier.step.history admin,model_aite_courrier_step_history,aite_courrier_base.group_admin,1,1,1,1

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ================= Agrément fournisseur ================= -->
+        <record id="dossier_type_fournisseur" model="aite.ecm.dossier.type">
+            <field name="code">AGR-FOURN</field>
+            <field name="name">Agrément fournisseur</field>
+            <field name="sequence">10</field>
+            <field name="folder_id" ref="aite_ecm_document.folder_achats"/>
+            <field name="metadata_definition" eval="[
+                {'name': 'agr_categorie', 'string': 'Catégorie d\'achat', 'type': 'selection',
+                 'selection': [['fournitures', 'Fournitures'], ['services', 'Services'],
+                               ['travaux', 'Travaux'], ['it', 'Informatique']]},
+                {'name': 'agr_plafond', 'string': 'Plafond annuel (FCFA)', 'type': 'float'},
+                {'name': 'agr_validite', 'string': 'Agrément valide jusqu\'au', 'type': 'date'},
+            ]"/>
+        </record>
+        <record id="piece_fourn_rc" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_fournisseur"/>
+            <field name="sequence">10</field>
+            <field name="name">Registre de commerce (RCCM)</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_generique"/>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="piece_fourn_anr" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_fournisseur"/>
+            <field name="sequence">20</field>
+            <field name="name">Attestation de non-redevance fiscale (ANR)</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_generique"/>
+            <field name="required" eval="True"/>
+            <field name="note">En cours de validité à la date du dépôt</field>
+        </record>
+        <record id="piece_fourn_localisation" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_fournisseur"/>
+            <field name="sequence">30</field>
+            <field name="name">Plan de localisation</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_generique"/>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="piece_fourn_rib" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_fournisseur"/>
+            <field name="sequence">40</field>
+            <field name="name">Relevé d'identité bancaire</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_generique"/>
+            <field name="required" eval="False"/>
+        </record>
+        <record id="piece_fourn_contrat" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_fournisseur"/>
+            <field name="sequence">50</field>
+            <field name="name">Contrat cadre signé</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_contrat"/>
+            <field name="required" eval="False"/>
+        </record>
+
+        <!-- Circuit Instruction → Validation → Décision -->
+        <record id="circuit_fournisseur" model="aite.workflow.circuit">
+            <field name="name">Agrément fournisseur — instruction et validation</field>
+            <field name="res_model">aite.ecm.dossier</field>
+            <field name="dossier_type_id" ref="dossier_type_fournisseur"/>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="step_fourn_instruction" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_fournisseur"/>
+            <field name="sequence">10</field>
+            <field name="name">Instruction</field>
+            <field name="description">Vérification des pièces et de la complétude</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">48</field>
+            <field name="is_initial" eval="True"/>
+        </record>
+        <record id="step_fourn_validation" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_fournisseur"/>
+            <field name="sequence">20</field>
+            <field name="name">Validation achats</field>
+            <field name="description">Avis du responsable des achats</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">72</field>
+        </record>
+        <record id="step_fourn_decision" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_fournisseur"/>
+            <field name="sequence">30</field>
+            <field name="name">Décision</field>
+            <field name="description">Agrément accordé</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager'), ref('aite_courrier_base.group_signer')])]"/>
+            <field name="is_final" eval="True"/>
+        </record>
+        <record id="trans_fourn_instruire" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_fournisseur"/>
+            <field name="step_from_id" ref="step_fourn_instruction"/>
+            <field name="step_to_id" ref="step_fourn_validation"/>
+            <field name="label">Transmettre pour validation</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_fourn_retour" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_fournisseur"/>
+            <field name="step_from_id" ref="step_fourn_validation"/>
+            <field name="step_to_id" ref="step_fourn_instruction"/>
+            <field name="label">Retour pour complément</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_fourn_valider" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_fournisseur"/>
+            <field name="step_from_id" ref="step_fourn_validation"/>
+            <field name="step_to_id" ref="step_fourn_decision"/>
+            <field name="label">Accorder l'agrément</field>
+            <field name="direction">forward</field>
+        </record>
+
+        <!-- ================= Dossier du personnel ================= -->
+        <record id="dossier_type_salarie" model="aite.ecm.dossier.type">
+            <field name="code">DOS-RH</field>
+            <field name="name">Dossier du personnel</field>
+            <field name="sequence">20</field>
+            <field name="folder_id" ref="aite_ecm_document.folder_rh_dossiers"/>
+            <field name="metadata_definition" eval="[
+                {'name': 'rh_matricule', 'string': 'Matricule', 'type': 'char'},
+                {'name': 'rh_date_embauche', 'string': 'Date d\'embauche', 'type': 'date'},
+                {'name': 'rh_poste', 'string': 'Poste', 'type': 'char'},
+            ]"/>
+        </record>
+        <record id="piece_rh_cni" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_salarie"/>
+            <field name="sequence">10</field>
+            <field name="name">Pièce d'identité</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_piece_rh"/>
+        </record>
+        <record id="piece_rh_diplome" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_salarie"/>
+            <field name="sequence">20</field>
+            <field name="name">Diplômes et attestations</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_piece_rh"/>
+        </record>
+        <record id="piece_rh_contrat" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_salarie"/>
+            <field name="sequence">30</field>
+            <field name="name">Contrat de travail signé</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_contrat"/>
+        </record>
+        <record id="piece_rh_medical" model="aite.ecm.dossier.piece.template">
+            <field name="dossier_type_id" ref="dossier_type_salarie"/>
+            <field name="sequence">40</field>
+            <field name="name">Certificat médical d'aptitude</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_piece_rh"/>
+            <field name="required" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

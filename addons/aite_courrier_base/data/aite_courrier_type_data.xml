@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=1 : référentiel paramétrable, non écrasé aux mises à jour. -->
+    <data noupdate="1">
+
+        <record id="type_entr" model="aite.courrier.type">
+            <field name="code">ENTR</field>
+            <field name="name">Courrier entrant</field>
+            <field name="category">entrant</field>
+        </record>
+
+        <record id="type_sort" model="aite.courrier.type">
+            <field name="code">SORT</field>
+            <field name="name">Courrier sortant</field>
+            <field name="category">sortant</field>
+        </record>
+
+        <record id="type_int" model="aite.courrier.type">
+            <field name="code">INT</field>
+            <field name="name">Courrier interne</field>
+            <field name="category">interne</field>
+        </record>
+
+        <record id="type_fact" model="aite.courrier.type">
+            <field name="code">FACT</field>
+            <field name="name">Facture</field>
+            <field name="category">entrant</field>
+        </record>
+
+        <record id="type_devis" model="aite.courrier.type">
+            <field name="code">DEVIS</field>
+            <field name="name">Devis</field>
+            <field name="category">sortant</field>
+        </record>
+
+    </data>
+</odoo>

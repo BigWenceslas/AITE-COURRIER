@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=1 : les clients adaptent librement ces modèles. -->
+    <data noupdate="1">
+
+        <record id="reponse_template_standard" model="aite.courrier.reponse.template">
+            <field name="name">Réponse standard</field>
+            <field name="sequence">10</field>
+            <field name="subject">Réponse à votre courrier {{ object.reference }}</field>
+            <field name="body_html" type="html">
+<div>
+    <p>Madame, Monsieur,</p>
+    <p>
+        Nous faisons suite à votre courrier référencé
+        <strong>{{ object.reference }}</strong>
+        relatif à « {{ object.subject }} ».
+    </p>
+    <p>[Votre réponse ici]</p>
+    <p>
+        Nous restons à votre disposition pour tout complément d'information.
+    </p>
+    <p>Veuillez agréer, Madame, Monsieur, l'expression de nos salutations
+       distinguées.</p>
+    <p>{{ user.name }}<br/>{{ object.department_id.name }}</p>
+</div>
+            </field>
+        </record>
+
+        <record id="reponse_template_pieces" model="aite.courrier.reponse.template">
+            <field name="name">Demande de pièces complémentaires</field>
+            <field name="sequence">20</field>
+            <field name="subject">Pièces complémentaires — dossier {{ object.reference }}</field>
+            <field name="body_html" type="html">
+<div>
+    <p>Madame, Monsieur,</p>
+    <p>
+        Votre demande référencée <strong>{{ object.reference }}</strong>
+        (« {{ object.subject }} ») est en cours d'instruction.
+    </p>
+    <p>
+        Afin de poursuivre son traitement, nous vous remercions de bien
+        vouloir nous transmettre les pièces suivantes :
+    </p>
+    <p>[Liste des pièces attendues]</p>
+    <p>
+        Sans retour de votre part, votre dossier restera en attente.
+        Merci de rappeler la référence ci-dessus dans votre réponse.
+    </p>
+    <p>Cordialement,</p>
+    <p>{{ user.name }}<br/>{{ object.department_id.name }}</p>
+</div>
+            </field>
+        </record>
+
+        <record id="reponse_template_cloture" model="aite.courrier.reponse.template">
+            <field name="name">Notification de clôture</field>
+            <field name="sequence">30</field>
+            <field name="subject">Clôture de votre dossier {{ object.reference }}</field>
+            <field name="body_html" type="html">
+<div>
+    <p>Madame, Monsieur,</p>
+    <p>
+        Nous vous informons que votre dossier
+        <strong>{{ object.reference }}</strong>
+        (« {{ object.subject }} »), reçu le {{ object.date_received }},
+        est désormais clôturé.
+    </p>
+    <p>[Motif / conclusion]</p>
+    <p>Veuillez agréer, Madame, Monsieur, l'expression de nos salutations
+       distinguées.</p>
+    <p>{{ user.name }}<br/>{{ object.department_id.name }}</p>
+</div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

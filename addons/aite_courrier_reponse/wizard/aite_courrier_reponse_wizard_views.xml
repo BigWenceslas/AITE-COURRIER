@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_reponse_wizard_form" model="ir.ui.view">
+        <field name="name">aite.courrier.reponse.wizard.form</field>
+        <field name="model">aite.courrier.reponse.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Répondre au courrier">
+                <group>
+                    <group>
+                        <field name="courrier_id" readonly="1"/>
+                        <field name="type_id" invisible="1"/>
+                        <field name="template_id"
+                               domain="['|', ('type_ids', '=', False), ('type_ids', 'in', type_id)]"
+                               options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="create_outgoing"/>
+                        <field name="outgoing_type_id"
+                               invisible="not create_outgoing"
+                               required="create_outgoing"/>
+                        <field name="send_email"/>
+                        <field name="sender_email" invisible="not send_email"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="subject"/>
+                </group>
+                <field name="body_html" nolabel="1" colspan="2"/>
+                <footer>
+                    <button name="action_generate" string="Générer la réponse"
+                            type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

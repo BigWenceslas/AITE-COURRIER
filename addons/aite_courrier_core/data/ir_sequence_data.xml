@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=1 : préserve le compteur (number_next) lors des MAJ de module. -->
+    <data noupdate="1">
+
+        <record id="seq_aite_courrier" model="ir.sequence">
+            <field name="name">Référence courrier AITE</field>
+            <field name="code">aite.courrier</field>
+            <field name="prefix">COUR-%(year)s-</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="aite_ecm_document.Explorer">
+        <div class="o_ecm_explorer d-flex flex-column h-100"
+             t-on-dragover="onDragOver" t-on-dragleave="onDragLeave" t-on-drop="onDrop">
+
+            <!-- Barre d'outils -->
+            <div class="o_ecm_toolbar d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom">
+                <button class="btn btn-primary" t-on-click="triggerUpload" t-att-disabled="!canUploadHere">
+                    <i class="fa fa-upload me-1"/>Charger
+                </button>
+                <button class="btn btn-secondary" t-on-click="triggerScan" t-att-disabled="!canUploadHere" title="Photos (appareil photo sur mobile) assemblées en un PDF">
+                    <i class="fa fa-camera me-1"/>Numériser
+                </button>
+                <button class="btn btn-link text-uppercase fw-bold" t-on-click="newDocument">Nouveau document</button>
+                <button class="btn btn-link text-uppercase fw-bold" t-if="state.meta.can_create_folder" t-on-click="startNewFolder">Nouveau dossier</button>
+                <button class="btn btn-link text-uppercase fw-bold" t-if="state.meta.share_installed and inspected and inspected.attachment_id"
+                        t-on-click="() => this.share(inspected)">Partager</button>
+                <span t-if="state.uploading" class="badge text-bg-info"><i class="fa fa-spinner fa-spin me-1"/>Dépôt en cours…</span>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <div class="input-group o_ecm_search">
+                        <span class="input-group-text bg-transparent"><i class="fa fa-search"/></span>
+                        <input type="text" class="form-control" placeholder="Rechercher (titre, référence, fichier, contenu)…"
+                               t-att-value="state.search" t-on-input="onSearchInput"/>
+                    </div>
+                    <select class="form-select w-auto" t-on-change="setOrder" t-att-value="state.order">
+                        <option value="date">Plus récents</option>
+                        <option value="name">Titre</option>
+                        <option value="reference">Référence</option>
+                    </select>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" t-att-class="{ active: state.view === 'grid' }" t-on-click="() => state.view = 'grid'" title="Cartes"><i class="fa fa-th-large"/></button>
+                        <button class="btn btn-secondary" t-att-class="{ active: state.view === 'list' }" t-on-click="() => state.view = 'list'" title="Liste"><i class="fa fa-list"/></button>
+                    </div>
+                </div>
+                <input type="file" multiple="multiple" class="d-none" t-ref="fileInput" t-on-change="onFilesPicked"/>
+                <input type="file" class="d-none" t-ref="versionInput" t-on-change="onVersionPicked"/>
+                <input type="file" class="d-none" t-ref="scanInput" accept="image/*" capture="environment" multiple="multiple" t-on-change="onScanPicked"/>
+            </div>
+
+            <div class="d-flex flex-grow-1 overflow-hidden">
+                <!-- Panneau latéral -->
+                <aside class="o_ecm_sidebar overflow-auto border-end py-3">
+                    <div class="o_ecm_section_title">Espace de travail</div>
+                    <div class="o_ecm_side_item" t-att-class="{ active: !state.folderId and !state.trash }" t-on-click="() => this.selectFolder(false)">
+                        <span>Tous</span>
+                    </div>
+                    <t t-foreach="folderTree" t-as="node" t-key="node.id">
+                        <t t-call="aite_ecm_document.FolderNode">
+                            <t t-set="depth" t-value="0"/>
+                        </t>
+                    </t>
+                    <div class="o_ecm_side_item" t-att-class="{ active: state.folderId === 'unfiled' }" t-on-click="() => this.selectFolder('unfiled')">
+                        <span class="text-muted fst-italic">Sans classement</span>
+                        <span class="o_ecm_count" t-esc="state.meta.unfiled_count"/>
+                    </div>
+
+                    <div class="o_ecm_section_title mt-3">Statut</div>
+                    <t t-foreach="state.meta.states" t-as="st" t-key="st.key">
+                        <div class="o_ecm_side_item" t-att-class="{ active: state.stateFilter === st.key }" t-on-click="() => this.setStateFilter(st.key)">
+                            <span t-esc="st.label"/>
+                            <span class="o_ecm_count" t-esc="st.count"/>
+                        </div>
+                    </t>
+                    <div class="o_ecm_side_item" t-att-class="{ active: state.mine }" t-on-click="toggleMine">
+                        <span><i class="fa fa-user-o me-1"/>Mes documents</span>
+                    </div>
+                    <div class="o_ecm_side_item" t-att-class="{ active: state.checkedOut }" t-on-click="toggleCheckedOut">
+                        <span><i class="fa fa-lock me-1"/>Réservés</span>
+                    </div>
+                    <div class="o_ecm_side_item" t-att-class="{ active: state.trash }" t-on-click="showTrash">
+                        <span><i class="fa fa-trash-o me-1"/>Corbeille</span>
+                        <span class="o_ecm_count" t-esc="state.meta.trash_count"/>
+                    </div>
+
+                    <div class="o_ecm_section_title mt-3">Types</div>
+                    <t t-foreach="state.meta.types" t-as="tp" t-key="tp.id">
+                        <div class="o_ecm_side_item" t-att-class="{ active: state.typeId === tp.id }" t-on-click="() => this.setType(tp.id)">
+                            <span t-esc="tp.name"/>
+                            <span class="o_ecm_count" t-esc="tp.count"/>
+                        </div>
+                    </t>
+
+                    <div class="o_ecm_section_title mt-3">Étiquettes</div>
+                    <t t-foreach="state.meta.tags" t-as="tag" t-key="tag.id">
+                        <div class="o_ecm_side_item" t-att-class="{ active: state.tagIds.includes(tag.id) }" t-on-click="() => this.toggleTag(tag.id)">
+                            <span><span t-attf-class="o_ecm_dot o_tag_color_#{tag.color}"/><t t-esc="tag.name"/></span>
+                            <span class="o_ecm_count" t-esc="tag.count"/>
+                        </div>
+                    </t>
+
+                    <t t-if="state.meta.res_models.length">
+                        <div class="o_ecm_section_title mt-3">Rattaché à</div>
+                        <t t-foreach="state.meta.res_models" t-as="rm" t-key="rm.model">
+                            <div class="o_ecm_side_item" t-att-class="{ active: state.resModel === rm.model }" t-on-click="() => this.setResModel(rm.model)">
+                                <span t-esc="rm.label"/>
+                                <span class="o_ecm_count" t-esc="rm.count"/>
+                            </div>
+                        </t>
+                    </t>
+                </aside>
+
+                <!-- Contenu -->
+                <main class="o_ecm_main flex-grow-1 overflow-auto p-3 position-relative">
+                    <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+                        <nav class="o_ecm_breadcrumb">
+                            <span class="o_ecm_crumb" t-on-click="() => this.selectFolder(false)">ECM</span>
+                            <t t-foreach="breadcrumb" t-as="crumb" t-key="crumb.id">
+                                <i class="fa fa-angle-right mx-1 text-muted"/>
+                                <span class="o_ecm_crumb" t-on-click="() => this.selectFolder(crumb.id)" t-esc="crumb.name"/>
+                            </t>
+                            <span t-if="state.trash" class="ms-2 badge text-bg-danger">Corbeille</span>
+                        </nav>
+                        <span class="text-muted small ms-2">
+                            <t t-esc="state.records.length"/> / <t t-esc="state.total"/> document(s)
+                        </span>
+                        <a href="#" class="small ms-2" t-if="activeFilterCount" t-on-click.prevent="clearFilters">Effacer les filtres</a>
+                        <div class="ms-auto d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-link" t-if="state.records.length" t-on-click="selectAll">
+                                <i class="fa fa-check-square-o me-1"/>Tout sélectionner
+                            </button>
+                        </div>
+                    </div>
+
+                    <div t-if="state.creatingFolder" class="input-group mb-3 o_ecm_new_folder">
+                        <span class="input-group-text"><i class="fa fa-folder-o"/></span>
+                        <input type="text" class="form-control" placeholder="Nom du nouveau dossier" t-model="state.newFolderName"
+                               t-on-keydown="(ev) => ev.key === 'Enter' &amp;&amp; this.confirmNewFolder()" autofocus="autofocus"/>
+                        <button class="btn btn-primary" t-on-click="confirmNewFolder">Créer</button>
+                        <button class="btn btn-secondary" t-on-click="() => state.creatingFolder = false">Annuler</button>
+                    </div>
+
+                    <div t-if="state.loading and !state.records.length" class="text-center text-muted py-5">
+                        <i class="fa fa-spinner fa-spin fa-2x"/>
+                    </div>
+
+                    <div t-elif="!state.records.length" class="o_ecm_empty text-center text-muted py-5">
+                        <i class="fa fa-cloud-upload fa-4x mb-3 d-block"/>
+                        <p class="mb-1 fs-5">Aucun document ici</p>
+                        <p t-if="canUploadHere">Déposez des fichiers dans cette zone ou cliquez sur <b>Charger</b>.</p>
+                    </div>
+
+                    <div t-if="state.view === 'grid'" class="o_ecm_grid">
+                        <t t-foreach="state.records" t-as="rec" t-key="rec.id">
+                            <div class="o_ecm_card" t-att-class="{ selected: isSelected(rec) }"
+                                 t-on-click="() => this.selectOnly(rec)" t-on-dblclick="() => this.preview(rec)">
+                                <div class="o_ecm_card_thumb">
+                                    <img t-if="rec.thumbnail_url" t-att-src="rec.thumbnail_url" alt=""/>
+                                    <i t-else="" t-attf-class="fa fa-4x #{iconFor(rec)}"/>
+                                    <span class="o_ecm_check" t-att-class="{ checked: isSelected(rec) }"
+                                          t-on-click="(ev) => this.toggleSelect(rec, ev)">
+                                        <i class="fa fa-check"/>
+                                    </span>
+                                    <span t-if="rec.is_checked_out" class="o_ecm_lock badge text-bg-warning" t-att-title="rec.checkout_user"><i class="fa fa-lock"/></span>
+                                    <span t-if="rec.confidentiality_code === 'CONF' or rec.confidentiality_code === 'SEC'"
+                                          class="o_ecm_conf badge text-bg-danger" t-att-title="rec.confidentiality"><i class="fa fa-eye-slash"/></span>
+                                </div>
+                                <div class="o_ecm_card_body">
+                                    <div class="o_ecm_card_title text-truncate" t-att-title="rec.name" t-esc="rec.name"/>
+                                    <div class="small text-muted text-truncate">
+                                        <t t-esc="rec.reference"/><t t-if="rec.type"> · <t t-esc="rec.type"/></t>
+                                    </div>
+                                    <div t-if="rec.tags.length" class="o_ecm_tags mt-1">
+                                        <t t-foreach="rec.tags" t-as="tag" t-key="tag.id">
+                                            <span t-attf-class="o_ecm_tag o_tag_color_#{tag.color}" t-esc="tag.name"/>
+                                        </t>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-1 small">
+                                        <span class="text-muted" t-esc="formatDate(rec.write_date)"/>
+                                        <span t-attf-class="badge #{stateClass(rec)}" t-esc="rec.state_label"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <table t-else="" class="table table-sm table-hover o_ecm_list">
+                        <thead>
+                            <tr>
+                                <th style="width: 32px;"/>
+                                <th>Référence</th><th>Titre</th><th>Type</th><th>Dossier</th>
+                                <th>Étiquettes</th><th>Propriétaire</th><th>Modifié</th><th>Taille</th><th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.records" t-as="rec" t-key="rec.id">
+                                <tr t-att-class="{ 'table-active': isSelected(rec) }" t-on-click="() => this.selectOnly(rec)" t-on-dblclick="() => this.preview(rec)">
+                                    <td><input type="checkbox" class="form-check-input" t-att-checked="isSelected(rec)" t-on-click="(ev) => this.toggleSelect(rec, ev)"/></td>
+                                    <td t-esc="rec.reference"/>
+                                    <td><i t-attf-class="fa #{iconFor(rec)} me-1 text-muted"/><t t-esc="rec.name"/></td>
+                                    <td t-esc="rec.type"/>
+                                    <td class="text-muted small" t-esc="rec.folder"/>
+                                    <td><t t-foreach="rec.tags" t-as="tag" t-key="tag.id"><span t-attf-class="o_ecm_tag o_tag_color_#{tag.color}" t-esc="tag.name"/></t></td>
+                                    <td t-esc="rec.owner"/>
+                                    <td t-esc="formatDate(rec.write_date)"/>
+                                    <td t-esc="formatSize(rec.file_size)"/>
+                                    <td><span t-attf-class="badge #{stateClass(rec)}" t-esc="rec.state_label"/>
+                                        <i t-if="rec.is_checked_out" class="fa fa-lock ms-1 text-warning" t-att-title="rec.checkout_user"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <div t-if="state.records.length and state.records.length &lt; state.total" class="text-center my-3">
+                        <button class="btn btn-secondary" t-on-click="loadMore" t-att-disabled="state.loading">
+                            <i t-if="state.loading" class="fa fa-spinner fa-spin me-1"/>Charger plus
+                        </button>
+                    </div>
+
+                    <div t-if="state.dragging" class="o_ecm_drop_overlay">
+                        <div><i class="fa fa-cloud-upload fa-3x d-block mb-2"/>Déposer pour ajouter à <b t-esc="currentFolder ? currentFolder.name : 'ECM'"/></div>
+                    </div>
+                </main>
+
+                <!-- Inspecteur -->
+                <aside t-if="selectedRecords.length" class="o_ecm_inspector overflow-auto border-start p-3">
+                    <t t-if="inspected">
+                        <t t-set="rec" t-value="inspected"/>
+                        <div class="o_ecm_inspector_thumb mb-3" t-on-click="() => this.preview(rec)">
+                            <img t-if="rec.thumbnail_url" t-att-src="rec.thumbnail_url" alt=""/>
+                            <i t-else="" t-attf-class="fa fa-4x text-muted #{iconFor(rec)}"/>
+                        </div>
+                        <h5 class="mb-0" t-esc="rec.name"/>
+                        <div class="text-muted small mb-2"><t t-esc="rec.reference"/> · <t t-esc="rec.state_label"/></div>
+                        <div t-if="rec.wf_status === 'running'" class="alert alert-info py-1 px-2 small mb-2">
+                            <i class="fa fa-random me-1"/>Étape <b t-esc="rec.wf_step"/>
+                            <span t-if="rec.wf_deadline"> · échéance <t t-esc="formatDate(rec.wf_deadline)"/></span>
+                            <span t-if="rec.wf_is_overdue" class="badge text-bg-danger ms-1">En retard</span>
+                        </div>
+                        <div t-if="rec.wf_status === 'rejected'" class="alert alert-danger py-1 px-2 small mb-2"><i class="fa fa-times-circle me-1"/>Circuit rejeté</div>
+                        <div t-if="rec.wf_status === 'done'" class="alert alert-success py-1 px-2 small mb-2"><i class="fa fa-check-circle me-1"/>Circuit terminé</div>
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            <button class="btn btn-sm btn-primary" t-on-click="() => this.openRecord(rec)"><i class="fa fa-external-link me-1"/>Fiche</button>
+                            <button class="btn btn-sm btn-secondary" t-if="rec.attachment_id" t-on-click="() => this.preview(rec)"><i class="fa fa-eye me-1"/>Aperçu</button>
+                            <button class="btn btn-sm btn-secondary" t-if="rec.attachment_id" t-on-click="() => this.download(rec)"><i class="fa fa-download me-1"/>Télécharger</button>
+                            <button class="btn btn-sm btn-secondary" t-if="rec.can_write and !rec.is_locked and rec.active" t-on-click="triggerVersionUpload"><i class="fa fa-upload me-1"/>Nouvelle version</button>
+                            <button class="btn btn-sm btn-secondary" t-if="!rec.is_checked_out and !rec.is_locked and rec.active and rec.can_write" t-on-click="() => this.bulk('checkout', [rec.id])"><i class="fa fa-lock me-1"/>Réserver</button>
+                            <button class="btn btn-sm btn-warning" t-if="rec.is_checked_out and (rec.checked_out_by_me or state.meta.is_manager)" t-on-click="() => this.bulk('checkin', [rec.id])"><i class="fa fa-unlock me-1"/>Libérer</button>
+                            <button class="btn btn-sm btn-primary" t-if="state.meta.workflow_installed and rec.wf_has_circuit and rec.wf_status !== 'running' and rec.wf_status !== 'done' and rec.state === 'draft' and rec.attachment_id and rec.active" t-on-click="() => this.bulk('wf_launch', [rec.id])"><i class="fa fa-play me-1"/>Lancer le circuit</button>
+                            <button class="btn btn-sm btn-primary" t-if="rec.wf_status === 'running' and rec.wf_can_act" t-on-click="() => this.wfWizard(rec)"><i class="fa fa-random me-1"/>Traiter</button>
+                            <button class="btn btn-sm btn-success" t-if="rec.state === 'draft' and rec.wf_status !== 'running' and rec.attachment_id and rec.can_write and rec.active" t-on-click="() => this.bulk('final', [rec.id])"><i class="fa fa-check me-1"/>Finaliser</button>
+                            <button class="btn btn-sm btn-secondary" t-if="state.meta.share_installed and rec.attachment_id and rec.active" t-on-click="() => this.share(rec)"><i class="fa fa-share-alt me-1"/>Partager</button>
+                            <button class="btn btn-sm btn-outline-danger" t-if="rec.active and rec.can_write" t-on-click="() => this.bulk('trash', [rec.id])"><i class="fa fa-trash-o me-1"/>Corbeille</button>
+                            <button class="btn btn-sm btn-outline-success" t-if="!rec.active" t-on-click="() => this.bulk('restore', [rec.id])"><i class="fa fa-undo me-1"/>Restaurer</button>
+                        </div>
+                        <dl class="o_ecm_props small">
+                            <dt>Fichier</dt><dd><t t-esc="rec.file_name or '—'"/> <span class="text-muted" t-if="rec.file_size">(<t t-esc="formatSize(rec.file_size)"/>)</span></dd>
+                            <dt>Versions</dt><dd t-esc="rec.version_count"/>
+                            <dt>Type</dt><dd t-esc="rec.type or '—'"/>
+                            <dt>Dossier</dt><dd t-esc="rec.folder or 'Sans classement'"/>
+                            <dt>Étiquettes</dt><dd>
+                                <t t-if="rec.tags.length"><t t-foreach="rec.tags" t-as="tag" t-key="tag.id"><span t-attf-class="o_ecm_tag o_tag_color_#{tag.color}" t-esc="tag.name"/></t></t>
+                                <span t-else="" class="text-muted">—</span>
+                            </dd>
+                            <dt>Confidentialité</dt><dd t-esc="rec.confidentiality or '—'"/>
+                            <dt>Propriétaire</dt><dd t-esc="rec.owner"/>
+                            <dt t-if="rec.is_checked_out">Réservé par</dt><dd t-if="rec.is_checked_out" t-esc="rec.checkout_user"/>
+                            <dt t-if="rec.res_display">Rattaché à</dt><dd t-if="rec.res_display" t-esc="rec.res_display"/>
+                            <dt>Modifié</dt><dd t-esc="formatDate(rec.write_date)"/>
+                        </dl>
+                        <hr/>
+                        <div class="small"><i class="fa fa-shield me-1 text-muted"/><b>Accès</b></div>
+                        <div class="small text-muted o_ecm_access" t-esc="rec.access_summary"/>
+                        <t t-if="rec.can_write">
+                            <select class="form-select form-select-sm mt-2" t-on-change="(ev) => this.shareSelection(ev, 'read')">
+                                <option value="">Partager en lecture avec…</option>
+                                <t t-foreach="state.meta.users" t-as="u" t-key="u.id"><option t-att-value="u.id" t-esc="u.name"/></t>
+                            </select>
+                            <select class="form-select form-select-sm mt-1" t-on-change="(ev) => this.shareSelection(ev, 'write')">
+                                <option value="">Partager en écriture avec…</option>
+                                <t t-foreach="state.meta.users" t-as="u" t-key="u.id"><option t-att-value="u.id" t-esc="u.name"/></t>
+                            </select>
+                            <button class="btn btn-sm btn-link px-0" t-if="rec.shared_users.length or rec.editor_users.length" t-on-click="() => this.bulk('unshare', [rec.id])">Retirer tous les partages nominatifs</button>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <h5><t t-esc="selectedRecords.length"/> documents sélectionnés</h5>
+                        <div class="d-flex flex-column gap-2 mt-3">
+                            <button class="btn btn-sm btn-success" t-if="!state.trash" t-on-click="() => this.bulk('final')"><i class="fa fa-check me-1"/>Finaliser</button>
+                            <button class="btn btn-sm btn-outline-danger" t-if="!state.trash" t-on-click="() => this.bulk('trash')"><i class="fa fa-trash-o me-1"/>Mettre à la corbeille</button>
+                            <button class="btn btn-sm btn-outline-success" t-if="state.trash" t-on-click="() => this.bulk('restore')"><i class="fa fa-undo me-1"/>Restaurer</button>
+                        </div>
+                    </t>
+                    <t t-if="!state.trash">
+                        <hr/>
+                        <label class="small text-muted">Déplacer vers</label>
+                        <select class="form-select form-select-sm mb-2" t-on-change="moveSelection">
+                            <option value="">— choisir un dossier —</option>
+                            <t t-foreach="state.meta.folders" t-as="f" t-key="f.id">
+                                <option t-att-value="f.id" t-att-disabled="!f.can_write" t-esc="f.name"/>
+                            </t>
+                        </select>
+                        <label class="small text-muted">Ajouter une étiquette</label>
+                        <select class="form-select form-select-sm mb-2" t-on-change="tagSelection">
+                            <option value="">— choisir —</option>
+                            <t t-foreach="state.meta.tags" t-as="tag" t-key="tag.id"><option t-att-value="tag.id" t-esc="tag.name"/></t>
+                        </select>
+                        <label class="small text-muted">Type de document</label>
+                        <select class="form-select form-select-sm" t-on-change="setTypeSelection">
+                            <option value="">— choisir —</option>
+                            <t t-foreach="state.meta.types" t-as="tp" t-key="tp.id"><option t-att-value="tp.id" t-esc="tp.name"/></t>
+                        </select>
+                    </t>
+                </aside>
+            </div>
+        </div>
+    </t>
+
+    <!-- Nœud de l'arborescence (récursif) -->
+    <t t-name="aite_ecm_document.FolderNode">
+        <div class="o_ecm_side_item o_ecm_folder" t-att-class="{ active: state.folderId === node.id }"
+             t-attf-style="padding-left: #{12 + depth * 14}px" t-on-click="() => this.selectFolder(node.id)">
+            <span class="o_ecm_caret" t-if="node.children.length" t-on-click="(ev) => this.toggleExpand(node.id, ev)">
+                <i t-attf-class="fa #{state.expanded[node.id] ? 'fa-caret-down' : 'fa-caret-right'}"/>
+            </span>
+            <span class="o_ecm_caret" t-else=""/>
+            <span class="text-truncate"><i class="fa fa-folder-o me-1 text-muted"/><t t-esc="node.name"/></span>
+            <span class="o_ecm_count" t-esc="node.subtotal"/>
+        </div>
+        <t t-if="state.expanded[node.id]">
+            <t t-foreach="node.children" t-as="child" t-key="child.id">
+                <t t-call="aite_ecm_document.FolderNode">
+                    <t t-set="node" t-value="child"/>
+                    <t t-set="depth" t-value="depth + 1"/>
+                </t>
+            </t>
+        </t>
+    </t>
+
+    <!-- Aperçu -->
+    <t t-name="aite_ecm_document.PreviewDialog">
+        <Dialog title="props.doc.name" size="'xl'" footer="false">
+            <div class="o_ecm_preview">
+                <iframe t-if="isPdf" t-att-src="pdfViewerUrl" class="o_ecm_preview_frame" title="Aperçu PDF"/>
+                <img t-elif="isImage" t-att-src="contentUrl" class="o_ecm_preview_img" alt=""/>
+                <iframe t-elif="isText" t-att-src="contentUrl" class="o_ecm_preview_frame" title="Aperçu"/>
+                <div t-else="" class="text-center py-5">
+                    <i class="fa fa-file-o fa-4x text-muted mb-3 d-block"/>
+                    <p>Ce format ne se prévisualise pas dans le navigateur.</p>
+                    <a class="btn btn-primary" t-att-href="downloadUrl" target="_blank"><i class="fa fa-download me-1"/>Télécharger <t t-esc="props.doc.file_name"/></a>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>

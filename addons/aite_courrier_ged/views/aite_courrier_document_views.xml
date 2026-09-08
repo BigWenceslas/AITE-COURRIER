@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ Document : liste ============ -->
+    <record id="view_document_list" model="ir.ui.view">
+        <field name="name">aite.courrier.document.list</field>
+        <field name="model">aite.courrier.document</field>
+        <field name="arch" type="xml">
+            <list string="Documents" decoration-muted="is_locked">
+                <field name="name"/>
+                <field name="courrier_id"/>
+                <field name="folder_id"/>
+                <field name="tag_ids" widget="many2many_tags" optional="show"/>
+                <field name="file_extension" optional="show"/>
+                <field name="version_count"/>
+                <field name="confidentiality_id" optional="show"/>
+                <field name="state" widget="badge"/>
+                <field name="is_locked" widget="boolean_toggle" readonly="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============ Document : formulaire ============ -->
+    <record id="view_document_form" model="ir.ui.view">
+        <field name="name">aite.courrier.document.form</field>
+        <field name="model">aite.courrier.document</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <header>
+                    <button name="action_preview_latest" string="Prévisualiser"
+                            type="object" class="btn-secondary"
+                            icon="fa-eye" invisible="version_count == 0"/>
+                    <button name="action_mark_final" string="Finaliser" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_mark_archived" string="Archiver" type="object"
+                            invisible="state != 'final'"/>
+                    <button name="action_reset_draft" string="Repasser en brouillon"
+                            type="object" groups="aite_courrier_base.group_admin"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Verrouillé"
+                            bg_color="text-bg-secondary" invisible="not is_locked"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nom du document"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="courrier_id"/>
+                            <field name="folder_id"/>
+                            <field name="tag_ids" widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                        </group>
+                        <group>
+                            <field name="confidentiality_id"/>
+                            <field name="version_count"/>
+                            <field name="latest_version_id"/>
+                            <field name="is_locked"/>
+                        </group>
+                    </group>
+                    <group string="Téléverser une nouvelle version" invisible="is_locked">
+                        <field name="upload_filename" invisible="1"/>
+                        <field name="upload_file" filename="upload_filename"/>
+                        <button name="action_upload_version" type="object"
+                                string="Ajouter la version" class="btn-primary"
+                                invisible="not upload_file"/>
+                        <div class="text-muted" colspan="2">
+                            Formats acceptés : PDF, DOCX, XLSX, images (JPG, PNG, TIFF), e-mails (EML, MSG) — 50 Mo maximum.
+                        </div>
+                    </group>
+                    <div class="text-muted" invisible="version_count == 0">
+                        Cliquez <b>Prévisualiser</b> (en-tête) pour ouvrir la
+                        dernière version dans un onglet — le PDF s'affiche
+                        directement. Chaque version est aussi téléchargeable ou
+                        ouvrable ci-dessous.
+                    </div>
+                    <notebook>
+                        <page string="Versions" name="versions">
+                            <field name="version_ids" readonly="1">
+                                <list string="Versions">
+                                    <field name="version"/>
+                                    <field name="file_name"/>
+                                    <button name="action_open_file" type="object"
+                                            string="Ouvrir" icon="fa-external-link"
+                                            title="Ouvrir / prévisualiser"/>
+                                    <field name="file_data" filename="file_name"
+                                           string="Télécharger"/>
+                                    <field name="file_extension"/>
+                                    <field name="file_size"/>
+                                    <field name="uploaded_by"/>
+                                    <field name="upload_date"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============ Document : recherche ============ -->
+    <record id="view_document_search" model="ir.ui.view">
+        <field name="name">aite.courrier.document.search</field>
+        <field name="model">aite.courrier.document</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Document"
+                       filter_domain="['|', ('name', 'ilike', self), ('courrier_id.reference', 'ilike', self)]"/>
+                <field name="folder_id"/>
+                <field name="tag_ids"/>
+                <field name="file_extension"/>
+                <filter name="filter_locked" string="Verrouillés"
+                        domain="[('is_locked', '=', True)]"/>
+                <filter name="filter_draft" string="Brouillons"
+                        domain="[('state', '=', 'draft')]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_folder" string="Dossier"
+                            context="{'group_by': 'folder_id'}"/>
+                    <filter name="group_extension" string="Extension"
+                            context="{'group_by': 'file_extension'}"/>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_document" model="ir.actions.act_window">
+        <field name="name">Espace documentaire</field>
+        <field name="res_model">aite.courrier.document</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_document_search"/>
+        <field name="context">{'search_default_group_folder': 1}</field>
+    </record>
+
+</odoo>

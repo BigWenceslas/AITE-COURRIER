@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_aite_ecm_dossier_form" model="ir.ui.view">
+        <field name="name">aite.ecm.dossier.form</field>
+        <field name="model">aite.ecm.dossier</field>
+        <field name="arch" type="xml">
+            <form string="Dossier métier">
+                <header>
+                    <button name="action_open" string="Ouvrir le dossier" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_wf_open_wizard" string="Traiter" type="object"
+                            class="btn-primary" icon="fa-play"
+                            invisible="wf_status != 'running' or not wf_can_act"/>
+                    <button name="action_close" string="Clôturer" type="object"
+                            invisible="state != 'open' or wf_status == 'running'"/>
+                    <button name="action_cancel" string="Annuler" type="object"
+                            invisible="state in ('done', 'cancel')"
+                            confirm="Annuler ce dossier ?"/>
+                    <button name="action_reset_draft" string="Remettre en brouillon"
+                            type="object" invisible="state == 'draft'"
+                            groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+                    <button name="action_generate_pieces" string="Régénérer les pièces"
+                            type="object" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_ecm_documents" type="object"
+                                class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="ecm_document_count" widget="statinfo" string="Documents"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Rejeté" bg_color="text-bg-danger"
+                            invisible="wf_status != 'rejected'"/>
+                    <div class="alert alert-info mb-3" role="status"
+                         invisible="wf_status != 'running'">
+                        <i class="fa fa-random me-1"/>Circuit en cours — étape
+                        <field name="wf_step_id" readonly="1" class="fw-bold"/>
+                        <span invisible="not wf_deadline"> · échéance
+                            <field name="wf_deadline" readonly="1"/></span>
+                        <span class="badge text-bg-danger ms-2" invisible="not wf_is_overdue">En retard</span>
+                    </div>
+                    <div class="oe_title">
+                        <label for="reference"/>
+                        <h3><field name="reference" readonly="1"/></h3>
+                        <h1><field name="name" placeholder="Objet du dossier"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="type_id" options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="partner_id"/>
+                            <field name="responsible_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="deadline"/>
+                            <field name="date_open"/>
+                            <field name="date_done"/>
+                            <field name="completion_rate" widget="progressbar"/>
+                            <field name="missing_required_count"/>
+                            <field name="is_complete" invisible="1"/>
+                            <field name="wf_status"/>
+                            <field name="wf_can_act" invisible="1"/>
+                            <field name="wf_is_overdue" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Métadonnées">
+                        <field name="properties" nolabel="1" colspan="2" columns="2"/>
+                    </group>
+                    <notebook>
+                        <page string="Pièces" name="pieces">
+                            <field name="piece_ids">
+                                <list editable="bottom" decoration-danger="state == 'missing' and required"
+                                      decoration-success="state == 'validated'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="document_type_id" options="{'no_create': True}"/>
+                                    <field name="required"/>
+                                    <field name="document_id" options="{'no_create': True}"/>
+                                    <field name="validated" widget="boolean_toggle"/>
+                                    <field name="state" widget="badge"
+                                           decoration-danger="state == 'missing'"
+                                           decoration-info="state == 'provided'"
+                                           decoration-success="state == 'validated'"/>
+                                    <field name="note" optional="show"/>
+                                    <button name="action_new_document" type="object" string="Fournir"
+                                            icon="fa-upload" invisible="document_id"/>
+                                    <button name="action_open_document" type="object" string="Ouvrir"
+                                            icon="fa-eye" invisible="not document_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Circuit" name="workflow">
+                            <group>
+                                <field name="wf_circuit_id"/>
+                                <field name="wf_reject_reason" invisible="wf_status != 'rejected'"/>
+                            </group>
+                            <field name="wf_history_ids" readonly="1">
+                                <list>
+                                    <field name="step_id"/>
+                                    <field name="entered_date"/>
+                                    <field name="left_date"/>
+                                    <field name="duration_hours" widget="float_time"/>
+                                    <field name="user_id"/>
+                                    <field name="transition_id"/>
+                                    <field name="comment"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_dossier_list" model="ir.ui.view">
+        <field name="name">aite.ecm.dossier.list</field>
+        <field name="model">aite.ecm.dossier</field>
+        <field name="arch" type="xml">
+            <list string="Dossiers" decoration-danger="wf_is_overdue">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="partner_id"/>
+                <field name="responsible_id"/>
+                <field name="wf_step_id"/>
+                <field name="completion_rate" widget="progressbar"/>
+                <field name="deadline" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'open'"
+                       decoration-success="state == 'done'"/>
+                <field name="wf_is_overdue" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_dossier_kanban" model="ir.ui.view">
+        <field name="name">aite.ecm.dossier.kanban</field>
+        <field name="model">aite.ecm.dossier</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="completion_rate"/>
+                <field name="wf_step_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-column p-2">
+                            <strong><field name="name"/></strong>
+                            <small class="text-muted"><field name="reference"/> · <field name="partner_id"/></small>
+                            <small t-if="record.wf_step_id.raw_value"><i class="fa fa-random me-1"/><field name="wf_step_id"/></small>
+                            <field name="completion_rate" widget="progressbar" class="mt-1"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_dossier_search" model="ir.ui.view">
+        <field name="name">aite.ecm.dossier.search</field>
+        <field name="model">aite.ecm.dossier</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher un dossier">
+                <field name="name" string="Référence / Objet"
+                       filter_domain="['|', ('reference', 'ilike', self), ('name', 'ilike', self)]"/>
+                <field name="partner_id"/>
+                <field name="type_id"/>
+                <field name="responsible_id"/>
+                <filter name="filter_mine" string="Mes dossiers" domain="[('responsible_id', '=', uid)]"/>
+                <filter name="filter_open" string="En cours" domain="[('state', '=', 'open')]"/>
+                <filter name="filter_incomplete" string="Incomplets" domain="[('is_complete', '=', False)]"/>
+                <filter name="filter_overdue" string="En retard (SLA)" domain="[('wf_is_overdue', '=', True)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_type" string="Type" context="{'group_by': 'type_id'}"/>
+                    <filter name="group_state" string="Statut" context="{'group_by': 'state'}"/>
+                    <filter name="group_step" string="Étape" context="{'group_by': 'wf_step_id'}"/>
+                </group>
+                <searchpanel>
+                    <field name="type_id" string="Types" icon="fa-folder-open" enable_counters="1"/>
+                    <field name="state" string="Statut" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_dossier" model="ir.actions.act_window">
+        <field name="name">Dossiers métier</field>
+        <field name="res_model">aite.ecm.dossier</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_aite_ecm_dossier_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Ouvrez votre premier dossier</p>
+            <p>Choisissez un type : la liste des pièces attendues et le circuit de
+               validation s'appliquent automatiquement.</p>
+        </field>
+    </record>
+
+</odoo>

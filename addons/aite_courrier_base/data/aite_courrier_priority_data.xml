@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="priority_u" model="aite.courrier.priority">
+            <field name="code">u</field>
+            <field name="name">Urgent</field>
+            <field name="sequence">1</field>
+            <field name="color">1</field>
+        </record>
+
+        <record id="priority_h" model="aite.courrier.priority">
+            <field name="code">h</field>
+            <field name="name">Haute</field>
+            <field name="sequence">2</field>
+            <field name="color">2</field>
+        </record>
+
+        <record id="priority_n" model="aite.courrier.priority">
+            <field name="code">n</field>
+            <field name="name">Normale</field>
+            <field name="sequence">3</field>
+            <field name="color">0</field>
+        </record>
+
+    </data>
+</odoo>

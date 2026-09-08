@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_nextcloud" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.nextcloud</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="aite_ecm_document.res_config_settings_view_form_ecm"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='aite_ecm']" position="inside">
+                    <block title="Nextcloud — espace de travail fichiers" name="nc_block">
+                        <setting string="Connexion" id="nc_connection"
+                                 help="Compte de service Nextcloud et son mot de passe d'application (Paramètres › Sécurité dans Nextcloud). Les fichiers sont écrits dans le dossier racine, sous le plan de classement.">
+                            <div class="row mt8">
+                                <label for="nc_url" class="col-lg-4 o_light_label"/>
+                                <field name="nc_url" placeholder="https://cloud.exemple.cm"/>
+                            </div>
+                            <div class="row">
+                                <label for="nc_user" class="col-lg-4 o_light_label"/>
+                                <field name="nc_user" placeholder="odoo-ecm"/>
+                            </div>
+                            <div class="row">
+                                <label for="nc_password" class="col-lg-4 o_light_label"/>
+                                <field name="nc_password" password="True"/>
+                            </div>
+                            <div class="row">
+                                <label for="nc_root" class="col-lg-4 o_light_label"/>
+                                <field name="nc_root"/>
+                            </div>
+                            <div class="mt8">
+                                <button name="action_nc_test_connection" type="object"
+                                        string="Tester la connexion" class="btn-link" icon="fa-plug"/>
+                            </div>
+                        </setting>
+                        <setting string="Synchronisation" id="nc_sync"
+                                 help="Miroir seul : Odoo écrit dans Nextcloud. Bidirectionnel : les modifications faites dans Nextcloud (client de synchronisation, édition en ligne) deviennent des versions Odoo.">
+                            <div class="row mt8">
+                                <label for="nc_mode" class="col-lg-4 o_light_label"/>
+                                <field name="nc_mode"/>
+                            </div>
+                            <div class="row">
+                                <field name="nc_immediate" class="col-lg-1"/>
+                                <label for="nc_immediate"/>
+                            </div>
+                            <div class="row">
+                                <field name="nc_poll" class="col-lg-1"/>
+                                <label for="nc_poll"/>
+                            </div>
+                            <div class="row">
+                                <field name="nc_sync_courrier" class="col-lg-1"/>
+                                <label for="nc_sync_courrier"/>
+                            </div>
+                            <div class="row">
+                                <field name="nc_sync_confidential" class="col-lg-1"/>
+                                <label for="nc_sync_confidential"/>
+                            </div>
+                            <div class="row">
+                                <label for="nc_share_days" class="col-lg-4 o_light_label"/>
+                                <field name="nc_share_days"/>
+                            </div>
+                            <div class="mt8">
+                                <button name="action_nc_push_all" type="object"
+                                        string="Envoyer tout le fonds" class="btn-link" icon="fa-cloud-upload"
+                                        confirm="Planifier l'envoi vers Nextcloud de tous les documents possédant un fichier ?"/>
+                            </div>
+                        </setting>
+                        <setting string="Webhook (Nextcloud 30+)" id="nc_webhook"
+                                 help="Avec l'app Nextcloud « Webhook Listeners », les modifications sont notifiées à Odoo en quasi temps réel ; le sondage périodique reste un filet de sécurité.">
+                            <div class="row mt8">
+                                <label for="nc_webhook_secret" class="col-lg-4 o_light_label"/>
+                                <field name="nc_webhook_secret" password="True"/>
+                            </div>
+                            <div class="row">
+                                <label for="nc_webhook_id" class="col-lg-4 o_light_label"/>
+                                <field name="nc_webhook_id"/>
+                            </div>
+                            <div class="mt8">
+                                <button name="action_nc_register_webhook" type="object"
+                                        string="Enregistrer le webhook dans Nextcloud" class="btn-link"
+                                        icon="fa-bolt"/>
+                            </div>
+                        </setting>
+                    </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

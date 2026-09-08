@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_aite_ecm_explorer_native" model="ir.actions.client">
+        <field name="name">Explorateur</field>
+        <field name="tag">aite_ecm_explorer</field>
+    </record>
+
+    <!-- Bouton « Explorateur » sur le dossier de classement -->
+    <record id="view_aite_ecm_folder_form_explorer" model="ir.ui.view">
+        <field name="name">aite.ecm.folder.form.explorer</field>
+        <field name="model">aite.ecm.folder</field>
+        <field name="inherit_id" ref="view_aite_ecm_folder_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_explorer" type="object" class="oe_stat_button"
+                        icon="fa-th-large" string="Explorateur"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Kanban ECM : cartes avec vignette -->
+    <record id="view_aite_ecm_document_kanban_thumbnail" model="ir.ui.view">
+        <field name="name">aite.ecm.document.kanban.thumbnail</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="view_aite_ecm_document_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="default_group_by"></attribute>
+            </xpath>
+            <xpath expr="//templates" position="replace">
+                <field name="thumbnail"/>
+                <field name="thumbnail_status"/>
+                <field name="file_extension"/>
+                <field name="tag_ids"/>
+                <field name="write_date"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-column">
+                            <div class="d-flex justify-content-center align-items-center bg-100 rounded-top"
+                                 style="height: 130px; overflow: hidden;">
+                                <field name="thumbnail" widget="image"
+                                       options="{'size': [null, 130], 'zoom': false}"
+                                       invisible="thumbnail_status != 'present'"/>
+                                <i t-if="record.thumbnail_status.raw_value != 'present'"
+                                   t-attf-class="fa fa-4x text-muted #{record.file_extension.raw_value == 'pdf' ? 'fa-file-pdf-o' : ['docx','doc','odt'].includes(record.file_extension.raw_value) ? 'fa-file-word-o' : ['xlsx','xls','ods','csv'].includes(record.file_extension.raw_value) ? 'fa-file-excel-o' : ['jpg','jpeg','png','gif','tif','tiff'].includes(record.file_extension.raw_value) ? 'fa-file-image-o' : 'fa-file-o'}"/>
+                            </div>
+                            <div class="p-2">
+                                <strong class="o_kanban_record_title text-truncate d-block"><field name="name"/></strong>
+                                <small class="text-muted"><field name="reference"/> · <field name="type_id"/></small>
+                                <div class="mt-1">
+                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted"><field name="write_date" widget="date"/></small>
+                                    <span>
+                                        <span t-if="record.is_checked_out.raw_value" class="badge text-bg-warning me-1">Réservé</span>
+                                        <field name="state" widget="badge"
+                                               decoration-success="state == 'final'"
+                                               decoration-muted="state == 'archived'"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </xpath>
+        </field>
+    </record>
+</odoo>

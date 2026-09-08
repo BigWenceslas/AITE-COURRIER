@@ -1,0 +1,25 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_aite_workflow_circuit_agent,aite.workflow.circuit read agent,model_aite_workflow_circuit,aite_courrier_base.group_agent,1,0,0,0
+access_aite_workflow_circuit_assistant,aite.workflow.circuit read assistant,model_aite_workflow_circuit,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_workflow_circuit_manager,aite.workflow.circuit read manager,model_aite_workflow_circuit,aite_courrier_base.group_manager,1,0,0,0
+access_aite_workflow_circuit_compta,aite.workflow.circuit read compta,model_aite_workflow_circuit,aite_courrier_base.group_compta,1,0,0,0
+access_aite_workflow_circuit_signer,aite.workflow.circuit read signer,model_aite_workflow_circuit,aite_courrier_base.group_signer,1,0,0,0
+access_aite_workflow_circuit_archive,aite.workflow.circuit read archive,model_aite_workflow_circuit,aite_courrier_base.group_archive,1,0,0,0
+access_aite_workflow_circuit_audit,aite.workflow.circuit read audit,model_aite_workflow_circuit,aite_courrier_base.group_audit,1,0,0,0
+access_aite_workflow_circuit_admin,aite.workflow.circuit manage admin,model_aite_workflow_circuit,aite_courrier_base.group_admin,1,1,1,1
+access_aite_workflow_step_agent,aite.workflow.step read agent,model_aite_workflow_step,aite_courrier_base.group_agent,1,0,0,0
+access_aite_workflow_step_assistant,aite.workflow.step read assistant,model_aite_workflow_step,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_workflow_step_manager,aite.workflow.step read manager,model_aite_workflow_step,aite_courrier_base.group_manager,1,0,0,0
+access_aite_workflow_step_compta,aite.workflow.step read compta,model_aite_workflow_step,aite_courrier_base.group_compta,1,0,0,0
+access_aite_workflow_step_signer,aite.workflow.step read signer,model_aite_workflow_step,aite_courrier_base.group_signer,1,0,0,0
+access_aite_workflow_step_archive,aite.workflow.step read archive,model_aite_workflow_step,aite_courrier_base.group_archive,1,0,0,0
+access_aite_workflow_step_audit,aite.workflow.step read audit,model_aite_workflow_step,aite_courrier_base.group_audit,1,0,0,0
+access_aite_workflow_step_admin,aite.workflow.step manage admin,model_aite_workflow_step,aite_courrier_base.group_admin,1,1,1,1
+access_aite_workflow_transition_agent,aite.workflow.transition read agent,model_aite_workflow_transition,aite_courrier_base.group_agent,1,0,0,0
+access_aite_workflow_transition_assistant,aite.workflow.transition read assistant,model_aite_workflow_transition,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_workflow_transition_manager,aite.workflow.transition read manager,model_aite_workflow_transition,aite_courrier_base.group_manager,1,0,0,0
+access_aite_workflow_transition_compta,aite.workflow.transition read compta,model_aite_workflow_transition,aite_courrier_base.group_compta,1,0,0,0
+access_aite_workflow_transition_signer,aite.workflow.transition read signer,model_aite_workflow_transition,aite_courrier_base.group_signer,1,0,0,0
+access_aite_workflow_transition_archive,aite.workflow.transition read archive,model_aite_workflow_transition,aite_courrier_base.group_archive,1,0,0,0
+access_aite_workflow_transition_audit,aite.workflow.transition read audit,model_aite_workflow_transition,aite_courrier_base.group_audit,1,0,0,0
+access_aite_workflow_transition_admin,aite.workflow.transition manage admin,model_aite_workflow_transition,aite_courrier_base.group_admin,1,1,1,1

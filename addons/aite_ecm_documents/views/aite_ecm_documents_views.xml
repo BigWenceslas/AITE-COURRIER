@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Explorateur : l'app Documents ouverte sur l'espace ECM -->
+    <record id="action_aite_ecm_explorer" model="ir.actions.act_window">
+        <field name="name">Explorateur Documents</field>
+        <field name="res_model">documents.document</field>
+        <field name="view_mode">kanban,list</field>
+        <field name="context" eval="{
+            'searchpanel_default_folder_id': ref('aite_ecm_documents.documents_folder_ecm'),
+            'documents_default_folder_id': ref('aite_ecm_documents.documents_folder_ecm'),
+        }"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Déposez vos fichiers ici</p>
+            <p>Les espaces de travail reproduisent le plan de classement ECM. Un fichier
+               déposé dans l'espace « ECM » devient automatiquement un document ECM.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_aite_ecm_explorer" name="Explorateur Documents (Enterprise)"
+              parent="aite_ecm_document.menu_aite_ecm_documents"
+              action="action_aite_ecm_explorer" sequence="6"/>
+
+    <!-- Dossier ECM : lien vers le dossier Documents miroir -->
+    <record id="view_aite_ecm_folder_form_documents" model="ir.ui.view">
+        <field name="name">aite.ecm.folder.form.documents</field>
+        <field name="model">aite.ecm.folder</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_folder_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Technique" name="tech" groups="aite_courrier_base.group_admin">
+                    <group><field name="documents_folder_id"/></group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Fiche ECM : bouton Explorateur -->
+    <record id="view_aite_ecm_document_form_documents" model="ir.ui.view">
+        <field name="name">aite.ecm.document.form.documents</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_explorer" type="object" class="oe_stat_button"
+                        icon="fa-folder-open-o" string="Explorateur"
+                        invisible="not documents_document_id"/>
+            </xpath>
+            <xpath expr="//field[@name='file_name']" position="after">
+                <field name="documents_document_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

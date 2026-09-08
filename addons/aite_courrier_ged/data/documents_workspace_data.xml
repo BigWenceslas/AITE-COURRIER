@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Espace documentaire racine « Courrier » dans la GED native (Documents).
+
+        Reproduit un « company root » (cf. documents.document.action_set_as_company_root) :
+        propriétaire OdooBot et aucun dossier parent, avec accès « éditeur » pour
+        les utilisateurs internes. Chaque courrier crée paresseusement son
+        sous-dossier (sa référence) sous cet espace — voir
+        aite.courrier._get_or_create_documents_folder.
+    -->
+    <record id="documents_folder_courrier" model="documents.document">
+        <field name="name">Courrier</field>
+        <field name="type">folder</field>
+        <field name="folder_id" eval="False"/>
+        <field name="owner_id" ref="base.user_root"/>
+        <field name="access_internal">edit</field>
+    </record>
+</odoo>

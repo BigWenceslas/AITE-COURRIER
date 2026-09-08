@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Circuit livré : procédures — rédaction, vérification, approbation -->
+        <record id="circuit_ecm_procedure" model="aite.workflow.circuit">
+            <field name="name">Procédure — rédaction, vérification, approbation</field>
+            <field name="res_model">aite.ecm.document</field>
+            <field name="document_type_id" ref="aite_ecm_document.type_procedure"/>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="step_ecm_proc_redaction" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_ecm_procedure"/>
+            <field name="sequence">10</field>
+            <field name="name">Rédaction</field>
+            <field name="description">Le rédacteur finalise le contenu et transmet</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">72</field>
+            <field name="is_initial" eval="True"/>
+        </record>
+        <record id="step_ecm_proc_verification" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_ecm_procedure"/>
+            <field name="sequence">20</field>
+            <field name="name">Vérification</field>
+            <field name="description">Relecture par le responsable du processus</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">48</field>
+        </record>
+        <record id="step_ecm_proc_approbation" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_ecm_procedure"/>
+            <field name="sequence">30</field>
+            <field name="name">Approuvée</field>
+            <field name="description">Procédure approuvée et finalisée</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager'), ref('aite_courrier_base.group_signer')])]"/>
+            <field name="is_final" eval="True"/>
+        </record>
+        <record id="trans_ecm_proc_transmettre" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_ecm_procedure"/>
+            <field name="step_from_id" ref="step_ecm_proc_redaction"/>
+            <field name="step_to_id" ref="step_ecm_proc_verification"/>
+            <field name="label">Transmettre pour vérification</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_ecm_proc_retour" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_ecm_procedure"/>
+            <field name="step_from_id" ref="step_ecm_proc_verification"/>
+            <field name="step_to_id" ref="step_ecm_proc_redaction"/>
+            <field name="label">Retour au rédacteur</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_ecm_proc_approuver" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_ecm_procedure"/>
+            <field name="step_from_id" ref="step_ecm_proc_verification"/>
+            <field name="step_to_id" ref="step_ecm_proc_approbation"/>
+            <field name="label">Approuver</field>
+            <field name="direction">forward</field>
+        </record>
+    </data>
+</odoo>

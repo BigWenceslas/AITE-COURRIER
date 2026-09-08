@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Onglet « Documents » ajouté au formulaire du courrier (core). -->
+    <record id="view_aite_courrier_form_ged" model="ir.ui.view">
+        <field name="name">aite.courrier.form.ged</field>
+        <field name="model">aite.courrier</field>
+        <field name="inherit_id" ref="aite_courrier_core.view_aite_courrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='history']" position="before">
+                <page string="Documents" name="documents">
+                    <field name="document_ids" context="{'default_courrier_id': id}">
+                        <list string="Documents" decoration-muted="is_locked">
+                            <field name="name"/>
+                            <field name="folder_id"/>
+                            <field name="tag_ids" widget="many2many_tags"/>
+                            <field name="file_extension"/>
+                            <field name="version_count"/>
+                            <field name="state" widget="badge"/>
+                            <field name="is_locked"/>
+                            <button name="action_preview_latest" type="object"
+                                    string="Prévisualiser" icon="fa-eye"
+                                    title="Ouvrir la dernière version dans un onglet"
+                                    invisible="version_count == 0"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

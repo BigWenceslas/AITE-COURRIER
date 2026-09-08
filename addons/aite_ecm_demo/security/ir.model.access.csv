@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ecm_demo_wizard_manager,ecm demo wizard manager,model_aite_ecm_demo_wizard,aite_courrier_base.group_manager,1,1,1,1
+access_ecm_demo_wizard_admin,ecm demo wizard admin,model_aite_ecm_demo_wizard,aite_courrier_base.group_admin,1,1,1,1
+access_ecm_demo_wizard_system,ecm demo wizard system,model_aite_ecm_demo_wizard,base.group_system,1,1,1,1

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_reponse_template_list" model="ir.ui.view">
+        <field name="name">aite.courrier.reponse.template.list</field>
+        <field name="model">aite.courrier.reponse.template</field>
+        <field name="arch" type="xml">
+            <list string="Modèles de réponse">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="subject"/>
+                <field name="type_ids" widget="many2many_tags"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_reponse_template_form" model="ir.ui.view">
+        <field name="name">aite.courrier.reponse.template.form</field>
+        <field name="model">aite.courrier.reponse.template</field>
+        <field name="arch" type="xml">
+            <form string="Modèle de réponse">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé"
+                            bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nom du modèle"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="type_ids" widget="many2many_tags"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="subject"/>
+                    </group>
+                    <field name="body_html" nolabel="1" colspan="2"/>
+                    <div class="alert alert-info mt-3" role="status">
+                        <strong>Champs de fusion</strong> (moteur des modèles
+                        d'e-mails Odoo) — insérer par exemple :
+                        <code>{{ object.reference }}</code>,
+                        <code>{{ object.subject }}</code>,
+                        <code>{{ object.sender }}</code>,
+                        <code>{{ object.date_received }}</code>,
+                        <code>{{ object.department_id.name }}</code>,
+                        <code>{{ object.responsible_id.name }}</code>,
+                        <code>{{ user.name }}</code>.
+                        <br/><code>object</code> désigne le courrier d'origine
+                        auquel on répond.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_reponse_template" model="ir.actions.act_window">
+        <field name="name">Modèles de réponse</field>
+        <field name="res_model">aite.courrier.reponse.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre premier modèle de réponse
+            </p>
+            <p>
+                Les modèles fusionnent automatiquement la référence,
+                l'expéditeur et les autres champs du courrier d'origine.
+            </p>
+        </field>
+    </record>
+
+    <!-- Sous le menu Configuration de l'application Courrier. -->
+    <menuitem id="menu_reponse_template"
+              name="Modèles de réponse"
+              parent="aite_courrier_base.menu_aite_courrier_config"
+              action="action_reponse_template"
+              sequence="60"/>
+
+</odoo>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_demo_wizard_form" model="ir.ui.view">
+        <field name="name">aite.ecm.demo.wizard.form</field>
+        <field name="model">aite.ecm.demo.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Jeu de données de test">
+                <group>
+                    <field name="profile" widget="radio" readonly="has_plan and not is_done"/>
+                    <field name="status" nolabel="1" colspan="2"/>
+                    <field name="cron_active"/>
+                    <field name="seeded" invisible="not seeded"/>
+                    <field name="has_plan" invisible="1"/>
+                    <field name="is_done" invisible="1"/>
+                </group>
+                <div class="alert alert-danger" role="alert" invisible="not last_error">
+                    <strong>Dernière erreur rencontrée</strong> (les unités en échec sont ignorées, la génération continue) :
+                    <field name="last_error" nolabel="1" readonly="1"/>
+                </div>
+                <div class="alert alert-info" role="status">
+                    <strong>Démarrer</strong> enregistre le plan et génère un premier lot (30 s) ;
+                    <strong>Générer un lot</strong> ajoute 30 s de génération à chaque clic ;
+                    <strong>Tout générer</strong> enchaîne les lots jusqu'à la fin dans cette même requête
+                    (plusieurs minutes : à réserver aux instances sans proxy ni limite de temps) ;
+                    <strong>Relancer la tâche planifiée</strong> laisse le serveur poursuivre en arrière-plan.
+                </div>
+                <footer>
+                    <button name="action_start" string="Démarrer" type="object" class="btn-primary"
+                            invisible="has_plan and not is_done"/>
+                    <button name="action_run_batch" string="Générer un lot (30 s)" type="object"
+                            class="btn-primary" invisible="not has_plan or is_done"/>
+                    <button name="action_run_all" string="Tout générer maintenant" type="object"
+                            invisible="not has_plan or is_done"
+                            confirm="Cette action peut durer plusieurs minutes sans retour visuel. Continuer ?"/>
+                    <button name="action_trigger_cron" string="Relancer la tâche planifiée" type="object"
+                            invisible="not has_plan or is_done"/>
+                    <button name="action_purge" string="Purger le jeu de données" type="object"
+                            class="btn-danger" invisible="not has_plan and not seeded"
+                            confirm="Supprimer tous les enregistrements du jeu de données de test ?"/>
+                    <button string="Fermer" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_demo_wizard" model="ir.actions.act_window">
+        <field name="name">Jeu de données de test</field>
+        <field name="res_model">aite.ecm.demo.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_aite_ecm_demo" name="Jeu de données de test"
+              parent="aite_ecm_document.menu_aite_ecm_config"
+              action="action_aite_ecm_demo_wizard" sequence="99"
+              groups="aite_courrier_base.group_admin,aite_courrier_base.group_manager,base.group_system"/>
+</odoo>

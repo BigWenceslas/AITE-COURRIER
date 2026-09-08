@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wf_history_agent,wf history agent,model_aite_workflow_history,aite_courrier_base.group_agent,1,0,0,0
+access_wf_history_assistant,wf history assistant,model_aite_workflow_history,aite_courrier_base.group_assistant,1,0,0,0
+access_wf_history_manager,wf history manager,model_aite_workflow_history,aite_courrier_base.group_manager,1,0,0,0
+access_wf_history_compta,wf history compta,model_aite_workflow_history,aite_courrier_base.group_compta,1,0,0,0
+access_wf_history_signer,wf history signer,model_aite_workflow_history,aite_courrier_base.group_signer,1,0,0,0
+access_wf_history_archive,wf history archive,model_aite_workflow_history,aite_courrier_base.group_archive,1,0,0,0
+access_wf_history_audit,wf history audit,model_aite_workflow_history,aite_courrier_base.group_audit,1,0,0,0
+access_wf_history_admin,wf history admin,model_aite_workflow_history,aite_courrier_base.group_admin,1,1,1,1
+access_wf_wizard_agent,wf wizard agent,model_aite_workflow_action_wizard,aite_courrier_base.group_agent,1,1,1,0
+access_wf_wizard_assistant,wf wizard assistant,model_aite_workflow_action_wizard,aite_courrier_base.group_assistant,1,1,1,0
+access_wf_wizard_manager,wf wizard manager,model_aite_workflow_action_wizard,aite_courrier_base.group_manager,1,1,1,0
+access_wf_wizard_compta,wf wizard compta,model_aite_workflow_action_wizard,aite_courrier_base.group_compta,1,1,1,0
+access_wf_wizard_signer,wf wizard signer,model_aite_workflow_action_wizard,aite_courrier_base.group_signer,1,1,1,0
+access_wf_wizard_archive,wf wizard archive,model_aite_workflow_action_wizard,aite_courrier_base.group_archive,1,1,1,0
+access_wf_wizard_admin,wf wizard admin,model_aite_workflow_action_wizard,aite_courrier_base.group_admin,1,1,1,1

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=1 : dossiers de départ, non écrasés aux mises à jour. -->
+    <data noupdate="1">
+
+        <!-- ============ Dossiers racine ============ -->
+        <record id="folder_direction" model="aite.courrier.folder">
+            <field name="name">Direction</field>
+            <field name="description">Courriers et notes de la direction générale.</field>
+            <field name="color">1</field>
+        </record>
+        <record id="folder_comptabilite" model="aite.courrier.folder">
+            <field name="name">Comptabilité</field>
+            <field name="description">Pièces comptables et financières.</field>
+            <field name="color">2</field>
+        </record>
+        <record id="folder_rh" model="aite.courrier.folder">
+            <field name="name">RH</field>
+            <field name="description">Ressources humaines.</field>
+            <field name="color">3</field>
+        </record>
+        <record id="folder_commercial" model="aite.courrier.folder">
+            <field name="name">Commercial</field>
+            <field name="description">Devis, contrats et relation client.</field>
+            <field name="color">4</field>
+        </record>
+        <record id="folder_archives" model="aite.courrier.folder">
+            <field name="name">Archives</field>
+            <field name="description">Courriers clôturés et archivés.</field>
+            <field name="color">8</field>
+        </record>
+
+        <!-- ============ Sous-dossiers (classement plus fin) ============ -->
+        <record id="folder_factures" model="aite.courrier.folder">
+            <field name="name">Factures</field>
+            <field name="parent_id" ref="folder_comptabilite"/>
+            <field name="description">Factures fournisseurs et clients.</field>
+            <field name="color">2</field>
+        </record>
+        <record id="folder_devis" model="aite.courrier.folder">
+            <field name="name">Devis</field>
+            <field name="parent_id" ref="folder_commercial"/>
+            <field name="description">Devis émis et reçus.</field>
+            <field name="color">4</field>
+        </record>
+        <record id="folder_contrats" model="aite.courrier.folder">
+            <field name="name">Contrats</field>
+            <field name="parent_id" ref="folder_commercial"/>
+            <field name="description">Contrats et conventions.</field>
+            <field name="color">4</field>
+        </record>
+
+    </data>
+</odoo>

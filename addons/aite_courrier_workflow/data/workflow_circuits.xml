@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Les 5 circuits de base, prêts à l'emploi dès l'installation.
+        noupdate="1" : ces données sont du paramétrage de départ ; les
+        modifications faites par l'administrateur ne sont PAS écrasées lors
+        d'une mise à jour du module.
+    -->
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!-- CIRCUIT 1 — Courrier entrant standard (type ENTR)            -->
+        <!-- ============================================================ -->
+        <record id="circuit_entrant_standard" model="aite.workflow.circuit">
+            <field name="name">Courrier entrant standard</field>
+            <field name="type_id" ref="aite_courrier_base.type_entr"/>
+        </record>
+
+        <record id="step_entr_1" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="sequence">1</field>
+            <field name="name">Réception</field>
+            <field name="description">Enregistrement et numérisation</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent')])]"/>
+            <field name="sla_hours">4</field>
+            <field name="is_initial" eval="True"/>
+        </record>
+        <record id="step_entr_2" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="sequence">2</field>
+            <field name="name">Qualification</field>
+            <field name="description">Catégorisation, priorité, confidentialité</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">8</field>
+        </record>
+        <record id="step_entr_3" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="sequence">3</field>
+            <field name="name">Affectation</field>
+            <field name="description">Attribution service/responsable</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_assistant'), ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">4</field>
+        </record>
+        <record id="step_entr_4" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="sequence">4</field>
+            <field name="name">Traitement</field>
+            <field name="description">Analyse par le service destinataire</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">48</field>
+        </record>
+        <record id="step_entr_5" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="sequence">5</field>
+            <field name="name">Archivage</field>
+            <field name="description">Clôture, indexation, conservation</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_archive')])]"/>
+            <field name="sla_hours">24</field>
+            <field name="is_final" eval="True"/>
+        </record>
+
+        <record id="trans_entr_1_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="step_from_id" ref="step_entr_1"/>
+            <field name="step_to_id" ref="step_entr_2"/>
+            <field name="label">Qualifier</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_entr_2_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="step_from_id" ref="step_entr_2"/>
+            <field name="step_to_id" ref="step_entr_3"/>
+            <field name="label">Affecter</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_entr_2_1" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="step_from_id" ref="step_entr_2"/>
+            <field name="step_to_id" ref="step_entr_1"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_entr_3_4" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="step_from_id" ref="step_entr_3"/>
+            <field name="step_to_id" ref="step_entr_4"/>
+            <field name="label">Transmettre</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_entr_3_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="step_from_id" ref="step_entr_3"/>
+            <field name="step_to_id" ref="step_entr_2"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_entr_4_5" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="step_from_id" ref="step_entr_4"/>
+            <field name="step_to_id" ref="step_entr_5"/>
+            <field name="label">Archiver</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_entr_4_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_entrant_standard"/>
+            <field name="step_from_id" ref="step_entr_4"/>
+            <field name="step_to_id" ref="step_entr_3"/>
+            <field name="label">Réaffecter</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- CIRCUIT 2 — Courrier sortant (type SORT)                     -->
+        <!-- ============================================================ -->
+        <record id="circuit_sortant" model="aite.workflow.circuit">
+            <field name="name">Courrier sortant</field>
+            <field name="type_id" ref="aite_courrier_base.type_sort"/>
+        </record>
+
+        <record id="step_sort_1" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="sequence">1</field>
+            <field name="name">Préparation</field>
+            <field name="description">Rédaction et mise en forme</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">24</field>
+            <field name="is_initial" eval="True"/>
+        </record>
+        <record id="step_sort_2" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="sequence">2</field>
+            <field name="name">Contrôle</field>
+            <field name="description">Vérification administrative et conformité</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">8</field>
+        </record>
+        <record id="step_sort_3" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="sequence">3</field>
+            <field name="name">Validation</field>
+            <field name="description">Validation par responsable de service</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">24</field>
+        </record>
+        <record id="step_sort_4" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="sequence">4</field>
+            <field name="name">Signature</field>
+            <field name="description">Visa formel et approbation finale</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_signer')])]"/>
+            <field name="sla_hours">24</field>
+        </record>
+        <record id="step_sort_5" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="sequence">5</field>
+            <field name="name">Émission</field>
+            <field name="description">Envoi destinataire et archivage</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_archive')])]"/>
+            <field name="sla_hours">4</field>
+            <field name="is_final" eval="True"/>
+        </record>
+
+        <record id="trans_sort_1_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="step_from_id" ref="step_sort_1"/>
+            <field name="step_to_id" ref="step_sort_2"/>
+            <field name="label">Soumettre</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_sort_2_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="step_from_id" ref="step_sort_2"/>
+            <field name="step_to_id" ref="step_sort_3"/>
+            <field name="label">Valider</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_sort_2_1" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="step_from_id" ref="step_sort_2"/>
+            <field name="step_to_id" ref="step_sort_1"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_sort_3_4" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="step_from_id" ref="step_sort_3"/>
+            <field name="step_to_id" ref="step_sort_4"/>
+            <field name="label">Soumettre visa</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_sort_3_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="step_from_id" ref="step_sort_3"/>
+            <field name="step_to_id" ref="step_sort_2"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_sort_4_5" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="step_from_id" ref="step_sort_4"/>
+            <field name="step_to_id" ref="step_sort_5"/>
+            <field name="label">Signer &amp; émettre</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_sort_4_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_sortant"/>
+            <field name="step_from_id" ref="step_sort_4"/>
+            <field name="step_to_id" ref="step_sort_3"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- CIRCUIT 3 — Courrier interne (type INT)                      -->
+        <!-- ============================================================ -->
+        <record id="circuit_interne" model="aite.workflow.circuit">
+            <field name="name">Courrier interne</field>
+            <field name="type_id" ref="aite_courrier_base.type_int"/>
+        </record>
+
+        <record id="step_int_1" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="sequence">1</field>
+            <field name="name">Création</field>
+            <field name="description">Rédaction note/instruction</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant'), ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">0</field>
+            <field name="is_initial" eval="True"/>
+        </record>
+        <record id="step_int_2" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="sequence">2</field>
+            <field name="name">Diffusion</field>
+            <field name="description">Transmission aux destinataires</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">4</field>
+        </record>
+        <record id="step_int_3" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="sequence">3</field>
+            <field name="name">Accusé réception</field>
+            <field name="description">Confirmation de prise en compte</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant'), ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">24</field>
+        </record>
+        <record id="step_int_4" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="sequence">4</field>
+            <field name="name">Archivage</field>
+            <field name="description">Conservation avec historique</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_archive')])]"/>
+            <field name="sla_hours">24</field>
+            <field name="is_final" eval="True"/>
+        </record>
+
+        <record id="trans_int_1_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="step_from_id" ref="step_int_1"/>
+            <field name="step_to_id" ref="step_int_2"/>
+            <field name="label">Diffuser</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_int_2_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="step_from_id" ref="step_int_2"/>
+            <field name="step_to_id" ref="step_int_3"/>
+            <field name="label">Confirmer</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_int_2_1" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="step_from_id" ref="step_int_2"/>
+            <field name="step_to_id" ref="step_int_1"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_int_3_4" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_interne"/>
+            <field name="step_from_id" ref="step_int_3"/>
+            <field name="step_to_id" ref="step_int_4"/>
+            <field name="label">Archiver</field>
+            <field name="direction">forward</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- CIRCUIT 4 — Facture fournisseur (type FACT)                  -->
+        <!-- ============================================================ -->
+        <record id="circuit_facture" model="aite.workflow.circuit">
+            <field name="name">Facture fournisseur</field>
+            <field name="type_id" ref="aite_courrier_base.type_fact"/>
+        </record>
+
+        <record id="step_fact_1" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="sequence">1</field>
+            <field name="name">Réception</field>
+            <field name="description">Réception et enregistrement facture</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">4</field>
+            <field name="is_initial" eval="True"/>
+        </record>
+        <record id="step_fact_2" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="sequence">2</field>
+            <field name="name">Contrôle administratif</field>
+            <field name="description">Vérification administrative et conformité</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">24</field>
+        </record>
+        <record id="step_fact_3" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="sequence">3</field>
+            <field name="name">Comptabilité</field>
+            <field name="description">Traitement comptable / budgétaire</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_compta')])]"/>
+            <field name="sla_hours">48</field>
+        </record>
+        <record id="step_fact_4" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="sequence">4</field>
+            <field name="name">Validation responsable</field>
+            <field name="description">Validation par responsable</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">24</field>
+        </record>
+        <record id="step_fact_5" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="sequence">5</field>
+            <field name="name">Visa DG</field>
+            <field name="description">Approbation finale, visa paiement</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_signer')])]"/>
+            <field name="sla_hours">24</field>
+        </record>
+        <record id="step_fact_6" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="sequence">6</field>
+            <field name="name">Clôture</field>
+            <field name="description">Enregistrement du règlement</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_compta')])]"/>
+            <field name="sla_hours">48</field>
+        </record>
+        <record id="step_fact_7" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="sequence">7</field>
+            <field name="name">Archivage</field>
+            <field name="description">Conservation légale</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_archive')])]"/>
+            <field name="sla_hours">24</field>
+            <field name="is_final" eval="True"/>
+        </record>
+
+        <record id="trans_fact_1_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_1"/>
+            <field name="step_to_id" ref="step_fact_2"/>
+            <field name="label">Transmettre</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_fact_2_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_2"/>
+            <field name="step_to_id" ref="step_fact_3"/>
+            <field name="label">Valider</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_fact_2_1" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_2"/>
+            <field name="step_to_id" ref="step_fact_1"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_fact_3_4" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_3"/>
+            <field name="step_to_id" ref="step_fact_4"/>
+            <field name="label">Valider</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_fact_3_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_3"/>
+            <field name="step_to_id" ref="step_fact_2"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_fact_4_5" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_4"/>
+            <field name="step_to_id" ref="step_fact_5"/>
+            <field name="label">Soumettre au visa</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_fact_4_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_4"/>
+            <field name="step_to_id" ref="step_fact_3"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_fact_5_6" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_5"/>
+            <field name="step_to_id" ref="step_fact_6"/>
+            <field name="label">Approuver</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_fact_5_4" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_5"/>
+            <field name="step_to_id" ref="step_fact_4"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_fact_6_7" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_facture"/>
+            <field name="step_from_id" ref="step_fact_6"/>
+            <field name="step_to_id" ref="step_fact_7"/>
+            <field name="label">Archiver</field>
+            <field name="direction">forward</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- CIRCUIT 5 — Devis commercial (type DEVIS)                    -->
+        <!-- ============================================================ -->
+        <record id="circuit_devis" model="aite.workflow.circuit">
+            <field name="name">Devis commercial</field>
+            <field name="type_id" ref="aite_courrier_base.type_devis"/>
+        </record>
+
+        <record id="step_devis_1" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="sequence">1</field>
+            <field name="name">Création</field>
+            <field name="description">Création/réception du devis</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">24</field>
+            <field name="is_initial" eval="True"/>
+        </record>
+        <record id="step_devis_2" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="sequence">2</field>
+            <field name="name">Analyse commerciale</field>
+            <field name="description">Faisabilité, pricing</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_assistant'), ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">48</field>
+        </record>
+        <record id="step_devis_3" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="sequence">3</field>
+            <field name="name">Validation responsable</field>
+            <field name="description">Validation responsable commercial</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_manager')])]"/>
+            <field name="sla_hours">24</field>
+        </record>
+        <record id="step_devis_4" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="sequence">4</field>
+            <field name="name">Validation direction</field>
+            <field name="description">Validation direction si seuil</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_signer')])]"/>
+            <field name="sla_hours">48</field>
+        </record>
+        <record id="step_devis_5" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="sequence">5</field>
+            <field name="name">Émission</field>
+            <field name="description">Envoi client et archivage émise</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_agent'), ref('aite_courrier_base.group_assistant')])]"/>
+            <field name="sla_hours">4</field>
+        </record>
+        <record id="step_devis_6" model="aite.workflow.step">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="sequence">6</field>
+            <field name="name">Archivage</field>
+            <field name="description">Conservation dossier commercial</field>
+            <field name="role_ids" eval="[(6, 0, [ref('aite_courrier_base.group_archive')])]"/>
+            <field name="sla_hours">24</field>
+            <field name="is_final" eval="True"/>
+        </record>
+
+        <record id="trans_devis_1_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_1"/>
+            <field name="step_to_id" ref="step_devis_2"/>
+            <field name="label">Soumettre</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_devis_2_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_2"/>
+            <field name="step_to_id" ref="step_devis_3"/>
+            <field name="label">Valider analyse</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_devis_2_1" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_2"/>
+            <field name="step_to_id" ref="step_devis_1"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_devis_3_4" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_3"/>
+            <field name="step_to_id" ref="step_devis_4"/>
+            <field name="label">Soumettre direction</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_devis_3_5" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_3"/>
+            <field name="step_to_id" ref="step_devis_5"/>
+            <field name="label">Approuver (direct)</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_devis_3_2" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_3"/>
+            <field name="step_to_id" ref="step_devis_2"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_devis_4_5" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_4"/>
+            <field name="step_to_id" ref="step_devis_5"/>
+            <field name="label">Approuver</field>
+            <field name="direction">forward</field>
+        </record>
+        <record id="trans_devis_4_3" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_4"/>
+            <field name="step_to_id" ref="step_devis_3"/>
+            <field name="label">Retourner</field>
+            <field name="direction">backward</field>
+            <field name="comment_required" eval="True"/>
+        </record>
+        <record id="trans_devis_5_6" model="aite.workflow.transition">
+            <field name="circuit_id" ref="circuit_devis"/>
+            <field name="step_from_id" ref="step_devis_5"/>
+            <field name="step_to_id" ref="step_devis_6"/>
+            <field name="label">Archiver</field>
+            <field name="direction">forward</field>
+        </record>
+
+    </data>
+</odoo>

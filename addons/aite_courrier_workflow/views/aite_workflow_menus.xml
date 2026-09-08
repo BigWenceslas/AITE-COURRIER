@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Les circuits sont du paramétrage : sous Configuration, réservé à
+         l'administrateur fonctionnel (cf. menu défini dans aite_courrier_base). -->
+    <menuitem id="menu_aite_workflow_circuit"
+              name="Circuits de traitement"
+              parent="aite_courrier_base.menu_aite_courrier_config"
+              action="action_aite_workflow_circuit"
+              sequence="40"/>
+
+</odoo>

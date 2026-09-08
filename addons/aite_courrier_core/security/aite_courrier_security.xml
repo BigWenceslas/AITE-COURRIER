@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=0 : règles de sécurité mises à jour avec le module. -->
+    <data noupdate="0">
+
+        <!--
+            Confidentialité du courrier.
+
+            Deux règles complémentaires (combinées en OU entre les groupes
+            d'un même utilisateur) :
+
+            * Rôles opérationnels « simples » : un courrier Confidentiel/Secret
+              n'est visible que pour le responsable, le créateur ou un membre
+              du service destinataire (les courriers Public/Interne restent
+              visibles).
+            * Rôles habilités (manager) : accès complet.
+
+            L'administrateur fonctionnel (group_admin) implique tous les groupes,
+            il bénéficie donc — via la règle « manager » — d'un accès complet.
+        -->
+        <record id="rule_courrier_confidential_restricted" model="ir.rule">
+            <field name="name">Courrier : confidentialité (opérationnels)</field>
+            <field name="model_id" ref="model_aite_courrier"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_agent'),
+                ref('aite_courrier_base.group_assistant'),
+                ref('aite_courrier_base.group_compta'),
+                ref('aite_courrier_base.group_signer'),
+                ref('aite_courrier_base.group_archive'),
+                ref('aite_courrier_base.group_audit'),
+            ])]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">[
+                '|', '|', '|', '|',
+                ('confidentiality_id', '=', False),
+                ('confidentiality_id.code', 'not in', ('CONF', 'SEC')),
+                ('responsible_id', '=', user.id),
+                ('create_uid', '=', user.id),
+                ('department_id.member_ids.user_id', '=', user.id),
+            ]</field>
+        </record>
+
+        <record id="rule_courrier_manager_all" model="ir.rule">
+            <field name="name">Courrier : accès complet (manager)</field>
+            <field name="model_id" ref="model_aite_courrier"/>
+            <field name="groups" eval="[(6, 0, [
+                ref('aite_courrier_base.group_manager'),
+            ])]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+    </data>
+</odoo>

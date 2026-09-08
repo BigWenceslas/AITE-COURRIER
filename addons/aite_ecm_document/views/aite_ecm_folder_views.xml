@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_aite_ecm_folder_form" model="ir.ui.view">
+        <field name="name">aite.ecm.folder.form</field>
+        <field name="model">aite.ecm.folder</field>
+        <field name="arch" type="xml">
+            <form string="Dossier de classement">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_documents" type="object"
+                                class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="document_count" widget="statinfo" string="Documents"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nom du dossier"/></h1>
+                        <field name="complete_name" readonly="1" class="text-muted"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                            <field name="color" widget="color_picker"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Droits (vides = hérités du parent, ou ouverts à tous)">
+                            <field name="read_group_ids" widget="many2many_tags"/>
+                            <field name="read_user_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="write_group_ids" widget="many2many_tags"/>
+                            <field name="write_user_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="status">
+                        <i class="fa fa-shield me-1"/><field name="access_summary" nolabel="1" readonly="1" class="d-inline"/>
+                    </div>
+                    <group>
+                        <group string="Droits effectifs (héritage inclus)">
+                            <field name="effective_read_group_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="effective_read_user_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="effective_write_group_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="effective_write_user_ids" widget="many2many_tags" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Sous-dossiers" name="children">
+                            <field name="child_ids" context="{'default_parent_id': id}">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="read_group_ids" widget="many2many_tags"/>
+                                    <field name="read_user_ids" widget="many2many_tags"/>
+                                    <field name="write_group_ids" widget="many2many_tags"/>
+                                    <field name="write_user_ids" widget="many2many_tags"/>
+                                    <field name="document_count"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_folder_list" model="ir.ui.view">
+        <field name="name">aite.ecm.folder.list</field>
+        <field name="model">aite.ecm.folder</field>
+        <field name="arch" type="xml">
+            <list string="Plan de classement">
+                <field name="sequence" widget="handle"/>
+                <field name="complete_name"/>
+                <field name="effective_read_group_ids" widget="many2many_tags" optional="show"/>
+                <field name="effective_write_group_ids" widget="many2many_tags" optional="hide"/>
+                <field name="document_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_folder_search" model="ir.ui.view">
+        <field name="name">aite.ecm.folder.search</field>
+        <field name="model">aite.ecm.folder</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="complete_name"/>
+                <filter name="filter_root" string="Dossiers racine"
+                        domain="[('parent_id', '=', False)]"/>
+                <filter name="filter_archived" string="Archivés"
+                        domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_folder" model="ir.actions.act_window">
+        <field name="name">Plan de classement</field>
+        <field name="res_model">aite.ecm.folder</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Construisez votre plan de classement</p>
+            <p>Les droits de lecture et d'écriture définis sur un dossier s'appliquent
+               à toute sa branche.</p>
+        </field>
+    </record>
+
+</odoo>
