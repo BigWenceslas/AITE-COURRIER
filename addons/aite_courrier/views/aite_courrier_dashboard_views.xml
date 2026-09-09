@@ -34,7 +34,7 @@
                 <field name="reference" string="Référence / Objet"
                        filter_domain="['|', ('reference', 'ilike', self), ('subject', 'ilike', self)]"/>
                 <filter name="active_courriers" string="En cours"
-                        domain="[('state', 'in', ('nw', 'pr', 'vl'))]"/>
+                        domain="[('state', 'in', ('nw', 'pr'))]"/>
                 <filter name="overdue" string="En retard (SLA)"
                         domain="[('sla_deadline', '&lt;', datetime.datetime.now()), ('state', 'not in', ('ar', 'rj'))]"/>
                 <filter name="my_courriers" string="Mes courriers"

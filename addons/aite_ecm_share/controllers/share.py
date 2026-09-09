@@ -11,8 +11,10 @@ class EcmShareController(http.Controller):
             [('token', '=', token)], limit=1)
         return share if share and share._check_valid() else None
 
+    # ``readonly=False`` : chaque accès incrémente le compteur du lien et
+    # journalise la consultation — la page de partage écrit donc en base.
     @http.route(['/ecm/share/<string:token>'], type='http', auth='public',
-                website=False, sitemap=False)
+                website=False, sitemap=False, readonly=False)
     def share_landing(self, token, **kw):
         share = self._share(token)
         if not share:
@@ -25,7 +27,7 @@ class EcmShareController(http.Controller):
         })
 
     @http.route(['/ecm/share/<string:token>/file'], type='http',
-                auth='public', website=False, sitemap=False)
+                auth='public', website=False, sitemap=False, readonly=False)
     def share_file(self, token, **kw):
         share = self._share(token)
         if not share:

@@ -17,7 +17,7 @@
                 <field name="current_step_id" optional="show"/>
                 <field name="current_sla_hours" optional="hide"/>
                 <field name="state" widget="badge"
-                       decoration-success="state == 'vl'"
+                       decoration-info="state == 'pr'"
                        decoration-danger="state == 'rj'"/>
                 <field name="date_received"/>
             </list>

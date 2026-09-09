@@ -17,7 +17,6 @@ PORTAL_STATE_LABELS = {
     'draft': "Reçue",
     'nw': "Enregistrée",
     'pr': "En traitement",
-    'vl': "Validée",
     'rj': "Clôturée sans suite",
     'ar': "Traitée",
 }

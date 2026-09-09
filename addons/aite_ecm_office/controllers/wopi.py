@@ -30,8 +30,11 @@ class EcmWopiController(http.Controller):
     # ------------------------------------------------------------------ #
     # CheckFileInfo / opérations de verrou
     # ------------------------------------------------------------------ #
+    # ``readonly=False`` : WOPI pose et lève des verrous, enregistre le
+    # contenu édité et rafraîchit les jetons — autant d'écritures.
     @http.route('/ecm/wopi/files/<int:doc_id>', type='http', auth='none',
-                methods=['GET', 'POST'], csrf=False, save_session=False)
+                methods=['GET', 'POST'], csrf=False, save_session=False,
+                readonly=False)
     def file_info(self, doc_id, **kw):
         token = self._token(doc_id)
         if token is None:
@@ -60,7 +63,7 @@ class EcmWopiController(http.Controller):
     # ------------------------------------------------------------------ #
     @http.route('/ecm/wopi/files/<int:doc_id>/contents', type='http',
                 auth='none', methods=['GET', 'POST'], csrf=False,
-                save_session=False)
+                save_session=False, readonly=False)
     def file_contents(self, doc_id, **kw):
         token = self._token(doc_id)
         if token is None:

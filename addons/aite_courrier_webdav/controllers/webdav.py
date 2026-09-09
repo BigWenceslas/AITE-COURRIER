@@ -26,7 +26,9 @@ import odoo
 from odoo import http
 from odoo.http import request, Response
 
-from ..models.aite_courrier_webdav import ROOT_PATH, WebdavError, WebdavBadRequest
+from ..models.aite_courrier_webdav import (
+    ROOT_PATH, WebdavBadRequest, WebdavError, WebdavUnsupportedMedia,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -42,10 +44,12 @@ class AiteCourrierWebdavController(http.Controller):
     # ------------------------------------------------------------------ #
     # Routage : un point d'entrée, dispatch par méthode HTTP
     # ------------------------------------------------------------------ #
+    # ``readonly=False`` : l'authentification HTTP Basic écrit (journal de
+    # connexion), ce qu'un curseur en lecture seule interdit.
     @http.route(
         ['/webdav/aite_courrier', '/webdav/aite_courrier/<path:subpath>'],
         type='http', auth='none', csrf=False, methods=WEBDAV_METHODS,
-        save_session=False, sitemap=False)
+        save_session=False, sitemap=False, readonly=False)
     def dispatch(self, subpath='', **kwargs):
         method = request.httprequest.method
         # OPTIONS doit répondre sans authentification (découverte des capacités).
@@ -205,9 +209,19 @@ class AiteCourrierWebdavController(http.Controller):
         return Response(data['content'], status=200, headers=headers)
 
     def _handle_head(self, subpath):
-        response = self._handle_get(subpath)
-        response.set_data(b'')
-        return response
+        # RFC 7231 : ``HEAD`` doit annoncer les mêmes en-têtes que ``GET``,
+        # ``Content-Length`` compris. Vider le corps le remet à zéro : on le
+        # restaure, sans quoi les clients WebDAV croient le fichier vide.
+        resp = self._handle_get(subpath)
+        length = resp.headers.get('Content-Length')
+        resp.set_data(b'')
+        if length is not None:
+            # werkzeug recalcule ``Content-Length`` d'après le corps au moment
+            # de l'envoi : il faut désactiver ce recalcul pour conserver la
+            # taille réelle du fichier.
+            resp.automatically_set_content_length = False
+            resp.headers['Content-Length'] = length
+        return resp
 
     def _collection_index(self, subpath):
         resources = self._service().propfind(subpath, depth=1)
@@ -224,8 +238,27 @@ class AiteCourrierWebdavController(http.Controller):
                 % (title, title, ''.join(rows)))
         return Response(html, content_type='text/html; charset=utf-8')
 
-    def _handle_put(self, subpath):
+    @staticmethod
+    def _request_body():
+        """Corps brut d'un ``PUT``.
+
+        Un client annonçant un type de formulaire voit son corps consommé par
+        l'analyseur de formulaires : ``get_data()`` renvoie alors des octets
+        vides et la pièce serait enregistrée vide, **sans erreur**. On refuse
+        plutôt que de détruire silencieusement le contenu.
+        """
         content = request.httprequest.get_data()
+        if content:
+            return content
+        declared = request.httprequest.headers.get('Content-Length')
+        if declared and declared.isdigit() and int(declared) > 0:
+            raise WebdavUnsupportedMedia(
+                "Corps de requête illisible : envoyez le fichier tel quel, "
+                "avec un en-tête Content-Type binaire.")
+        return content
+
+    def _handle_put(self, subpath):
+        content = self._request_body()
         result = self._service().put_file(subpath, content)
         return Response(status=201 if result['created'] else 204)
 

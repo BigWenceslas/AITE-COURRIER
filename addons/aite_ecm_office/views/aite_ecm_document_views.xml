@@ -32,8 +32,9 @@
                 <field name="gdrive_user_id" invisible="not gdrive_file_id"/>
                 <field name="gdrive_error" invisible="not gdrive_error"/>
                 <field name="gdrive_file_id" invisible="1"/>
-                <field name="webdav_url" widget="CopyClipboardChar" invisible="not webdav_url"
-                       groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+                <!-- « Adresse WebDAV » est déjà posée par aite_ecm_webdav, dont
+                     ce module dépend : la replacer ici l'affichait deux fois
+                     sur la fiche. -->
             </xpath>
         </field>
     </record>

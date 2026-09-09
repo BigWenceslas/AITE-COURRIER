@@ -5,7 +5,11 @@ import json
 from unittest.mock import patch
 
 from odoo.exceptions import UserError
-from odoo.tests import HttpCase, TransactionCase, tagged
+from odoo.tests import tagged
+
+from odoo.addons.aite_ecm_document.tests.common import (
+    EcmHttpCase, EcmTransactionCase,
+)
 
 from odoo.addons.aite_ecm_nextcloud.models import nextcloud_client as ncc
 
@@ -42,7 +46,11 @@ class FakeNextcloud:
             return {'fileid': fileid, 'etag': etag, 'size': len(data),
                     'is_dir': False, 'name': path.rsplit('/', 1)[-1]}
         if path.strip('/') in self.dirs:
-            return {'fileid': 'dir', 'etag': 'root-%d' % len(self.files),
+            # Nextcloud propage l'ETag d'un fichier modifié jusqu'à la racine :
+            # l'empreinte d'un dossier doit donc changer à chaque écriture, pas
+            # seulement quand le nombre de fichiers varie — sinon le sondage
+            # se court-circuite et ne détecte jamais de modification.
+            return {'fileid': 'dir', 'etag': 'dir-%d' % self._seq,
                     'is_dir': True, 'name': path}
         return None
 
@@ -80,7 +88,7 @@ class FakeNextcloud:
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_nextcloud')
-class TestNextcloud(TransactionCase):
+class TestNextcloud(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
@@ -95,11 +103,8 @@ class TestNextcloud(TransactionCase):
             'aite_ecm_nextcloud.mode', 'bidir')
         cls.folder = cls.env.ref('aite_ecm_document.folder_juridique')
         cls.ctype = cls.env.ref('aite_ecm_document.type_contrat')
-        cls.manager = cls.env['res.users'].with_context(
-            no_reset_password=True).create({
-                'name': "Manager NC", 'login': "nc_manager",
-                'groups_id': [(6, 0, [cls.env.ref(
-                    'aite_courrier_base.group_manager').id])]})
+        cls.manager = cls._make_user("Manager NC", "nc_manager",
+                                     'group_manager')
 
     def setUp(self):
         super().setUp()
@@ -134,7 +139,7 @@ class TestNextcloud(TransactionCase):
         self.assertEqual(doc.nc_sync_state, 'synced')
         self.assertTrue(doc.nc_file_id and doc.nc_etag)
         log = self.env['aite.courrier.audit.log'].sudo().search(
-            [('res_model', '=', 'aite.ecm.document'), ('res_id', '=', doc.id),
+            [('model_name', '=', 'aite.ecm.document'), ('res_id', '=', doc.id),
              ('source', '=', 'nextcloud')])
         self.assertTrue(log)
 
@@ -220,7 +225,7 @@ class TestNextcloud(TransactionCase):
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_nextcloud')
-class TestNextcloudWebhook(HttpCase):
+class TestNextcloudWebhook(EcmHttpCase):
 
     def test_10_webhook(self):
         Param = self.env['ir.config_parameter'].sudo()

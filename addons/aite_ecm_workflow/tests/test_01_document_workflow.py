@@ -2,24 +2,21 @@
 import base64
 
 from odoo.exceptions import AccessError, UserError
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
+
+from odoo.addons.aite_ecm_document.tests.common import EcmTransactionCase
 
 PDF = base64.b64encode(b"%PDF-1.4\n%AITE wf\n%%EOF\n")
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_workflow')
-class TestDocumentWorkflow(TransactionCase):
+class TestDocumentWorkflow(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Users = cls.env['res.users'].with_context(no_reset_password=True)
-        cls.agent = Users.create({'name': "Agent WF", 'login': "wf_agent",
-                                  'groups_id': [(6, 0, [cls.env.ref(
-                                      'aite_courrier_base.group_agent').id])]})
-        cls.manager = Users.create({'name': "Manager WF", 'login': "wf_manager",
-                                    'groups_id': [(6, 0, [cls.env.ref(
-                                        'aite_courrier_base.group_manager').id])]})
+        cls.agent = cls._make_user("Agent WF", "wf_agent", 'group_agent')
+        cls.manager = cls._make_user("Manager WF", "wf_manager", 'group_manager')
         cls.proc_type = cls.env.ref('aite_ecm_document.type_procedure')
 
     def _doc(self):

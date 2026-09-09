@@ -327,21 +327,28 @@ class AiteEcmDocument(models.Model):
             'aite_courrier_base.group_admin')
 
     def _check_document_access(self, operation='read', user=None):
-        """Règle d'accès unique (UI, API, partages, WebDAV à venir).
+        """Règle d'accès unique (UI, API, partages, WebDAV).
 
-        1. Superutilisateur, Manager et Administrateur : accès total.
-        2. Partage nominatif : lecteurs partagés (lecture), rédacteurs partagés
+        1. Écriture : toujours refusée si le document est **verrouillé**
+           (finalisé ou archivé), y compris pour un manager — la seule voie
+           reste la remise en brouillon, qui est tracée. Sans cela, la valeur
+           probante d'un document finalisé n'était pas garantie.
+        2. Superutilisateur, Manager et Administrateur : accès total par
+           ailleurs.
+        3. Partage nominatif : lecteurs partagés (lecture), rédacteurs partagés
            (lecture et écriture) — quels que soient dossier et confidentialité.
-        3. Confidentiel / Secret : propriétaire ou créateur uniquement.
-        4. Droits du dossier de classement (lecture / écriture hérités).
-        5. Écriture : refusée si verrouillé ou réservé par un autre.
+        4. Confidentiel / Secret : propriétaire ou créateur uniquement.
+        5. Droits du dossier de classement (lecture / écriture hérités).
+        6. Écriture : refusée si réservé par un autre.
         """
         self.ensure_one()
         user = user or self.env.user
+        if operation != 'read' and self.is_locked:
+            return False
         if self._is_manager(user):
             return True
-        if operation != 'read' and (self.is_locked or (
-                self.is_checked_out and self.checkout_user_id != user)):
+        if operation != 'read' and (
+                self.is_checked_out and self.checkout_user_id != user):
             return False
         if user in self.editor_user_ids:
             return True
@@ -539,6 +546,16 @@ class AiteEcmDocument(models.Model):
             self._audit(doc, _("Restauration"), 'ok', doc.reference)
         return True
 
+    def _purgeable(self):
+        """Sous-ensemble réellement destructible par la purge automatique.
+
+        Point d'extension : la gestion des archives (``aite_ecm_records``) y
+        retire les documents sous politique de conservation ou sous gel, qui
+        ne peuvent partir que par un bordereau d'élimination. Sans ce filtre,
+        un seul document protégé faisait échouer toute la purge.
+        """
+        return self
+
     @api.model
     def _cron_purge_trash(self):
         days = int(self.env['ir.config_parameter'].sudo().get_param(
@@ -546,11 +563,12 @@ class AiteEcmDocument(models.Model):
         limit = fields.Datetime.now() - timedelta(days=days)
         expired = self.with_context(active_test=False).sudo().search([
             ('active', '=', False), ('trashed_date', '<', limit)])
-        for doc in expired:
+        purgeable = expired._purgeable()
+        for doc in purgeable:
             self._audit(doc, _("Purge de la corbeille"), 'warn',
                         doc.reference, source='system')
-        expired.sudo().unlink()
-        return True
+        purgeable.sudo().unlink()
+        return len(purgeable)
 
     # ================================================================== #
     # Navigation

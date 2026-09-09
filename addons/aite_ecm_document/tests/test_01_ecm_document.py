@@ -4,27 +4,25 @@ from datetime import timedelta
 
 from odoo import fields
 from odoo.exceptions import AccessError, UserError, ValidationError
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
+
+from .common import EcmTransactionCase
 
 PDF = base64.b64encode(b"%PDF-1.4\n%AITE ECM test\n%%EOF\n")
 PDF2 = base64.b64encode(b"%PDF-1.4\n%AITE ECM test v2\n%%EOF\n")
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_document')
-class TestEcmDocument(TransactionCase):
+class TestEcmDocument(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Users = cls.env['res.users'].with_context(no_reset_password=True)
         cls.g_agent = cls.env.ref('aite_courrier_base.group_agent')
         cls.g_manager = cls.env.ref('aite_courrier_base.group_manager')
-        cls.agent = Users.create({'name': "Agent A", 'login': "ecm_agent_a",
-                                  'groups_id': [(6, 0, [cls.g_agent.id])]})
-        cls.agent_b = Users.create({'name': "Agent B", 'login': "ecm_agent_b",
-                                    'groups_id': [(6, 0, [cls.g_agent.id])]})
-        cls.manager = Users.create({'name': "Manager", 'login': "ecm_manager",
-                                    'groups_id': [(6, 0, [cls.g_manager.id])]})
+        cls.agent = cls._make_user("Agent A", "ecm_agent_a", 'group_agent')
+        cls.agent_b = cls._make_user("Agent B", "ecm_agent_b", 'group_agent')
+        cls.manager = cls._make_user("Manager", "ecm_manager", 'group_manager')
         cls.type_contrat = cls.env.ref('aite_ecm_document.type_contrat')
         cls.folder_jur = cls.env.ref('aite_ecm_document.folder_juridique')
 
@@ -83,7 +81,13 @@ class TestEcmDocument(TransactionCase):
             v1.unlink()
 
     def test_07_trash_and_purge(self):
-        doc = self._doc(self.manager)
+        # type générique : aucune règle de conservation ne s'y applique, la
+        # purge automatique peut donc détruire le document même lorsque
+        # ``aite_ecm_records`` est installé (un contrat, lui, est protégé et
+        # ne part que par un bordereau d'élimination).
+        doc = self._doc(self.manager,
+                        type_id=self.env.ref(
+                            'aite_ecm_document.type_generique').id)
         doc.action_trash()
         self.assertFalse(doc.active)
         doc.action_restore()
@@ -122,20 +126,15 @@ class TestEcmDocument(TransactionCase):
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_document')
-class TestEcmRightsAndScan(TransactionCase):
+class TestEcmRightsAndScan(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Users = cls.env['res.users'].with_context(no_reset_password=True)
-        g_agent = cls.env.ref('aite_courrier_base.group_agent')
         g_manager = cls.env.ref('aite_courrier_base.group_manager')
-        cls.agent_a = Users.create({'name': "Agent A2", 'login': "ecm_r_agent_a",
-                                    'groups_id': [(6, 0, [g_agent.id])]})
-        cls.agent_b = Users.create({'name': "Agent B2", 'login': "ecm_r_agent_b",
-                                    'groups_id': [(6, 0, [g_agent.id])]})
-        cls.manager = Users.create({'name': "Manager 2", 'login': "ecm_r_manager",
-                                    'groups_id': [(6, 0, [g_manager.id])]})
+        cls.agent_a = cls._make_user("Agent A2", "ecm_r_agent_a", 'group_agent')
+        cls.agent_b = cls._make_user("Agent B2", "ecm_r_agent_b", 'group_agent')
+        cls.manager = cls._make_user("Manager 2", "ecm_r_manager", 'group_manager')
         cls.internal = cls.env.ref('aite_courrier_base.confidentiality_internal')
         cls.conf = cls.env.ref('aite_courrier_base.confidentiality_confidential')
         cls.g_manager = g_manager

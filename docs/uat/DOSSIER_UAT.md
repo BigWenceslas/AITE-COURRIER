@@ -1,31 +1,49 @@
 # Dossier de recette (UAT) — AITE Courrier / AITE ECM v2.1
 
-**Version du dossier** : 1.0 · **Date d'exécution** : 9 septembre 2026 · **Rédacteur** : recette technique
-**Version testée** : commit `8ac0a08` (« maj ok »), 28 modules · **Socle** : Odoo 18.0 Community, PostgreSQL 16, Python 3.11
+**Version du dossier** : 2.0 · **Date d'exécution** : 9 septembre 2026 · **Rédacteur** : recette technique  
+**Version testée** : branche `claude/ecm-webdav-analysis-vy4196`, 28 modules  
+**Socle** : Odoo 18.0 Community, PostgreSQL 16, Python 3.11
 
 Ce dossier est **réutilisable** : chaque scénario est numéroté, décrit pas à pas, avec son résultat
 attendu, sa capture d'écran de référence et une colonne à remplir à chaque campagne. Les captures
 portent un bandeau d'étiquette reprenant l'identifiant du scénario.
 
+> **Historique du dossier.** La version 1.0 rendait compte de la campagne initiale : 9 anomalies
+> relevées, dont une bloquante rendant le lecteur réseau WebDAV inutilisable. La présente version 2.0
+> rend compte de la **campagne de contre-essai** menée après correction : les 9 anomalies sont
+> corrigées et vérifiées, la campagne protocolaire WebDAV passe à **32 cas sur 32** et la suite
+> automatisée à **152 tests sans aucun échec**. Le détail de chaque correction, avec sa cause racine
+> et sa preuve de vérification, figure au chapitre 5.
+
 ---
 
 ## 1. Résultat de la campagne du 9 septembre 2026
 
-| Indicateur | Valeur |
-|---|---|
-| Modules installés sans erreur | **24 / 24** installables sur Community |
-| Scénarios de recette fonctionnelle | **34 exécutés — 33 conformes, 1 non conforme** |
-| Tests automatisés exécutés | 152 |
-| Tests en échec, suite livrée telle quelle | **39** |
-| Tests en échec après réparation du banc de test | **17** |
-| Anomalies produit retenues | **9** (1 bloquante, 3 majeures, 5 mineures) |
+| Indicateur | Campagne initiale | **Contre-essai après correction** |
+|---|---|---|
+| Modules installés sans erreur | 24 / 24 | **24 / 24** |
+| Scénarios de recette fonctionnelle | 34 exécutés — 33 conformes | **34 exécutés — 34 conformes** |
+| Campagne protocolaire WebDAV (`curl`) | 22 cas — 20 conformes | **32 cas — 32 conformes** |
+| Tests automatisés exécutés | 152 | **152** |
+| Tests en échec | 39 puis 17 | **0** |
+| Anomalies produit ouvertes | 9 (1 bloquante, 3 majeures, 5 mineures) | **0 — les 9 sont corrigées et vérifiées** |
 
 **Verdict.** La plateforme s'installe proprement sur Odoo 18 Community et l'ensemble des fonctions
 métier est opérationnel : courrier, circuits, GED, référentiel ECM, dossiers métier, conservation,
-valeur probante, partage externe, API REST. Le **lecteur réseau WebDAV était inutilisable** en
-raison d'une anomalie bloquante (ANO-01) désormais corrigée et vérifiée ; il reste une anomalie
-majeure (ANO-03) sur le dépôt de fichiers nouveaux. Le **banc de tests automatisés des modules ECM
-est défaillant** (ANO-02) : il masquait ces régressions.
+valeur probante, partage externe, API REST et **lecteur réseau WebDAV**.
+
+Le lecteur réseau, seul point encore en défaut à l'ouverture de la campagne, a fait l'objet de
+quatre corrections (ANO-01, ANO-03, ANO-07 et le refus explicite des corps de requête illisibles).
+Il satisfait désormais l'intégralité de la campagne protocolaire, **parcours bureautique complet
+compris** : dépôt d'un fichier neuf, relecture au même chemin, versionnage, verrou exclusif, refus
+d'écriture concurrente, déplacement, renommage et mise en corbeille.
+
+Le banc de tests automatisés, qui masquait ces régressions (ANO-02), a été remis en état : les trois
+causes de faux échecs sont supprimées et la suite sert désormais de socle de non-régression.
+
+**Réserves subsistantes.** Aucune anomalie produit n'est ouverte. Les seules limites tiennent à
+l'environnement de recette, décrites au § 2.3 : génération PDF, OCR image, SMTP/IMAP, instance
+Nextcloud réelle et passerelles Odoo Enterprise n'ont pas pu être exercées de bout en bout.
 
 ---
 
@@ -136,11 +154,11 @@ Statuts relevés le 9 septembre 2026 : **C** = conforme, **NC** = non conforme, 
 | SC-01.6 | Onglet **Historique** | Historique daté des étapes traversées, avec acteur et commentaire | `sc01_06_historique_etapes.png` | C |
 | SC-01.7 | Courrier › Audit › Journal d'audit | Journal horodaté, en lecture seule, source de chaque opération | `sc01_07_journal_audit.png` | C |
 
-> **Point de vigilance fonctionnel.** Le tableau de bord affiche 75 courriers « en cours ». Le champ
-> `state` déclare six valeurs mais le moteur n'écrit que *Brouillon*, *Nouveau*, *Rejeté* et
-> *Archivé* : **« En traitement » et « Validé » ne sont jamais positionnés**. Un courrier reste donc
-> « Nouveau » de la première à l'avant-dernière étape (voir ANO-08). L'avancement réel se lit sur
-> l'étape du circuit, pas sur le statut.
+> **Point de vigilance levé (ANO-08).** Le champ `state` déclarait six valeurs alors que le moteur
+> n'en écrivait que quatre : un courrier restait « Nouveau » de la première à l'avant-dernière
+> étape. Le franchissement d'une étape positionne désormais **« En traitement »**, et la valeur
+> *Validé*, que rien ne produisait, a été retirée de la liste. Le statut affiché suit maintenant
+> l'avancement réel du circuit, au tableau de bord comme au portail.
 
 ### SC-02 — Référentiel documentaire ECM
 
@@ -156,7 +174,9 @@ Statuts relevés le 9 septembre 2026 : **C** = conforme, **NC** = non conforme, 
 | SC-02.6 | Onglet **Conservation** | Règle appliquée, durée d'utilité administrative, sort final, cycle de vie, boîte d'archives | `sc02_06_conservation.png` | C |
 | SC-02.7 | Onglet **Preuve** | Sceaux du document et renvoi au journal de preuve | `sc02_07_preuve.png` | C |
 
-> Le champ **Adresse WebDAV** apparaît **deux fois** sur la fiche (voir ANO-06).
+> Le champ **Adresse WebDAV** apparaissait **deux fois** sur la fiche (ANO-06) : la capture
+> `sc02_06_conservation.png` conserve la trace de l'anomalie. Le doublon a été retiré de la vue
+> `aite_ecm_office` ; le champ n'est plus posé que par `aite_ecm_webdav`.
 
 ### SC-03 — Plan de classement
 
@@ -252,37 +272,74 @@ passez par un bordereau d'élimination* ». Comportement conforme, constaté en 
 | SC-11.0 | Ouvrir la racine WebDAV | Le plan de classement ECM apparaît comme arborescence de dossiers | `sc11_00_webdav_racine.png` | C |
 | SC-11.1 | Ouvrir un dossier | Sous-dossiers et documents nommés `RÉFÉRENCE - Titre.ext` | `sc11_01_webdav_navigation.png` | C |
 
-**Campagne protocolaire** (`curl`, 22 cas). Les résultats ci-dessous sont ceux obtenus **après
-correction de l'anomalie ANO-01**.
+**Campagne protocolaire** (`curl`, 32 exécutions pour 24 références). Le script complet et rejouable figure en annexe 7.1.
+Les résultats ci-dessous sont ceux du **contre-essai après correction** ; la campagne a été rejouée
+deux fois de suite sans réinitialisation intermédiaire pour vérifier son idempotence.
+
+**A. Découverte et authentification**
 
 | Réf. | Cas | Attendu | 09/09 |
 |---|---|---|---|
 | SC-11.2 | `OPTIONS` | 200, en-têtes `DAV: 1, 2` et `MS-Author-Via: DAV` | C |
 | SC-11.3 | `PROPFIND` sans identifiants | 401 avec `WWW-Authenticate: Basic` | C |
 | SC-11.4 | `PROPFIND` avec mot de passe erroné | 401 | C |
+
+**B. Navigation dans le plan de classement**
+
+| Réf. | Cas | Attendu | 09/09 |
+|---|---|---|---|
 | SC-11.5 | `PROPFIND` racine, `Depth: 1` | 207, 9 dossiers dont « Sans classement » | C |
-| SC-11.6 | `PROPFIND` sur chaque dossier racine | 207 pour les 9 dossiers | C |
+| SC-11.6 | `PROPFIND` sur chacun des 9 dossiers racine | 207 pour les 9 dossiers *(9 exécutions)* | C |
 | SC-11.7 | `PROPFIND` dossier inexistant | 404 | C |
-| SC-11.8 | `GET` d'un document | 200, contenu binaire, `Content-Type` correct | C |
-| SC-11.9 | En-têtes de réponse `GET` | `ETag` = SHA-256 de la version, `Last-Modified` en RFC 1123 | C |
-| SC-11.10 | `LOCK` d'un document | 200, jeton `opaquelocktoken`, document **réservé** côté ECM | C |
-| SC-11.11 | `PUT` par un autre utilisateur pendant le verrou | **423 Locked** | C |
-| SC-11.12 | `UNLOCK` | 204, réservation libérée | C |
-| SC-11.13 | `PUT` sur un document existant | 204, **nouvelle version** créée et attribuée à l'utilisateur | C |
+
+**C. Dépôt d'un fichier neuf et relecture** — *cœur de l'anomalie ANO-03, désormais corrigée*
+
+| Réf. | Cas | Attendu | 09/09 |
+|---|---|---|---|
+| SC-11.8 | `PUT` d'un fichier **inconnu** dans un dossier | 201 Created, document ECM créé | C |
+| SC-11.9 | `GET` **au chemin même où le client a déposé** | 200, contenu identique à l'octet près | C |
+| SC-11.10 | Second `PUT` au même chemin | 204, **nouvelle version** — pas de document en double | C |
+| SC-11.11 | `GET` après le second `PUT` | 200, contenu de la **v2** | C |
+| SC-11.12 | `HEAD` d'un document | 200 et **même `Content-Length` que le `GET`** | C |
+| SC-11.13 | `PUT` avec un corps illisible (type formulaire) | **415**, refus explicite plutôt qu'un fichier vide | C |
 | SC-11.14 | `PUT` d'un fichier temporaire `~$…` | 403 (fichiers de travail Office ignorés) | C |
 | SC-11.15 | `PUT` d'un fichier `.tmp` | 403 | C |
-| SC-11.16 | `MKCOL` | 201, dossier de classement créé | C |
-| SC-11.17 | `MOVE` vers un autre dossier avec nouveau nom | 201, titre et dossier ECM mis à jour | C |
-| SC-11.18 | `DELETE` | 204, document placé **en corbeille** (non supprimé) | C |
-| SC-11.19 | `COPY` | 403 (non pris en charge, conforme à la documentation) | C |
-| SC-11.20 | `PROPPATCH` | 207 acquitté sans effet | C |
-| SC-11.21 | **`PUT` d'un fichier nouveau puis relecture au même chemin** | 201 puis 200 | **NC — ANO-03** |
-| SC-11.22 | `HEAD` d'un document | Même `Content-Length` que le `GET` | **NC — ANO-07** |
 
-**Parcours bureautique complet, validé de bout en bout** (SC-11.10 à SC-11.13) : ouverture d'un
-document depuis le lecteur réseau, verrouillage automatique, enregistrement créant une nouvelle
-version, refus d'écriture concurrente pour un collègue (423), libération, reprise possible par le
-collègue. **6 cas sur 6 conformes.**
+**D. Verrous collaboratifs** — *parcours bureautique de bout en bout*
+
+| Réf. | Cas | Attendu | 09/09 |
+|---|---|---|---|
+| SC-11.16 | `LOCK` d'un document | 200, jeton `opaquelocktoken`, document **réservé** côté ECM | C |
+| SC-11.17 | `PUT` par un collègue pendant le verrou | **423 Locked**, avec le nom du détenteur | C |
+| SC-11.18 | `UNLOCK` | 204, réservation libérée | C |
+| SC-11.19 | `PUT` du collègue après libération | 204, nouvelle version à son nom | C |
+
+**E. Classement : création, déplacement, renommage, corbeille**
+
+| Réf. | Cas | Attendu | 09/09 |
+|---|---|---|---|
+| SC-11.20 | `MKCOL` | 201, dossier de classement créé | C |
+| SC-11.21 | `MOVE` vers un autre dossier **avec nouveau nom** | 201, titre et dossier ECM mis à jour | C |
+| SC-11.22 | `GET` **au nouvel emplacement, sous le nouveau nom** | 200 | C |
+| SC-11.23 | `DELETE` | 204, document placé **en corbeille** (non supprimé) | C |
+
+**F. Divers**
+
+| Réf. | Cas | Attendu | 09/09 |
+|---|---|---|---|
+| SC-11.24 | `COPY` | 403 (non pris en charge, conforme à la documentation) | C |
+| SC-11.25 | `PROPPATCH` | 207 acquitté sans effet | C |
+
+**Parcours bureautique complet, validé de bout en bout** (SC-11.8 à SC-11.19) : dépôt d'un fichier
+depuis l'explorateur Windows, relecture au même chemin, ouverture dans Word, verrouillage
+automatique, enregistrement créant une nouvelle version, refus d'écriture concurrente pour un
+collègue (423), libération, reprise par le collègue. **12 cas sur 12 conformes.**
+
+> **Note sur la résolution des noms.** Le serveur expose les documents sous `RÉFÉRENCE - Titre.ext`
+> alors qu'un client dépose ou renomme sous le nom qu'il a lui-même choisi. Quatre clés de
+> résolution sont donc acceptées, de la plus précise à la plus tolérante : nom exposé, titre du
+> document, nom réel du fichier de la dernière version, référence en tête de nom. C'est ce qui rend
+> SC-11.9 et SC-11.22 possibles.
 
 ### SC-12 — Sécurité et cloisonnement par rôle
 
@@ -312,6 +369,21 @@ confidentialité et par dossier de classement est effectif et mesurable.**
 Gravité : **Bloquante** = fonction inutilisable · **Majeure** = contournement nécessaire ·
 **Mineure** = gêne ou écart cosmétique.
 
+**Les neuf anomalies sont corrigées et vérifiées.** Chaque fiche conserve le constat d'origine — il
+sert de cas de non-régression — et se termine par la correction appliquée et sa preuve.
+
+| Réf. | Objet | Gravité | État |
+|---|---|---|---|
+| ANO-01 | WebDAV : erreur 500 sur tout dossier contenant des documents | Bloquante | ✅ Corrigée |
+| ANO-02 | Banc de tests des modules ECM inopérant | Majeure | ✅ Corrigée |
+| ANO-03 | WebDAV : un fichier déposé n'est pas relisible à son chemin | Majeure | ✅ Corrigée |
+| ANO-04 | Suppression d'une pièce de courrier impossible | Majeure | ✅ Corrigée |
+| ANO-05 | Un document finalisé accepte une nouvelle version | Majeure | ✅ Corrigée |
+| ANO-06 | Champ « Adresse WebDAV » affiché en double | Mineure | ✅ Corrigée |
+| ANO-07 | `HEAD` renvoie une taille nulle | Mineure | ✅ Corrigée |
+| ANO-08 | Statuts « En traitement » et « Validé » jamais atteints | Mineure | ✅ Corrigée |
+| ANO-09 | Anomalies détectées par les tests, à qualifier | Mineure à majeure | ✅ Corrigées (6 sur 6) |
+
 ### ANO-01 — WebDAV : erreur 500 sur tout dossier contenant des documents · **Bloquante** · *Corrigée*
 
 **Constat.** Toute requête `PROPFIND` sur un dossier contenant au moins un document, tout `GET` de
@@ -334,16 +406,51 @@ GET      /webdav/aite_ecm/Juridique et contrats/DOC-2026-00217 - ….pdf -> 500
 serveur, le contrôleur renvoyant un 500 muet.
 
 **Correction appliquée et vérifiée.** Introduction d'une fonction `http_date()` qui rend la date
-explicitement UTC avant formatage, utilisée aux deux emplacements. Après correction : les 9 dossiers
-répondent 207, le `GET` renvoie le fichier avec `ETag` et `Last-Modified` conformes, et les
-22 cas protocolaires passent sauf ANO-03 et ANO-07.
+explicitement UTC avant formatage, utilisée aux deux emplacements :
 
-### ANO-02 — Banc de tests des modules ECM inopérant · **Majeure**
+```python
+def http_date(value):
+    if not value:
+        return None
+    if value.tzinfo is None:                       # les dates Odoo sont naïves…
+        value = value.replace(tzinfo=timezone.utc)  # …et exprimées en UTC
+    return format_datetime(value.astimezone(timezone.utc), usegmt=True)
+```
+
+**Seconde cause, découverte pendant la correction.** Une fois les dates réparées, les tests HTTP du
+WebDAV continuaient à répondre **401**. L'instrumentation temporaire du contrôleur a fait apparaître
+`Opening a read/write test cursor from a readonly one` : Odoo 18 sert les méthodes réputées de
+lecture sur un **curseur en lecture seule**, alors que l'authentification HTTP Basic écrit (journal
+de connexion, session).
+
+Le défaut n'est pas propre au WebDAV : il touche **toute route qui écrit sans être déclarée comme
+telle**. Le tour complet des contrôleurs de la suite a donc été fait, et sept routes ont reçu
+`readonly=False` :
+
+| Route | Écriture qu'elle effectue |
+|---|---|
+| `/webdav/aite_ecm` | Authentification HTTP Basic, versions, verrous, classement |
+| `/webdav/aite_courrier` | Idem sur le référentiel courrier |
+| `/api/ecm/v1/*` | Authentification par clé d'API, audit, création de documents et de versions |
+| `/ecm/share/<token>` et `/ecm/share/<token>/file` | Compteur d'accès et journalisation de la consultation |
+| `/ecm/wopi/files/<id>` et `…/contents` | Pose et levée de verrous, enregistrement du contenu édité |
+| `/ecm/google/callback` | Enregistrement des jetons OAuth sur le compte |
+| `/ecm/nextcloud/webhook` | Marquage des documents à importer |
+
+Sans ce correctif, chacune de ces routes échoue dès qu'un réplica de lecture est configuré — et
+systématiquement en test.
+
+**Vérification.** Les 9 dossiers racine répondent 207, le `GET` renvoie le fichier avec `ETag` et
+`Last-Modified` conformes, et **les 32 cas protocolaires passent** (SC-11.2 à SC-11.25).
+
+### ANO-02 — Banc de tests des modules ECM inopérant · **Majeure** · *Corrigée*
 
 **Constat.** Sur la suite livrée telle quelle, **39 tests échouent**. Ces échecs masquaient ANO-01 :
 aucun signal n'était remonté sur une fonction pourtant totalement cassée.
 
-**Trois causes distinctes, toutes dans le code de test :**
+**Trois causes distinctes.** Les deux premières sont des défauts du **code de test** ; la
+troisième s'est révélée être un défaut du **produit** (voir ANO-01), que le banc n'exprimait pas
+correctement.
 
 | Cause | Détail | Tests concernés |
 |---|---|---|
@@ -356,14 +463,55 @@ aucun signal n'était remonté sur une fonction pourtant totalement cassée.
 le font pas. En ajoutant `base.group_user` puis une adresse e-mail aux utilisateurs de test, le
 nombre d'échecs tombe de **39 à 17** sans toucher au code produit.
 
-**Effet de bord.** `test_07_security` (`aite_ecm_webdav`) **passe pour une mauvaise raison** : il
-vérifie `assertNotIn("Secret de l'autre", resp.text)` sur une réponse 401 au corps vide. Le test est
-vert alors qu'il ne teste rien.
+**Diagnostic des 401 du WebDAV.** Deux hypothèses ont été formulées puis **écartées par
+l'expérience** avant de trouver la bonne — elles sont consignées ici pour éviter qu'on ne les
+reprenne :
 
-**Recommandation.** Réparer les trois causes, puis traiter les 17 échecs restants comme le socle de
-non-régression. Sans cela, aucune campagne automatisée n'a de valeur.
+- *un `flush_all()` manquant avant l'authentification* : ajouté, sans effet sur le symptôme ;
+- *la base non résolvable côté test* : une méthode `_resolve_db()` a été écrite, puis **retirée**
+  après avoir constaté que le code d'origine répondait déjà 207 dès lors que `-d` était renseigné.
+  La contrainte de base unique reste un **prérequis de déploiement** (§ 2.1), pas un défaut.
 
-### ANO-03 — WebDAV : un fichier déposé n'est pas relisible à son propre chemin · **Majeure**
+La cause réelle n'est apparue qu'en instrumentant temporairement le contrôleur pour faire remonter
+l'exception avalée : `Opening a read/write test cursor from a readonly one`. Traitée en ANO-01.
+
+**Effet de bord.** `test_07_security` (`aite_ecm_webdav`) **passait pour une mauvaise raison** : il
+vérifiait `assertNotIn("Secret de l'autre", resp.text)` sur une réponse 401 au corps vide. Le test
+était vert alors qu'il ne testait rien — c'est ce qui a permis à ANO-01 de traverser toute la suite
+sans être détectée.
+
+**Correction appliquée.** Un socle de test partagé,
+`addons/aite_ecm_document/tests/common.py`, supprime les deux premières causes à la racine plutôt
+que fichier par fichier :
+
+```python
+class EcmTestUsersMixin:
+    @classmethod
+    def _make_user(cls, name, login, roles, **extra):
+        """Utilisateur de test : toujours interne, toujours avec une adresse."""
+        if isinstance(roles, str):
+            roles = [roles]
+        group_ids = [cls.env.ref('base.group_user').id]
+        for role in roles:
+            xmlid = role if '.' in role else 'aite_courrier_base.%s' % role
+            group_ids.append(cls.env.ref(xmlid).id)
+        ...
+
+class EcmTransactionCase(EcmTestUsersMixin, TransactionCase): ...
+class EcmHttpCase(EcmTestUsersMixin, HttpCase): ...
+```
+
+Les **8 fichiers de test** des modules ECM en héritent : `aite_ecm_document` (2 fichiers),
+`aite_ecm_dossier`, `aite_ecm_workflow`, `aite_ecm_records`, `aite_ecm_webdav`, `aite_ecm_nextcloud`
+et `aite_ecm_office`. Un utilisateur de test ne peut donc plus être créé sans le groupe
+*Utilisateur interne* ni sans adresse e-mail. La troisième cause — les 401 du WebDAV — relevait du
+produit et non du test : c'est le `readonly=False` décrit en ANO-01.
+
+**Vérification.** Suite complète relancée sur les 24 modules installés :
+**`0 failed, 0 error(s) of 152 tests`**. Les 39 échecs initiaux sont résorbés : 22 provenaient du
+banc de test, 17 étaient de véritables défauts produit, traités par ANO-04, ANO-05 et ANO-09.
+
+### ANO-03 — WebDAV : un fichier déposé n'est pas relisible à son propre chemin · **Majeure** · *Corrigée*
 
 **Constat.** Copier un fichier dans le lecteur réseau le crée, mais il devient introuvable à
 l'emplacement où l'utilisateur l'a déposé. Chaque nouvelle copie crée un document supplémentaire.
@@ -390,11 +538,41 @@ Word sont inexploitables : le fichier disparaît de la vue du client et se dupli
 tentative. En revanche, **l'édition d'un document existant fonctionne parfaitement** (SC-11.10 à
 SC-11.13) car le client utilise alors le nom exposé par le serveur.
 
-**Pistes de correction.** Soit exposer les documents sous leur nom de fichier réel et lever
-l'ambiguïté autrement, soit, après création par `PUT`, répondre `201` avec un en-tête `Location`
-pointant le nom définitif, soit conserver le nom déposé comme clé de résolution alternative.
+**Correction appliquée.** C'est la troisième piste envisagée qui a été retenue : conserver le nom
+déposé par le client comme clé de résolution. `_document_by_filename()` accepte désormais **quatre
+clés**, de la plus précise à la plus tolérante :
 
-### ANO-04 — Suppression d'une pièce de courrier impossible · **Majeure**
+| # | Clé de résolution | Cas d'usage couvert |
+|---|---|---|
+| 1 | Nom **exposé** par le serveur, `RÉFÉRENCE - Titre.ext` | Navigation normale, édition Office |
+| 2 | **Titre** du document + extension | Dépôt d'un fichier neuf, renommage par le client |
+| 3 | **Nom réel du fichier** de la dernière version | « Enregistrer sous » conservant le nom d'origine |
+| 4 | **Référence** en tête du nom | Réenregistrement sous un autre titre par Office |
+
+La clé n° 2 est celle qui referme l'anomalie : après un `PUT` de `rapport.docx`, le document porte le
+titre `rapport`, que le `GET` suivant retrouve. Elle couvre aussi le `MOVE` avec renommage
+(SC-11.22), où le client n'a jamais vu le nom exposé du fichier déplacé.
+
+**Vérification.**
+
+```
+PUT  .../Juridique et contrats/campagne-uat.docx   -> 201 Created
+GET  .../Juridique et contrats/campagne-uat.docx   -> 200, contenu v1 identique
+PUT  (même chemin)                                 -> 204 No Content, version v2
+GET  (même chemin)                                 -> 200, contenu v2
+```
+
+Un seul document est créé pour quatre `PUT` successifs, contre quatre auparavant. La campagne a été
+rejouée deux fois d'affilée pour vérifier qu'elle est idempotente.
+
+**Correction connexe — perte de contenu silencieuse.** Le diagnostic a mis au jour un défaut voisin :
+un client annonçant un `Content-Type` de formulaire (`x-www-form-urlencoded`, `multipart/form-data`)
+voit son corps consommé par l'analyseur de formulaires de Werkzeug ; `get_data()` renvoie alors des
+octets vides et **le fichier était enregistré vide, sans la moindre erreur**. Le serveur refuse
+désormais explicitement la requête en **415 Unsupported Media Type**, avec un message indiquant
+l'en-tête à employer (SC-11.13). Perdre une requête vaut mieux que perdre un document.
+
+### ANO-04 — Suppression d'une pièce de courrier impossible · **Majeure** · *Corrigée*
 
 **Constat.** Supprimer un document de courrier échoue en base :
 
@@ -413,79 +591,174 @@ version ECM. À la suppression du document courrier, Odoo supprime en cascade l'
 `aite_courrier_ecm/TestCourrierEcmBridge.test_05_unlink_to_trash`.
 
 **Portée.** Toute suppression de pièce de courrier, depuis l'interface comme depuis le WebDAV
-courrier. Le partage de fichier entre les deux référentiels demande une stratégie explicite de
-cycle de vie.
+courrier.
 
-### ANO-05 — Un document finalisé accepte une nouvelle version · **Majeure**
+**Correction appliquée.** Le partage de fichier entre les deux référentiels reçoit une stratégie
+explicite de cycle de vie : **le jumeau ECM devient propriétaire des pièces jointes partagées**
+avant la suppression de la pièce de courrier. Dans `AiteCourrierDocument.unlink()`, les
+`ir.attachment` communs aux deux référentiels sont réattribués (`res_model` / `res_id`) au document
+ECM ; Odoo ne les emporte donc plus en cascade et la contrainte `restrict` n'est plus violée.
 
-**Constat.** Le test `aite_ecm_document/TestEcmDocument.test_06_locked_when_final` échoue sur
+**Vérification.** `aite_courrier_webdav/test_delete_document` et
+`aite_courrier_ecm/test_05_unlink_to_trash` passent. Le fichier reste accessible depuis le document
+ECM après suppression de la pièce de courrier — la suppression ne détruit plus de contenu.
+
+### ANO-05 — Un document finalisé accepte une nouvelle version · **Majeure** · *Corrigée*
+
+**Constat.** Le test `aite_ecm_document/TestEcmDocument.test_06_locked_when_final` échouait sur
 `AssertionError: AccessError not raised` : après finalisation, `add_version` aurait dû être refusée.
-Le verrouillage des documents finalisés — pierre angulaire de la valeur probante — n'est pas garanti
-dans ce cas de figure.
+Le verrouillage des documents finalisés — pierre angulaire de la valeur probante — n'était pas
+garanti.
 
-**À confirmer en recette fonctionnelle** avant correction : reproduire depuis l'interface
-(finaliser un document, puis tenter d'ajouter une version) pour déterminer si l'écart vient du
-produit ou de l'ordre d'exécution du test.
+**Cause racine, confirmée en recette.** L'écart venait bien du produit, pas de l'ordre d'exécution
+du test. Dans `_check_document_access()`, le raccourci manager était évalué **avant** le contrôle de
+verrouillage :
 
-### ANO-06 — Champ « Adresse WebDAV » affiché en double · **Mineure**
+```python
+if self._is_manager(user):
+    return True                       # ← sortie avant tout contrôle de verrou
+if operation != 'read' and (self.is_locked or …):
+    return False
+```
 
-Sur la fiche document, le champ apparaît deux fois (visible sur `sc02_06_conservation.png`).
-`aite_ecm_office/views/aite_ecm_document_views.xml:35` replace `webdav_url` alors que
+Un manager — et tout administrateur — pouvait donc ajouter une version à un document finalisé ou
+archivé.
+
+**Correction appliquée.** Le contrôle de verrouillage passe **avant** le raccourci manager : en
+écriture, un document verrouillé est refusé à tout le monde, la seule voie restant la remise en
+brouillon, qui est tracée au journal d'audit.
+
+```python
+if operation != 'read' and self.is_locked:
+    return False                      # ← s'applique aussi au manager
+if self._is_manager(user):
+    return True
+```
+
+**Vérification.** `test_06_locked_when_final` passe, ainsi que les 13 autres tests de droits du
+module. L'ordre des règles est documenté dans la docstring de la méthode.
+
+### ANO-06 — Champ « Adresse WebDAV » affiché en double · **Mineure** · *Corrigée*
+
+Sur la fiche document, le champ apparaissait deux fois (visible sur `sc02_06_conservation.png`).
+`aite_ecm_office/views/aite_ecm_document_views.xml` replaçait `webdav_url` alors que
 `aite_ecm_webdav/views/aite_ecm_document_views.xml:13` le positionne déjà. Reliquat de la
-séparation des deux modules décrite au changelog 18.0.2.1.1 : le champ a été retiré du modèle
+séparation des deux modules décrite au changelog 18.0.2.1.1 : le champ avait été retiré du modèle
 Office mais pas de sa vue.
 
-### ANO-07 — `HEAD` renvoie une taille nulle · **Mineure**
+**Correction appliquée.** Le champ est retiré de la vue Office, qui dépend de toute façon de
+`aite_ecm_webdav` ; un commentaire à l'emplacement libéré évite que le doublon ne soit réintroduit.
 
-`_handle_head()` réutilise la réponse du `GET` puis vide le corps, ce qui remet `Content-Length` à 0.
-La RFC 7231 impose que `HEAD` annonce la même taille que `GET`. Certains clients WebDAV s'appuient
-sur cet en-tête pour préparer un téléchargement.
+### ANO-07 — `HEAD` renvoie une taille nulle · **Mineure** · *Corrigée*
 
-### ANO-08 — Statuts « En traitement » et « Validé » jamais atteints · **Mineure**
+`_handle_head()` réutilisait la réponse du `GET` puis vidait le corps, ce qui remettait
+`Content-Length` à 0. La RFC 7231 impose que `HEAD` annonce la même taille que `GET` ; certains
+clients WebDAV s'appuient sur cet en-tête pour préparer un téléchargement.
 
-Le champ `state` de `aite.courrier` déclare six valeurs ; le moteur n'écrit que `draft`, `nw`, `rj`
-et `ar`. Conséquences : le filtre « En cours » du tableau de bord se réduit à « Nouveau », et les
-libellés publics du portail affichent un état figé pendant tout le traitement. Soit implémenter ces
-deux transitions, soit retirer les valeurs et ajuster tableau de bord et portail.
+**Correction appliquée.** La taille est relevée avant de vider le corps puis réécrite. Werkzeug
+recalculant `Content-Length` d'après le corps au moment de l'envoi, il faut en outre **désactiver ce
+recalcul** — sans quoi la valeur restaurée est écrasée juste avant l'émission :
 
-### ANO-09 — Anomalies détectées par les tests, à qualifier · **Mineure à majeure**
+```python
+resp.set_data(b'')
+if length is not None:
+    resp.automatically_set_content_length = False
+    resp.headers['Content-Length'] = length
+```
 
-Après réparation du banc de test, 17 échecs subsistent. Outre ANO-04 et ANO-05, ils désignent :
+**Vérification.** SC-11.12 : `HEAD` annonce `Content-Length: 27`, valeur identique à celle du `GET`.
 
-| Test | Symptôme | Lecture |
+Le même correctif a été porté sur le WebDAV **courrier** (`/webdav/aite_courrier`), qui présentait
+le défaut à l'identique, ainsi que le refus en 415 des corps de requête illisibles décrit en ANO-03.
+Les deux points d'entrée WebDAV se comportent donc désormais de la même façon.
+
+### ANO-08 — Statuts « En traitement » et « Validé » jamais atteints · **Mineure** · *Corrigée*
+
+Le champ `state` de `aite.courrier` déclarait six valeurs ; le moteur n'écrivait que `draft`, `nw`,
+`rj` et `ar`. Conséquences : le filtre « En cours » du tableau de bord se réduisait à « Nouveau », et
+les libellés publics du portail affichaient un état figé pendant tout le traitement.
+
+**Correction appliquée**, en combinant les deux options envisagées :
+
+- `_enter_step()` positionne `state = 'pr'` (**En traitement**) au franchissement d'une étape, ce qui
+  donne enfin au statut la valeur qui lui manquait pendant tout le cycle de vie ;
+- la valeur `vl` (**Validé**), que rien ne produisait et que rien ne devait produire — la validation
+  se lit sur l'étape du circuit — est retirée de la liste de sélection.
+
+**Vérification.** Les tests des modules `aite_courrier_core`, `aite_courrier_workflow` et
+`aite_courrier_portal` passent ; le tableau de bord et le portail n'affichent plus que des valeurs
+effectivement atteignables.
+
+### ANO-09 — Anomalies détectées par les tests · **Mineure à majeure** · *Corrigées (6 sur 6)*
+
+Après réparation du banc de test, 17 échecs subsistaient. Outre ANO-04 et ANO-05, ils désignaient
+six défauts, tous corrigés :
+
+| Symptôme d'origine | Cause racine | Correction |
 |---|---|---|
-| `aite_ecm_nextcloud/test_02_push_on_version` | `Invalid field aite.courrier.audit.log.res_model` | Le connecteur interroge un champ inexistant du journal d'audit |
-| `aite_ecm_nextcloud/test_08_poll`, `test_10_webhook` | Sondage sans effet ; webhook renvoie 500 au lieu de 403 | Gestion d'erreur du webhook à revoir |
-| `aite_ecm_records/test_05_protection` | `NotNullViolation` sur `aite_ecm_seal.document_id` | Un sceau est créé sans document rattaché |
-| `aite_ecm_records/test_02`, `test_04` | `'TestRecords' object has no attribute '_context'` | Défaut de test : `with_context` appelé sur la classe de test |
-| `aite_ecm_office/test_06_google_round_trip` | `Expected singleton: res.users()` | Recordset vide là où un utilisateur unique est attendu |
-| `aite_ecm_document/test_07_trash_and_purge` | Mise en corbeille refusée par la politique de conservation | Comportement v2.1 volontaire ; **test à mettre à jour** |
+| `Invalid field aite.courrier.audit.log.res_model` (`test_02_push_on_version`) | Le journal d'audit expose `model_name`/`res_id`, pas `res_model` | Requête du test alignée sur le modèle réel |
+| Sondage Nextcloud sans effet (`test_08_poll`) | Le simulateur ne faisait varier l'ETag d'un dossier qu'au **nombre** de fichiers ; Nextcloud le fait varier à **chaque écriture**, ce qui court-circuitait la détection | ETag de dossier indexé sur le compteur d'écritures |
+| Webhook Nextcloud : 500 au lieu de 403 (`test_10_webhook`) | `make_json_response(payload, 403)` — le 2ᵉ argument positionnel est `headers`, pas `status` ; et la route écrivait sur un curseur en lecture seule | `status=403` nommé, et `readonly=False` sur la route |
+| `NotNullViolation` sur `aite_ecm_seal.document_id` (`test_05_protection`) | Le sceau était `required` : le journal de preuve ne pouvait pas survivre à la destruction du document qu'il atteste | Champ rendu facultatif ; le sceau reste identifié par la référence et les empreintes, qui demeurent obligatoires |
+| `Expected singleton: res.users()` (`test_06_google_round_trip`) | `self.env['res.users']._google_authorize_action(...)` appelé sur le **modèle** au lieu de l'utilisateur courant | `self.env.user._google_authorize_action(...)` |
+| Purge de corbeille refusée (`test_07_trash_and_purge`) | La politique de conservation refusait la purge : **un seul document protégé faisait échouer toute la purge** | Point d'extension `_purgeable()` : la purge écarte les documents sous gel ou sous conservation et détruit les autres ; elle renvoie le nombre réellement purgé |
+
+**Trois défauts de fond mis au jour au passage**, corrigés dans `aite_ecm_records` :
+
+1. **Le gel juridique posé sur un dossier ne protégeait rien.** `legal_hold_active` est un champ
+   *stocké* dont les dépendances se limitent à `legal_hold_ids` et `folder_id` : un gel visant un
+   **dossier** ne déclenchait donc aucun recalcul et les documents concernés restaient modifiables.
+   Le recalcul est désormais explicite à la pose comme à la levée du gel.
+2. **La protection bloquait son propre recalcul.** Ce recalcul écrit `legal_hold_active` et
+   `legal_hold_names`, champs que la protection refuse en écriture — elle s'opposait donc à
+   l'activation du gel qu'elle est censée faire respecter. Un contexte `records_bypass` lève la
+   protection pour ce seul recalcul, et `legal_hold_names` rejoint la liste des champs techniques
+   autorisés.
+3. **Le point de départ de la conservation dérivait.** Le déclencheur « à la finalisation » se
+   fondait sur `write_date`, qui bouge à chaque modification ultérieure : l'échéance de conservation
+   d'un document reculait donc à chaque écriture. Deux horodatages dédiés, `date_final` et
+   `date_archived`, sont posés par `action_mark_final()` et `action_mark_archived()` et servent de
+   point de départ, `write_date` ne restant qu'un repli pour les documents antérieurs.
+
+**Vérification d'ensemble.** Suite complète sur les 24 modules installés :
+**`0 failed, 0 error(s) of 152 tests`**.
 
 ---
 
 ## 6. Synthèse par domaine
 
-| Domaine | Verdict | Réserve |
-|---|---|---|
-| Installation Community | ✅ Conforme | Aucune |
-| Courrier : circuits, SLA, audit | ✅ Conforme | ANO-08 (statuts intermédiaires) |
-| GED du courrier | ⚠️ Réserve | ANO-04 (suppression impossible) |
-| Référentiel ECM, explorateur | ✅ Conforme | Aucune |
-| Dossiers métier | ✅ Conforme | Aucune |
-| Conservation et archivage | ✅ Conforme | ANO-09 (sceau sans document) |
-| Valeur probante | ✅ Conforme | ANO-05 à confirmer |
-| Partage externe | ✅ Conforme | Aucune |
-| API REST | ✅ Conforme | Aucune |
-| **Lecteur réseau WebDAV** | ⚠️ **Réserve** | ANO-01 corrigée ; **ANO-03 ouverte** |
-| Sécurité et cloisonnement | ✅ Conforme | Aucune |
-| Non-régression automatisée | ❌ **Non conforme** | ANO-02 |
+| Domaine | Campagne initiale | **Contre-essai** | Anomalie traitée |
+|---|---|---|---|
+| Installation Community | ✅ Conforme | ✅ Conforme | — |
+| Courrier : circuits, SLA, audit | ✅ Conforme | ✅ Conforme | ANO-08 |
+| GED du courrier | ⚠️ Réserve | ✅ **Conforme** | ANO-04 |
+| Référentiel ECM, explorateur | ✅ Conforme | ✅ Conforme | ANO-06 |
+| Dossiers métier | ✅ Conforme | ✅ Conforme | — |
+| Conservation et archivage | ✅ Conforme | ✅ Conforme | ANO-09 (gel, échéance, purge) |
+| Valeur probante | ✅ Conforme | ✅ Conforme | ANO-05, ANO-09 (sceau orphelin) |
+| Partage externe | ✅ Conforme | ✅ Conforme | — |
+| API REST | ✅ Conforme | ✅ Conforme | — |
+| **Lecteur réseau WebDAV** | ⚠️ **Réserve** | ✅ **Conforme** | ANO-01, ANO-03, ANO-07 |
+| Connecteur Nextcloud | ⚠️ Réserve | ✅ Conforme (simulateur) | ANO-09 |
+| Passerelle Office / Google | ⚠️ Réserve | ✅ Conforme (simulateur) | ANO-09 |
+| Sécurité et cloisonnement | ✅ Conforme | ✅ Conforme | — |
+| Non-régression automatisée | ❌ **Non conforme** | ✅ **Conforme** — 152/152 | ANO-02 |
 
-**Recommandation de mise en production.** Le déploiement est envisageable pour l'ensemble des
-domaines à l'exception de deux points : la suppression des pièces de courrier (ANO-04) et le dépôt
-de fichiers nouveaux par le lecteur réseau (ANO-03). Ce dernier peut être contourné en formant les
-utilisateurs à créer le document depuis l'interface puis à l'éditer via le lecteur réseau, parcours
-validé sans réserve. La remise en état du banc de tests (ANO-02) conditionne la maîtrise des
-prochaines livraisons.
+**Recommandation de mise en production.** Aucune anomalie produit ne reste ouverte : le déploiement
+est envisageable sur l'ensemble des domaines, **lecteur réseau WebDAV compris**. L'objectif d'un ECM
+complet avec WebDAV fonctionnel est atteint et vérifié par une campagne protocolaire rejouable.
+
+Trois recommandations d'exploitation subsistent, sans caractère bloquant :
+
+1. **Prérequis de déploiement WebDAV.** Le serveur doit exposer une seule base résolvable (`db_name`
+   ou `--db-filter`) : un client WebDAV n'envoie aucun cookie de session, la base ne peut donc pas
+   être déduite. Sans cela, les deux points d'entrée répondent 404. Ce n'est pas un défaut du
+   produit mais une contrainte à porter dans la procédure d'installation.
+2. **Compléter la couverture d'environnement.** Génération PDF (`wkhtmltopdf`), OCR image
+   (`tesseract`), SMTP/IMAP et une instance Nextcloud réelle n'ont pas pu être exercés ; ces
+   fonctions restent à valider en pré-production.
+3. **Tenir la suite automatisée à zéro échec.** Elle est désormais un socle de non-régression fiable
+   — c'est précisément son silence qui avait laissé passer une anomalie bloquante.
 
 ---
 
@@ -493,16 +766,37 @@ prochaines livraisons.
 
 ### 7.1 Rejouer la campagne WebDAV
 
+Le script complet est livré : **`docs/uat/scripts/campagne_webdav.sh`**. Il enchaîne les 24 cas
+SC-11.2 à SC-11.25 (32 exécutions, SC-11.6 en comptant 9), affiche un verdict par cas et un total. Il est **idempotent** : le document
+d'essai finit en corbeille, le dossier créé est réutilisé, on peut donc l'enchaîner sans
+réinitialiser la base.
+
+```bash
+bash docs/uat/scripts/campagne_webdav.sh                       # serveur sur :8169
+BASE_URL=http://serveur:8069 bash docs/uat/scripts/campagne_webdav.sh
+```
+
+Résultat attendu : `TOTAL : 32 réussis, 0 échoués`.
+
+Les cas isolés, pour un diagnostic ponctuel :
+
 ```bash
 B="demo.admin:demo1234"; U="http://localhost:8169/webdav/aite_ecm"
-curl -i -X OPTIONS -u "$B" "$U"                                   # SC-11.2
-curl -X PROPFIND -H "Depth: 1" -u "$B" "$U"                       # SC-11.5
+CT="-H Content-Type:application/octet-stream"   # indispensable : voir SC-11.13
+curl -i -X OPTIONS -u "$B" "$U"                                    # SC-11.2
+curl -X PROPFIND -H "Depth: 1" -u "$B" "$U"                        # SC-11.5
 curl -X PROPFIND -H "Depth: 1" -u "$B" "$U/Juridique%20et%20contrats"
-curl -o fichier.pdf -u "$B" "$U/Juridique%20et%20contrats/DOC-…pdf"  # SC-11.8
-curl -X LOCK -u "$B" -H "Timeout: Second-3600" "$U/…"             # SC-11.10
-curl -X PUT  -u "$B" --data-binary @fichier.docx "$U/…"           # SC-11.13
-curl -X UNLOCK -u "$B" "$U/…"                                     # SC-11.12
+curl -X PUT $CT -u "$B" --data-binary @f.docx "$U/…/rapport.docx"   # SC-11.8
+curl -o f.docx -u "$B" "$U/…/rapport.docx"                         # SC-11.9
+curl -I -u "$B" "$U/…/rapport.docx"                                # SC-11.12
+curl -X LOCK -u "$B" -H "Timeout: Second-3600" "$U/…"              # SC-11.16
+curl -X UNLOCK -u "$B" "$U/…"                                      # SC-11.18
 ```
+
+> **Piège à connaître.** Sans en-tête `Content-Type` binaire, `curl --data-binary` envoie
+> `application/x-www-form-urlencoded` : le corps est alors consommé par l'analyseur de formulaires et
+> n'atteint jamais le contrôleur. Le serveur répond désormais **415** dans ce cas (SC-11.13) au lieu
+> d'enregistrer un fichier vide.
 
 ### 7.2 Rejouer la campagne API
 
@@ -517,14 +811,33 @@ curl -X POST -H "X-API-Key: $K" -H "Content-Type: application/json" \
 
 ### 7.3 Rejouer les tests automatisés
 
+La liste des modules est déduite de la base, ce qui évite de la maintenir à la main :
+
 ```bash
-MODS="aite_courrier,aite_courrier_base,…,aite_ecm_webdav,aite_ecm_workflow"
+DB=aite_test
+MODS=$(psql "postgresql://odoo:odoo@localhost/$DB" -tAc \
+  "SELECT name FROM ir_module_module WHERE state='installed' AND name LIKE 'aite%' ORDER BY name;" \
+  | paste -sd,)
 TAGS=$(echo "$MODS" | tr ',' '\n' | sed 's|^|/|' | paste -sd,)
-odoo-bin -c odoo.conf -d aite_test -u "$MODS" --test-enable --test-tags "$TAGS" --stop-after-init
+odoo-bin -c odoo.conf -d "$DB" -u "$MODS" --test-enable --test-tags "$TAGS" --stop-after-init
+```
+
+Résultat attendu, en fin de journal :
+
+```
+odoo.tests.result: 0 failed, 0 error(s) of 152 tests when loading database 'aite_test'
 ```
 
 > Ne pas lancer `--test-enable` sans `--test-tags` : la suite JavaScript d'Odoo s'exécute alors
 > pendant plusieurs dizaines de minutes sans rapport avec la recette AITE.
+
+**Deux règles à respecter en écrivant de nouveaux tests ECM** — ce sont les deux causes d'ANO-02 :
+
+1. hériter de `EcmTransactionCase` / `EcmHttpCase`
+   (`odoo.addons.aite_ecm_document.tests.common`) et créer les utilisateurs avec `_make_user()`,
+   qui garantit le groupe *Utilisateur interne* et une adresse e-mail ;
+2. ne jamais appeler `with_context()` ou `context_today()` sur la **classe de test** : ces méthodes
+   attendent un recordset, pas un `TestCase`.
 
 ### 7.4 Index des captures
 

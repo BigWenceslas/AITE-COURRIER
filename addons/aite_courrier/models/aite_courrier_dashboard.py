@@ -16,7 +16,7 @@ class AiteCourrier(models.Model):
         Courrier = self.env['aite.courrier']
         now = fields.Datetime.now()
         month_start = fields.Date.context_today(self).replace(day=1)
-        active_domain = [('state', 'in', ('nw', 'pr', 'vl'))]
+        active_domain = [('state', 'in', ('nw', 'pr'))]
         overdue_domain = [('sla_deadline', '<', now),
                           ('state', 'not in', ('ar', 'rj'))]
 

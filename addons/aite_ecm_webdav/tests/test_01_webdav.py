@@ -2,27 +2,24 @@
 import base64
 from urllib.parse import quote
 
-from odoo.tests import HttpCase, tagged
+from odoo.tests import tagged
+
+from odoo.addons.aite_ecm_document.tests.common import EcmHttpCase
 
 DOCX = base64.b64encode(b"PK\x03\x04 fake docx v1")
 DOCX2 = base64.b64encode(b"PK\x03\x04 fake docx v2")
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_webdav')
-class TestEcmWebdav(HttpCase):
+class TestEcmWebdav(EcmHttpCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Users = cls.env['res.users'].with_context(no_reset_password=True)
-        cls.agent = Users.create({'name': "Agent DAV", 'login': "dav_agent",
-                                  'password': "dav_agent_pwd",
-                                  'groups_id': [(6, 0, [cls.env.ref(
-                                      'aite_courrier_base.group_agent').id])]})
-        cls.other = Users.create({'name': "Autre DAV", 'login': "dav_other",
-                                  'password': "dav_other_pwd",
-                                  'groups_id': [(6, 0, [cls.env.ref(
-                                      'aite_courrier_base.group_agent').id])]})
+        cls.agent = cls._make_user("Agent DAV", "dav_agent", 'group_agent',
+                                   password="dav_agent_pwd")
+        cls.other = cls._make_user("Autre DAV", "dav_other", 'group_agent',
+                                   password="dav_other_pwd")
         cls.folder = cls.env.ref('aite_ecm_document.folder_juridique')
         cls.doc = cls.env['aite.ecm.document'].with_user(cls.agent).create({
             'name': "Contrat DAV", 'folder_id': cls.folder.id,
@@ -110,4 +107,6 @@ class TestEcmWebdav(HttpCase):
                 'aite_courrier_base.confidentiality_confidential').id})
         secret.add_version("s.docx", DOCX)
         resp = self._dav('PROPFIND', "Juridique et contrats", headers={'Depth': '1'})
+        # sans ce contrôle, un 401 au corps vide ferait passer l'assertion suivante
+        self.assertEqual(resp.status_code, 207)
         self.assertNotIn("Secret de l'autre", resp.text)

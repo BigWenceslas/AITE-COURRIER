@@ -11,7 +11,10 @@ _logger = logging.getLogger(__name__)
 
 class EcmGoogleController(http.Controller):
 
-    @http.route('/ecm/google/callback', type='http', auth='user', methods=['GET'])
+    # ``readonly=False`` : le retour OAuth enregistre les jetons Google
+    # sur le compte de l'utilisateur.
+    @http.route('/ecm/google/callback', type='http', auth='user',
+                methods=['GET'], readonly=False)
     def callback(self, code=None, state=None, error=None, **kw):
         user = request.env.user
         stored = user.sudo().ecm_google_state or ''

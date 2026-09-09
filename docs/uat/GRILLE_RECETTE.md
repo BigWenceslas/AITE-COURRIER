@@ -19,6 +19,7 @@ Statuts : **C** conforme · **NC** non conforme · **NT** non testé · **SO** s
 | P3 | Base résolvable pour le WebDAV | `db_name` ou `--db-filter` renseigné | | |
 | P4 | `wkhtmltopdf` disponible | Génération PDF opérationnelle | | |
 | P5 | Comptes de recette créés | 8 rôles distincts, mots de passe connus | | |
+| P6 | Suite automatisée | `0 failed, 0 error(s) of 152 tests` (annexe 7.3) | | bloque la campagne si rouge |
 
 ## SC-01 — Courrier : pilotage et cycle de vie
 
@@ -101,29 +102,40 @@ Statuts : **C** conforme · **NC** non conforme · **NT** non testé · **SO** s
 
 ## SC-11 — Lecteur réseau WebDAV
 
+Les 24 cas protocolaires sont automatisés : `bash docs/uat/scripts/campagne_webdav.sh`
+(attendu : `TOTAL : 32 réussis, 0 échoués` — 32 exécutions pour 24 références, SC-11.6 en couvrant 9).
+Reporter ci-dessous le verdict de chaque cas ou, à défaut, le total du script.
+
 | # | Cas | Attendu | Statut | Observation |
 |---|---|---|---|---|
-| SC-11.2 | `OPTIONS` | `DAV: 1, 2` | | |
+| SC-11.2 | `OPTIONS` | 200, `DAV: 1, 2` | | |
 | SC-11.3 | Sans identifiants | 401 | | |
 | SC-11.4 | Mot de passe erroné | 401 | | |
-| SC-11.5 | `PROPFIND` racine | Plan de classement listé | | |
-| SC-11.6 | `PROPFIND` de chaque dossier | 207 sur tous | | |
+| SC-11.5 | `PROPFIND` racine | 207, plan de classement listé | | |
+| SC-11.6 | `PROPFIND` de chacun des 9 dossiers | 207 sur tous | | |
 | SC-11.7 | Dossier inexistant | 404 | | |
-| SC-11.8 | `GET` d'un document | Contenu correct | | |
-| SC-11.9 | En-têtes | `ETag` et `Last-Modified` présents | | |
-| SC-11.10 | `LOCK` | Document réservé côté ECM | | |
-| SC-11.11 | `PUT` par un tiers pendant le verrou | 423 | | |
-| SC-11.12 | `UNLOCK` | Réservation libérée | | |
-| SC-11.13 | `PUT` sur document existant | Nouvelle version | | |
+| SC-11.8 | `PUT` d'un fichier **inconnu** | 201, document créé | | |
+| SC-11.9 | `GET` **au chemin déposé** | 200, contenu identique | | |
+| SC-11.10 | Second `PUT` au même chemin | 204, nouvelle version, **sans doublon** | | |
+| SC-11.11 | `GET` après le second `PUT` | 200, contenu de la v2 | | |
+| SC-11.12 | `HEAD` | 200, `Content-Length` identique au `GET` | | |
+| SC-11.13 | `PUT` avec corps de type formulaire | 415, refus explicite | | sans `Content-Type` binaire |
 | SC-11.14 | Fichier `~$…` | 403 | | |
 | SC-11.15 | Fichier `.tmp` | 403 | | |
-| SC-11.16 | `MKCOL` | Dossier créé | | |
-| SC-11.17 | `MOVE` | Titre et dossier mis à jour | | |
-| SC-11.18 | `DELETE` | Mise en corbeille | | |
-| SC-11.21 | **`PUT` d'un fichier nouveau puis relecture** | 201 puis 200 | | *cf. ANO-03* |
-| SC-11.22 | `HEAD` | Taille identique au `GET` | | *cf. ANO-07* |
+| SC-11.16 | `LOCK` | 200, document réservé côté ECM | | |
+| SC-11.17 | `PUT` par un tiers pendant le verrou | 423 | | |
+| SC-11.18 | `UNLOCK` | 204, réservation libérée | | |
+| SC-11.19 | `PUT` du tiers après libération | 204, version à son nom | | |
+| SC-11.20 | `MKCOL` | 201, dossier créé | | |
+| SC-11.21 | `MOVE` avec renommage | 201, titre et dossier mis à jour | | |
+| SC-11.22 | `GET` au **nouvel emplacement** | 200 | | |
+| SC-11.23 | `DELETE` | 204, mise en corbeille | | |
+| SC-11.24 | `COPY` | 403 | | non pris en charge |
+| SC-11.25 | `PROPPATCH` | 207 acquitté | | |
 
 ### Montage poste de travail
+
+*À exécuter manuellement : ces cas ne sont pas couverts par le script.*
 
 | # | Cas | Attendu | Statut | Observation |
 |---|---|---|---|---|
@@ -131,7 +143,8 @@ Statuts : **C** conforme · **NC** non conforme · **NT** non testé · **SO** s
 | SC-11.31 | Windows : ouvrir un document dans Word | Ouverture et verrouillage | | |
 | SC-11.32 | Windows : enregistrer depuis Word | Nouvelle version côté ECM | | |
 | SC-11.33 | macOS : Se connecter au serveur | Le volume est monté | | |
-| SC-11.34 | Copier un fichier dans le lecteur | Le fichier reste visible | | *cf. ANO-03* |
+| SC-11.34 | Copier un fichier dans le lecteur | Le fichier reste visible au même emplacement | | |
+| SC-11.35 | Rouvrir le fichier copié depuis le lecteur | Le contenu déposé est relu | | |
 
 ## SC-12 — Sécurité par rôle
 
@@ -156,7 +169,8 @@ Statuts : **C** conforme · **NC** non conforme · **NT** non testé · **SO** s
 | SC-03 à SC-05 | | | | |
 | SC-06 / SC-07 Conservation et preuve | | | | |
 | SC-09 API | | | | |
-| SC-11 WebDAV | | | | |
+| SC-11 WebDAV (protocole) | | | | |
+| SC-11 WebDAV (poste de travail) | | | | |
 | SC-12 Sécurité | | | | |
 | **Total** | | | | |
 

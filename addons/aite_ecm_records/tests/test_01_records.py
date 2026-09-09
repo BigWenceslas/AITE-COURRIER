@@ -6,23 +6,22 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import fields
 from odoo.exceptions import UserError
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
+
+from odoo.addons.aite_ecm_document.tests.common import EcmTransactionCase
 
 PDF = base64.b64encode(b"%PDF-1.4\n%records\n%%EOF\n")
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_records')
-class TestRecords(TransactionCase):
+class TestRecords(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.internal = cls.env.ref('aite_courrier_base.confidentiality_internal')
-        cls.manager = cls.env['res.users'].with_context(
-            no_reset_password=True).create({
-                'name': "Manager records", 'login': "rec_manager",
-                'groups_id': [(6, 0, [cls.env.ref(
-                    'aite_courrier_base.group_manager').id])]})
+        cls.manager = cls._make_user("Manager records", "rec_manager",
+                                     'group_manager')
         cls.Document = cls.env['aite.ecm.document']
 
     def _doc(self, type_xmlid, folder_xmlid, **vals):
@@ -62,8 +61,7 @@ class TestRecords(TransactionCase):
         self.assertTrue(facture.retention_deadline)
         self.assertEqual(facture.retention_state, 'current')
         # échéance dépassée
-        facture.sudo().write({'retention_start':
-                              fields.Date.context_today(self)
+        facture.sudo().write({'date_final': fields.Datetime.now()
                               - relativedelta(years=11)})
         facture.sudo()._retention_compute()
         facture.invalidate_recordset()
@@ -73,7 +71,7 @@ class TestRecords(TransactionCase):
         pv = self._doc('aite_ecm_document.type_pv',
                        'aite_ecm_document.folder_direction')
         pv.action_mark_final()
-        pv.sudo().write({'retention_start': fields.Date.context_today(self)
+        pv.sudo().write({'date_final': fields.Datetime.now()
                          - relativedelta(years=2)})
         pv.sudo()._retention_compute()
         self.assertEqual(pv.retention_state, 'permanent')
@@ -105,7 +103,7 @@ class TestRecords(TransactionCase):
         expired = self._doc('aite_ecm_document.type_facture_fournisseur',
                             'aite_ecm_document.folder_finance')
         expired.action_mark_final()
-        expired.sudo().write({'retention_start': fields.Date.context_today(self)
+        expired.sudo().write({'date_final': fields.Datetime.now()
                               - relativedelta(years=11)})
         expired.sudo()._retention_compute()
         keep = self._doc('aite_ecm_document.type_pv',
@@ -122,11 +120,12 @@ class TestRecords(TransactionCase):
         slip.action_submit()
         slip.with_user(self.manager).action_approve()
         self.assertEqual(slip.state, 'approved')
-        expired_id = expired.id
+        expired_id, expired_ref = expired.id, expired.reference
         slip.with_user(self.manager).action_execute()
         self.assertEqual(slip.state, 'done')
         self.assertFalse(self.Document.browse(expired_id).exists())
-        line = slip.line_ids.filtered(lambda l: l.reference == expired.reference)
+        # le document est détruit : la référence doit être lue avant l'exécution
+        line = slip.line_ids.filtered(lambda l: l.reference == expired_ref)
         self.assertTrue(line.destroyed and line.sha256)
 
     def test_05_protection(self):

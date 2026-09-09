@@ -12,7 +12,9 @@ from odoo import http
 from odoo.http import request
 from werkzeug.wrappers import Response
 
-from ..models.aite_ecm_webdav import WebdavError, WebdavNotFound
+from ..models.aite_ecm_webdav import (
+    WebdavError, WebdavNotFound, WebdavUnsupportedMedia,
+)
 
 _logger = logging.getLogger(__name__)
 ROOT_PATH = '/webdav/aite_ecm'
@@ -32,8 +34,14 @@ def http_date(value):
 
 class AiteEcmWebdavController(http.Controller):
 
+    # ``readonly=False`` : Odoo 18 sert les méthodes de lecture sur un curseur
+    # en lecture seule, alors que l'authentification HTTP Basic écrit (journal de
+    # connexion, session). Sans cela, toute requête WebDAV échoue en 401 avec
+    # « Opening a read/write test cursor from a readonly one » dès qu'un réplica
+    # de lecture est configuré — et systématiquement en test.
     @http.route([ROOT_PATH, ROOT_PATH + '/<path:subpath>'], type='http',
-                auth='none', csrf=False, methods=None, save_session=False)
+                auth='none', csrf=False, methods=None, save_session=False,
+                readonly=False)
     def dispatch(self, subpath='', **kwargs):
         method = request.httprequest.method.upper()
         if method == 'OPTIONS':
@@ -83,6 +91,28 @@ class AiteEcmWebdavController(http.Controller):
 
     def _service(self):
         return request.env['aite.ecm.webdav']
+
+    @staticmethod
+    def _request_body():
+        """Corps brut d'un ``PUT``.
+
+        Un client annonçant un type de formulaire (``x-www-form-urlencoded``,
+        ``multipart/form-data``) voit son corps consommé par l'analyseur de
+        formulaires : ``get_data()`` renvoie alors des octets vides et le
+        fichier serait enregistré vide, **sans erreur**. On préfère refuser la
+        requête plutôt que de détruire silencieusement le contenu.
+        """
+        content = request.httprequest.get_data()
+        if content:
+            return content
+        declared = request.httprequest.headers.get('Content-Length')
+        if declared and declared.isdigit() and int(declared) > 0:
+            raise WebdavUnsupportedMedia(
+                "Corps de requête illisible : envoyez le fichier tel quel, "
+                "avec un en-tête Content-Type binaire "
+                "(application/octet-stream ou le type du document), et non un "
+                "type de formulaire.")
+        return content
 
     # ------------------------------------------------------------------ #
     # Formatage
@@ -177,12 +207,22 @@ class AiteEcmWebdavController(http.Controller):
             ('Last-Modified', http_date(version.upload_date or doc.write_date))])
 
     def _handle_head(self, subpath):
+        # RFC 7231 : ``HEAD`` doit annoncer les mêmes en-têtes que ``GET``,
+        # ``Content-Length`` compris. Vider le corps le remet à zéro : on le
+        # restaure, sans quoi les clients WebDAV croient le fichier vide.
         resp = self._handle_get(subpath)
+        length = resp.headers.get('Content-Length')
         resp.set_data(b'')
+        if length is not None:
+            # werkzeug recalcule ``Content-Length`` d'après le corps au moment
+            # de l'envoi : il faut désactiver ce recalcul pour conserver la
+            # taille réelle du fichier.
+            resp.automatically_set_content_length = False
+            resp.headers['Content-Length'] = length
         return resp
 
     def _handle_put(self, subpath):
-        content = request.httprequest.get_data()
+        content = self._request_body()
         doc, created = self._service().put_file(subpath, content)
         version = doc.latest_version_id
         return Response(status=201 if created else 204,

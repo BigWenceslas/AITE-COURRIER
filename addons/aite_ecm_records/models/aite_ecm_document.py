@@ -35,6 +35,14 @@ class AiteEcmDocument(models.Model):
              "automatique.")
     retention_start = fields.Date(string="Départ de la conservation",
                                   readonly=True)
+    date_final = fields.Datetime(
+        string="Date de finalisation", readonly=True, copy=False,
+        help="Horodatage du passage à l'état Finalisé. Sert de déclencheur de "
+             "conservation : contrairement à la date de dernière écriture, il "
+             "ne bouge pas quand le document est modifié par la suite.")
+    date_archived = fields.Datetime(
+        string="Date d'archivage", readonly=True, copy=False,
+        help="Horodatage du passage à l'état Archivé.")
     retention_deadline = fields.Date(string="Échéance de conservation",
                                      readonly=True, index=True)
     retention_state = fields.Selection(
@@ -108,19 +116,22 @@ class AiteEcmDocument(models.Model):
         if rule.trigger == 'create':
             return fields.Date.to_date(self.create_date)
         if rule.trigger == 'final':
-            return fields.Date.to_date(self.write_date) \
-                if self.state in ('final', 'archived') else False
+            if self.state not in ('final', 'archived'):
+                return False
+            return fields.Date.to_date(self.date_final or self.write_date)
         if rule.trigger == 'archive':
-            return fields.Date.to_date(self.write_date) \
-                if self.state == 'archived' else False
+            if self.state != 'archived':
+                return False
+            return fields.Date.to_date(self.date_archived or self.write_date)
         if rule.trigger == 'close':
             if self.res_model and self.res_id:
                 record = self.env[self.res_model].sudo().browse(self.res_id)
                 for field_name in ('date_done', 'date_close', 'date_archived'):
                     if field_name in record._fields and record[field_name]:
                         return fields.Date.to_date(record[field_name])
-            return fields.Date.to_date(self.write_date) \
-                if self.state == 'archived' else False
+            if self.state != 'archived':
+                return False
+            return fields.Date.to_date(self.date_archived or self.write_date)
         if rule.trigger == 'meta':
             value = (self.properties or {})
             if isinstance(value, list):     # format liste de définitions
@@ -176,6 +187,13 @@ class AiteEcmDocument(models.Model):
         return True
 
     def _retention_recompute_ids(self):
+        # ``legal_hold_active`` est stocké et ne dépend que de ``legal_hold_ids``
+        # et de ``folder_id`` : un gel visant un **dossier** ne déclenche donc
+        # aucun recalcul et les documents concernés n'étaient pas protégés. On
+        # recalcule explicitement à la pose comme à la levée d'un gel, en
+        # neutralisant la protection : elle refuserait sinon l'écriture des
+        # champs de gel qu'elle vient elle-même de rendre actifs.
+        self.sudo().with_context(records_bypass=True)._compute_legal_hold()
         return self._retention_compute()
 
     @api.model
@@ -252,6 +270,30 @@ class AiteEcmDocument(models.Model):
                 'domain': [('id', 'in', self.legal_hold_ids.ids)]}
 
     # ================================================================== #
+    # Horodatage des transitions de cycle de vie
+    # ================================================================== #
+    def action_mark_final(self):
+        res = super().action_mark_final()
+        now = fields.Datetime.now()
+        for doc in self:
+            if doc.state == 'final' and not doc.date_final:
+                doc.sudo().with_context(records_bypass=True).write(
+                    {'date_final': now})
+        return res
+
+    def action_mark_archived(self):
+        res = super().action_mark_archived()
+        now = fields.Datetime.now()
+        for doc in self:
+            if doc.state != 'archived':
+                continue
+            stamps = {'date_archived': now}
+            if not doc.date_final:      # archivage direct depuis le brouillon
+                stamps['date_final'] = now
+            doc.sudo().with_context(records_bypass=True).write(stamps)
+        return res
+
+    # ================================================================== #
     # Protections
     # ================================================================== #
     def write(self, vals):
@@ -260,8 +302,9 @@ class AiteEcmDocument(models.Model):
                                      'retention_start', 'retention_deadline',
                                      'retention_state', 'final_fate',
                                      'retention_note', 'legal_hold_active',
-                                     'box_id', 'message_ids', 'activity_ids',
-                                     'message_follower_ids'}
+                                     'legal_hold_names', 'date_final',
+                                     'date_archived', 'box_id', 'message_ids',
+                                     'activity_ids', 'message_follower_ids'}
             if protected:
                 held = self.filtered('legal_hold_active')
                 if held:
@@ -278,6 +321,15 @@ class AiteEcmDocument(models.Model):
                 "Gel juridique actif (%s) : impossible de mettre « %s » à la "
                 "corbeille.", held[0].legal_hold_names, held[0].name))
         return super().action_trash()
+
+    def _purgeable(self):
+        """Retire de la purge automatique les documents encore protégés :
+        gel juridique actif, ou politique de conservation en cours. Ils ne
+        peuvent être détruits que par un bordereau d'élimination."""
+        protected_states = ('current', 'intermediate', 'permanent')
+        return super()._purgeable().filtered(
+            lambda d: not d.legal_hold_active
+            and d.retention_state not in protected_states)
 
     def unlink(self):
         held = self.filtered('legal_hold_active')

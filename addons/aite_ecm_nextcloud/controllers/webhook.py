@@ -11,20 +11,26 @@ _logger = logging.getLogger(__name__)
 class NextcloudWebhookController(http.Controller):
     """Réception des événements fichiers de Nextcloud (Webhook Listeners)."""
 
+    # ``readonly=False`` : le webhook marque les documents à importer
+    # et réveille la tâche planifiée, deux écritures qu'un curseur en
+    # lecture seule interdit.
     @http.route('/ecm/nextcloud/webhook', type='http', auth='none',
-                methods=['POST'], csrf=False, save_session=False)
+                methods=['POST'], csrf=False, save_session=False,
+                readonly=False)
     def webhook(self, **kw):
         env = request.env(su=True)
         secret = env['ir.config_parameter'].get_param(
             'aite_ecm_nextcloud.webhook_secret')
         given = request.httprequest.headers.get('X-AITE-Secret')
         if not secret or given != secret:
-            return request.make_json_response({'error': 'forbidden'}, 403)
+            return request.make_json_response({'error': 'forbidden'},
+                                             status=403)
         try:
             payload = json.loads(request.httprequest.get_data(as_text=True)
                                  or '{}')
         except ValueError:
-            return request.make_json_response({'error': 'bad json'}, 400)
+            return request.make_json_response({'error': 'bad json'},
+                                             status=400)
         event = payload.get('event') or {}
         node = event.get('node') or {}
         file_id = str(node.get('id') or '')

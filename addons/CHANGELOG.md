@@ -1,5 +1,104 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.2 — Lecteur réseau WebDAV opérationnel, banc de tests remis en état
+
+Campagne de recette complète (dossier `docs/uat/DOSSIER_UAT.md`) : 9 anomalies
+relevées, 9 corrigées et vérifiées. Suite automatisée à **0 échec sur 152
+tests**, campagne protocolaire WebDAV à **32 exécutions sur 32**.
+
+### Lecteur réseau WebDAV
+
+- **fix(ecm_webdav): erreur 500 sur tout dossier contenant des documents**
+  *(bloquante)* — les champs date d'Odoo sont naïfs ; `format_datetime(...,
+  usegmt=True)` exige un fuseau explicite et levait `ValueError`. Une fonction
+  `http_date()` rend la date explicitement UTC avant formatage. Le lecteur
+  réseau était inutilisable au-delà de la racine.
+- **fix(http): routes qui écrivent sans être déclarées comme telles** — Odoo 18
+  sert les méthodes réputées de lecture sur un curseur en lecture seule
+  (`Opening a read/write test cursor from a readonly one`). Sept routes
+  reçoivent `readonly=False` : les deux points d'entrée WebDAV,
+  `/api/ecm/v1/*`, les deux routes de partage externe, les deux routes WOPI,
+  le retour OAuth Google et le webhook Nextcloud.
+- **fix(webdav): un fichier déposé n'était pas relisible à son propre chemin**
+  — le serveur expose `RÉFÉRENCE - Titre.ext` alors que le client emploie le
+  nom qu'il a écrit : chaque `PUT` créait un document de plus.
+  `_document_by_filename()` accepte désormais quatre clés de résolution (nom
+  exposé, titre, nom de fichier de la dernière version, référence en tête).
+  Corrige aussi la relecture après un `MOVE` avec renommage.
+- **fix(webdav): perte de contenu silencieuse sur `PUT`** — un client annonçant
+  un type de formulaire voyait son corps consommé par l'analyseur de
+  formulaires : le fichier était enregistré **vide, sans erreur**. La requête
+  est refusée en **415** avec l'en-tête à employer.
+- **fix(webdav): `HEAD` annonçait une taille nulle** — vider le corps remet
+  `Content-Length` à zéro, et werkzeug le recalcule à l'envoi. La taille est
+  restaurée et le recalcul désactivé (RFC 7231). Corrigé sur les deux points
+  d'entrée WebDAV.
+
+### Cœur ECM et archivage
+
+- **fix(ecm_document): un document finalisé acceptait une nouvelle version**
+  — dans `_check_document_access()`, le raccourci manager était évalué avant le
+  contrôle de verrouillage : un manager pouvait donc versionner un document
+  finalisé ou archivé, ce qui ruinait la valeur probante. Le contrôle de
+  verrou passe désormais en premier et s'applique à tous.
+- **fix(courrier_ecm): suppression d'une pièce de courrier impossible** — la
+  pièce et son jumeau ECM partagent les mêmes `ir.attachment` ; la suppression
+  en cascade se heurtait au `ondelete='restrict'` des versions ECM
+  (`ForeignKeyViolation`). Les pièces jointes partagées sont réattribuées au
+  document ECM, qui en devient propriétaire, avant la suppression.
+- **fix(records): un gel juridique posé sur un dossier ne protégeait rien** —
+  `legal_hold_active` est stocké et ne dépend que de `legal_hold_ids` et
+  `folder_id` : un gel visant un dossier ne déclenchait aucun recalcul. Le
+  recalcul est explicite à la pose comme à la levée, sous contexte
+  `records_bypass` — la protection refusait sinon l'écriture des champs de gel
+  qu'elle vient elle-même d'activer.
+- **fix(records): le point de départ de la conservation dérivait** — les
+  déclencheurs « à la finalisation » et « à l'archivage » se fondaient sur
+  `write_date`, qui bouge à chaque modification : l'échéance reculait donc
+  indéfiniment. Deux horodatages dédiés, `date_final` et `date_archived`, sont
+  posés par les transitions de cycle de vie ; `write_date` ne reste qu'un repli.
+- **fix(ecm_document): un seul document protégé faisait échouer toute la purge**
+  — nouveau point d'extension `_purgeable()` ; `aite_ecm_records` y écarte les
+  documents sous gel ou sous conservation, la purge traite les autres et
+  renvoie le nombre réellement détruit.
+- **fix(sae): le journal de preuve ne survivait pas au document** —
+  `aite.ecm.seal.document_id` était `required`, d'où un `NotNullViolation` à la
+  destruction. Le champ devient facultatif ; référence et empreintes, elles,
+  restent obligatoires.
+
+### Courrier, connecteurs, bureautique
+
+- **fix(courrier_core): statuts déclarés mais jamais atteints** — le champ
+  `state` annonçait six valeurs, le moteur n'en écrivait que quatre : un
+  courrier restait « Nouveau » de la première à l'avant-dernière étape.
+  Le franchissement d'une étape positionne « En traitement » ; la valeur
+  « Validé », que rien ne produisait, est retirée. Tableau de bord, vue liste
+  et libellés du portail ajustés.
+- **fix(nextcloud): webhook renvoyant 500 au lieu de 403** —
+  `make_json_response(payload, 403)` passait le statut en position d'`headers`.
+- **fix(office): `Expected singleton: res.users()`** — l'autorisation Google
+  était demandée au modèle `res.users` au lieu de l'utilisateur courant.
+- **fix(office): champ « Adresse WebDAV » affiché en double** sur la fiche
+  document — reliquat de la séparation `aite_ecm_office` / `aite_ecm_webdav`
+  du 18.0.2.1.1, le champ ayant été retiré du modèle mais pas de la vue.
+
+### Banc de tests et recette
+
+- **fix(tests): banc de tests des modules ECM inopérant** *(39 échecs sur 152)*
+  — deux défauts systématiques du code de test masquaient les anomalies
+  ci-dessus : utilisateurs créés sans le groupe *Utilisateur interne* (compte
+  externe, `AccessError` sur `ir.sequence` dès la création d'un document) et
+  sans adresse e-mail (tout `message_post` échoue). Nouveau socle partagé
+  `aite_ecm_document/tests/common.py` (`EcmTransactionCase`, `EcmHttpCase`,
+  `_make_user()`) dont héritent les 8 fichiers de test ECM.
+- **docs(uat): dossier de recette réutilisable** — `docs/uat/DOSSIER_UAT.md`
+  (34 scénarios, 36 captures étiquetées, 9 fiches d'anomalie avec cause racine
+  et preuve de correction) et sa version PDF, grille de saisie vierge
+  `GRILLE_RECETTE.md`, campagne WebDAV rejouable
+  `scripts/campagne_webdav.sh` (32 cas) et générateur de PDF
+  `scripts/generer_pdf.py`.
+
+
 ## 18.0.2.1.1 — Corrections
 
 - **fix(dashboard): clé de boucle dupliquée** — le tableau de bord du courrier

@@ -3,7 +3,9 @@ import base64
 import io
 
 from odoo.exceptions import AccessError
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
+
+from .common import EcmTransactionCase
 
 PDF = base64.b64encode(b"%PDF-1.4\n%AITE explorer\n%%EOF\n")
 
@@ -16,18 +18,13 @@ def _png():
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_document')
-class TestExplorer(TransactionCase):
+class TestExplorer(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Users = cls.env['res.users'].with_context(no_reset_password=True)
-        cls.agent = Users.create({'name': "Agent X", 'login': "ecm_x_agent",
-                                  'groups_id': [(6, 0, [cls.env.ref(
-                                      'aite_courrier_base.group_agent').id])]})
-        cls.manager = Users.create({'name': "Manager X", 'login': "ecm_x_manager",
-                                    'groups_id': [(6, 0, [cls.env.ref(
-                                        'aite_courrier_base.group_manager').id])]})
+        cls.agent = cls._make_user("Agent X", "ecm_x_agent", 'group_agent')
+        cls.manager = cls._make_user("Manager X", "ecm_x_manager", 'group_manager')
         cls.jur = cls.env.ref('aite_ecm_document.folder_juridique')
         cls.sub = cls.env['aite.ecm.folder'].create({'name': "Baux X",
                                                      'parent_id': cls.jur.id})

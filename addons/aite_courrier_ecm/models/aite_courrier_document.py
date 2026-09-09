@@ -145,6 +145,21 @@ class AiteCourrierDocument(models.Model):
 
     def unlink(self):
         mirrors = self.mapped('ecm_document_id')
+        # Le miroir partage les mêmes ``ir.attachment`` que la pièce (aucune
+        # copie du fichier). Odoo supprime en cascade les pièces jointes
+        # rattachées à l'enregistrement effacé ; comme les versions ECM les
+        # référencent en ``restrict``, la suppression échouait sur une
+        # violation de clé étrangère. On rattache donc d'abord ces pièces
+        # jointes au jumeau ECM, qui devient leur propriétaire et conserve le
+        # fichier une fois la pièce de courrier supprimée.
+        for piece in self:
+            ecm = piece.ecm_document_id
+            if not ecm:
+                continue
+            shared = piece.version_ids.mapped('attachment_id') \
+                & ecm.version_ids.mapped('attachment_id')
+            if shared:
+                shared.sudo().write({'res_model': ecm._name, 'res_id': ecm.id})
         res = super().unlink()
         for ecm in mirrors:
             if ecm.exists() and ecm.active:

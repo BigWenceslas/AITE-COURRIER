@@ -45,8 +45,11 @@ class AiteEcmSeal(models.Model):
     _order = 'id'
 
     document_id = fields.Many2one(
-        comodel_name='aite.ecm.document', string="Document", required=True,
-        ondelete='restrict', index=True)
+        comodel_name='aite.ecm.document', string="Document",
+        ondelete='restrict', index=True,
+        help="Vide lorsque le document a été détruit : le journal de preuve "
+             "lui survit et reste identifié par sa référence et ses "
+             "empreintes.")
     document_reference = fields.Char(string="Référence", required=True,
                                      index=True)
     version_id = fields.Many2one(

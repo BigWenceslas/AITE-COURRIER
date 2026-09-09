@@ -74,7 +74,6 @@ class AiteCourrier(models.Model):
             ('draft', "Brouillon"),
             ('nw', "Nouveau"),
             ('pr', "En traitement"),
-            ('vl', "Validé"),
             ('rj', "Rejeté"),
             ('ar', "Archivé"),
         ],
@@ -497,6 +496,11 @@ class AiteCourrier(models.Model):
         vals = {'current_step_id': step.id}
         if step.is_final:
             vals['state'] = 'ar'
+        elif not step.is_initial and self.state == 'nw':
+            # Le courrier a quitté l'étape d'entrée : il est en traitement.
+            # Sans cela il restait « Nouveau » jusqu'à l'archivage, ce qui
+            # faussait le tableau de bord et le suivi affiché au portail.
+            vals['state'] = 'pr'
         self.with_context(skip_courrier_audit=True).write(vals)
         # L'entrée nouvellement créée ne porte PAS de commentaire : le commentaire
         # et la transition appartiennent à l'étape *quittée* (action effectuée),

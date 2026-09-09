@@ -4,7 +4,9 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from odoo import fields
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
+
+from odoo.addons.aite_ecm_document.tests.common import EcmTransactionCase
 
 from odoo.addons.aite_ecm_office.models import aite_ecm_document as ecm_doc_module
 
@@ -13,47 +15,59 @@ DOCX2 = base64.b64encode(b"PK\x03\x04 fake docx v2")
 
 
 class FakeDrive:
-    """Google Drive simulé : dépôt, export et suppression, sans réseau."""
+    """Google Drive simulé, sans réseau.
+
+    Les signatures reprennent exactement celles de ``GoogleDriveClient``
+    (``ensure_folder``, ``upload``, ``metadata``, ``download``, ``delete``) :
+    toute dérive entre le simulateur et le client réel ferait passer les tests
+    sur une interface qui n'existe pas.
+    """
 
     def __init__(self):
         self.files = {}
         self.calls = []
-        self._seq = 100
+        self._seq = 0
 
-    def upload(self, name, content, mimetype, target_mime=None, folder=None):
+    def ensure_folder(self, name):
+        self.calls.append(('ensure_folder', name))
+        return "gfolder-%s" % name.replace(' ', '-').lower()
+
+    def upload(self, name, content, mimetype, folder_id=None, convert_to=None):
         self._seq += 1
-        file_id = "gd-%d" % self._seq
+        file_id = "gfile-%d" % self._seq
         self.files[file_id] = {'name': name, 'content': content,
-                               'mimetype': target_mime or mimetype,
+                               'mimetype': convert_to or mimetype,
                                'modified': '2026-09-09T10:00:00.000Z'}
         self.calls.append(('upload', name))
-        return {'id': file_id, 'mimeType': self.files[file_id]['mimetype'],
-                'modifiedTime': self.files[file_id]['modified']}
+        return dict(self.files[file_id], id=file_id,
+                    mimeType=self.files[file_id]['mimetype'],
+                    modifiedTime=self.files[file_id]['modified'],
+                    webViewLink="https://drive.google.com/file/d/%s/view" % file_id)
 
     def metadata(self, file_id):
         self.calls.append(('metadata', file_id))
-        return dict(self.files[file_id], id=file_id,
-                    modifiedTime=self.files[file_id]['modified'])
+        entry = self.files[file_id]
+        return dict(entry, id=file_id, mimeType=entry['mimetype'],
+                    modifiedTime=entry['modified'], trashed=False,
+                    webViewLink="https://drive.google.com/file/d/%s/view" % file_id)
 
-    def export(self, file_id, mimetype):
-        self.calls.append(('export', file_id))
-        return self.files[file_id]['content']
+    def download(self, file_id, mimetype):
+        """Contrat du client réel : (contenu, type MIME, extension)."""
+        self.calls.append(('download', file_id))
+        return self.files[file_id]['content'], mimetype, 'docx'
 
     def delete(self, file_id):
         self.calls.append(('delete', file_id))
         self.files.pop(file_id, None)
 
-    def edit_url(self, file_id, mimetype=None):
-        return "https://docs.google.com/document/d/%s/edit" % file_id
-
-    def touch(self, file_id, content):
-        """Simule une modification dans Google."""
+    def edit(self, file_id, content):
+        """Simule une modification faite dans l'éditeur Google."""
         self.files[file_id]['content'] = content
-        self.files[file_id]['modified'] = '2026-09-09T11:30:00.000Z"'.rstrip('"')
+        self.files[file_id]['modified'] = '2026-09-09T11:30:00.000Z'
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_office')
-class TestOfficeGoogle(TransactionCase):
+class TestOfficeGoogle(EcmTransactionCase):
 
     def setUp(self):
         super().setUp()
@@ -61,9 +75,7 @@ class TestOfficeGoogle(TransactionCase):
         Param.set_param('aite_ecm_office.google_client_id', 'client-id')
         Param.set_param('aite_ecm_office.google_client_secret', 'secret')
         Param.set_param('web.base.url', 'https://ecm.test')
-        self.user = self.env['res.users'].with_context(no_reset_password=True).create({
-            'name': "Agent GD", 'login': "gd_agent",
-            'groups_id': [(6, 0, [self.env.ref('aite_courrier_base.group_agent').id])]})
+        self.user = self._make_user("Agent GD", "gd_agent", 'group_agent')
         self.doc = self.env['aite.ecm.document'].with_user(self.user).create({
             'name': "Note", 'confidentiality_id': self.env.ref(
                 'aite_courrier_base.confidentiality_internal').id})
@@ -103,17 +115,13 @@ DISCOVERY = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_office')
-class TestOfficeWopi(TransactionCase):
+class TestOfficeWopi(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Users = cls.env['res.users'].with_context(no_reset_password=True)
-        g_agent = cls.env.ref('aite_courrier_base.group_agent')
-        cls.agent = Users.create({'name': "Agent WOPI", 'login': "wopi_agent",
-                                  'groups_id': [(6, 0, [g_agent.id])]})
-        cls.other = Users.create({'name': "Autre WOPI", 'login': "wopi_other",
-                                  'groups_id': [(6, 0, [g_agent.id])]})
+        cls.agent = cls._make_user("Agent WOPI", "wopi_agent", 'group_agent')
+        cls.other = cls._make_user("Autre WOPI", "wopi_other", 'group_agent')
         Param = cls.env['ir.config_parameter'].sudo()
         Param.set_param('web.base.url', 'https://ecm.test')
         Param.set_param('aite_ecm_office.wopi_server_url', 'https://office.test')

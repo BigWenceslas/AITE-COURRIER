@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
 from odoo.exceptions import AccessError, UserError
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
+
+from odoo.addons.aite_ecm_document.tests.common import EcmTransactionCase
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_dossier')
-class TestEcmDossier(TransactionCase):
+class TestEcmDossier(EcmTransactionCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        Users = cls.env['res.users'].with_context(no_reset_password=True)
-        cls.agent = Users.create({
-            'name': "Agent", 'login': "dos_agent",
-            'groups_id': [(6, 0, [cls.env.ref('aite_courrier_base.group_agent').id])]})
-        cls.manager = Users.create({
-            'name': "Manager", 'login': "dos_manager",
-            'groups_id': [(6, 0, [cls.env.ref('aite_courrier_base.group_manager').id])]})
+        cls.agent = cls._make_user("Agent", "dos_agent", 'group_agent')
+        cls.manager = cls._make_user("Manager", "dos_manager", 'group_manager')
         cls.dtype = cls.env.ref('aite_ecm_dossier.dossier_type_fournisseur')
         cls.partner = cls.env['res.partner'].create({'name': "ETS KAMDEM"})
 

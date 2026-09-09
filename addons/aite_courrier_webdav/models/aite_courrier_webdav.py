@@ -51,6 +51,11 @@ class WebdavConflict(WebdavError):
     label = "Conflict"
 
 
+class WebdavUnsupportedMedia(WebdavError):
+    status = 415
+    label = "Unsupported Media Type"
+
+
 class WebdavBadRequest(WebdavError):
     status = 400
     label = "Bad Request"

@@ -44,6 +44,10 @@ class WebdavBadRequest(WebdavError):
     status = 400
 
 
+class WebdavUnsupportedMedia(WebdavError):
+    status = 415
+
+
 def sanitize(name):
     return _FORBIDDEN.sub('_', (name or '').strip()).strip('. ') or 'sans_nom'
 
@@ -103,12 +107,34 @@ class AiteEcmWebdav(models.AbstractModel):
 
     @api.model
     def _document_by_filename(self, folder, filename):
+        """Document désigné par un nom de fichier dans ``folder``.
+
+        Quatre clés sont acceptées, de la plus précise à la plus tolérante.
+        Le serveur expose ``RÉFÉRENCE - Titre.ext`` alors que le client
+        manipule le nom qu'il a lui-même écrit : sans ces replis, un fichier
+        déposé ou renommé devenait introuvable et un nouveau document était
+        créé à chaque enregistrement.
+
+        1. le nom **exposé** par le serveur ;
+        2. le **titre** du document suivi de son extension — c'est le nom que
+           le client vient d'employer lors d'un dépôt ou d'un renommage ;
+        3. le nom **réel du fichier** de la dernière version ;
+        4. la référence en tête du nom, lorsque le fichier a été réenregistré
+           sous un autre titre par Office.
+        """
         docs = self._documents_in(folder)
         exact = docs.filtered(lambda d: self._document_filename(d) == filename)[:1]
         if exact:
             return exact
-        # repli : la référence en tête du nom (fichier réenregistré sous un
-        # autre nom par Office)
+        stem = filename.rsplit('.', 1)[0] if '.' in filename else filename
+        by_title = docs.filtered(
+            lambda d: sanitize(d.name)[:80] == stem)[:1]
+        if by_title:
+            return by_title
+        by_file = docs.filtered(
+            lambda d: (d.latest_version_id.file_name or '') == filename)[:1]
+        if by_file:
+            return by_file
         ref = filename.split(' - ', 1)[0].strip()
         return docs.filtered(lambda d: d.reference == ref)[:1]
 
