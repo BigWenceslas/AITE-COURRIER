@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="report_disposition" model="ir.actions.report">
+        <field name="name">Bordereau d'élimination</field>
+        <field name="model">aite.ecm.disposition</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aite_ecm_records.report_disposition_document</field>
+        <field name="report_file">aite_ecm_records.report_disposition_document</field>
+        <field name="binding_model_id" ref="model_aite_ecm_disposition"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_disposition_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="slip">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Bordereau d'élimination <span t-field="slip.name"/></h2>
+                        <div class="row mt-3 mb-3">
+                            <div class="col-6">
+                                <strong>Date :</strong> <span t-field="slip.date"/><br/>
+                                <strong>Préparé par :</strong> <span t-field="slip.prepared_by.name"/><br/>
+                                <strong>Validé par :</strong> <span t-field="slip.approved_by.name"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Statut :</strong> <span t-field="slip.state"/><br/>
+                                <strong>Exécuté le :</strong> <span t-field="slip.executed_date"/><br/>
+                                <strong>Documents :</strong> <span t-field="slip.line_count"/>
+                            </div>
+                        </div>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Référence</th><th>Titre</th><th>Dossier</th>
+                                    <th>Règle appliquée</th><th>Échéance</th>
+                                    <th>Empreinte SHA-256</th><th>Détruit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="slip.line_ids" t-as="line">
+                                    <td><span t-field="line.reference"/></td>
+                                    <td><span t-field="line.title"/></td>
+                                    <td><span t-field="line.folder"/></td>
+                                    <td><span t-field="line.retention_rule"/></td>
+                                    <td><span t-field="line.retention_deadline"/></td>
+                                    <td style="font-size: 8px;"><span t-field="line.sha256"/></td>
+                                    <td><span t-if="line.destroyed">Oui</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-if="slip.note"><strong>Observations :</strong> <span t-field="slip.note"/></p>
+                        <p class="mt-4" style="font-size: 10px;">
+                            Ce bordereau atteste de l'élimination des documents listés, à
+                            l'échéance de leur durée de conservation et après validation.
+                            Les empreintes SHA-256 permettent de vérifier a posteriori
+                            l'identité des fichiers détruits.
+                        </p>
+                        <div class="row mt-5">
+                            <div class="col-6">Le préparateur<br/><br/><br/>_______________</div>
+                            <div class="col-6">Le validateur<br/><br/><br/>_______________</div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

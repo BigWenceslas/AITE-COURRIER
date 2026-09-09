@@ -47,7 +47,8 @@ class AiteWorkflowMixin(models.AbstractModel):
         comodel_name='aite.workflow.transition',
         string="Transitions disponibles", compute='_compute_wf_transitions')
     wf_can_act = fields.Boolean(string="Je peux agir",
-                                compute='_compute_wf_transitions')
+                                compute='_compute_wf_transitions',
+                                search='_search_wf_can_act')
 
     # ------------------------------------------------------------------ #
     # Calculs
@@ -69,6 +70,25 @@ class AiteWorkflowMixin(models.AbstractModel):
             return overdue
         return ['|', '|', ('wf_status', '!=', 'running'),
                 ('wf_deadline', '=', False), ('wf_deadline', '>=', now)]
+
+    def _search_wf_can_act(self, operator, value):
+        """Rend « Je peux agir » filtrable : les enregistrements en cours dont
+        l'étape courante m'est confiée (les managers agissent partout)."""
+        if operator not in ('=', '!='):
+            raise UserError(_("Filtre non supporté sur « Je peux agir »."))
+        user = self.env.user
+        Step = self.env['aite.workflow.step'].sudo()
+        if self._wf_is_manager(user):
+            step_ids = Step.search([]).ids
+        else:
+            step_ids = [s.id for s in Step.search(
+                [('role_ids', 'in', user.groups_id.ids)])
+                if not s.user_ids or user in s.user_ids]
+        positive = (operator == '=') == bool(value)
+        if positive:
+            return [('wf_status', '=', 'running'), ('wf_step_id', 'in', step_ids)]
+        return ['|', ('wf_status', '!=', 'running'),
+                ('wf_step_id', 'not in', step_ids)]
 
     @api.depends('wf_step_id', 'wf_status')
     def _compute_wf_transitions(self):

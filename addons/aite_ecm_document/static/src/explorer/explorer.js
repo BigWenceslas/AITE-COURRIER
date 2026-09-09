@@ -418,6 +418,23 @@ export class EcmExplorer extends Component {
         }
     }
 
+    async extraAction(rec, action) {
+        if (action.kind === "url") {
+            if (action.url.startsWith("http")) {
+                window.open(action.url, "_blank");
+            } else {
+                window.location.href = action.url;      // schéma d'application (ms-word:…)
+            }
+            return;
+        }
+        const result = await this.orm.call("aite.ecm.document", "explorer_call", [rec.id, action.method]);
+        if (result && typeof result === "object" && result.type) {
+            await this.action.doAction(result, { onClose: () => this.refreshAll() });
+        } else {
+            await this.refreshAll();
+        }
+    }
+
     async wfWizard(rec) {
         const action = await this.orm.call("aite.ecm.document", "explorer_wf_wizard", [rec.id]);
         if (!action) {

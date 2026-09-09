@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_seda_export_form" model="ir.ui.view">
+        <field name="name">aite.ecm.seda.export.form</field>
+        <field name="model">aite.ecm.seda.export</field>
+        <field name="arch" type="xml">
+            <form string="Export de paquet d'archives">
+                <group>
+                    <field name="name"/>
+                    <field name="scope"/>
+                    <field name="folder_id" invisible="scope != 'folder'" required="scope == 'folder'"/>
+                    <field name="document_ids" widget="many2many_tags" invisible="scope != 'selection'"/>
+                    <field name="document_count"/>
+                    <field name="include_all_versions"/>
+                    <field name="transferring_agency"/>
+                    <field name="archival_agency"/>
+                </group>
+                <div class="alert alert-info" role="status" invisible="file_data">
+                    Le paquet contient le bordereau <b>manifest.xml</b> (structure SEDA 2.1 :
+                    identité des services, métadonnées, empreintes SHA-256), les fichiers, et le
+                    <b>journal de preuve</b>. Il permet de confier le fonds à un système
+                    d'archivage tiers ou de prouver ce qui a été conservé.
+                </div>
+                <group invisible="not file_data">
+                    <field name="file_data" filename="file_name" readonly="1" string="Paquet prêt"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_export" string="Produire le paquet" type="object"
+                            class="btn-primary" invisible="file_data"/>
+                    <button string="Fermer" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_seda_export" model="ir.actions.act_window">
+        <field name="name">Export de paquet d'archives</field>
+        <field name="res_model">aite.ecm.seda.export</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="aite_ecm_document.model_aite_ecm_document"/>
+        <field name="binding_view_types">list</field>
+    </record>
+</odoo>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Les bordereaux d'élimination sont visibles de tous les rôles ECM
+             (transparence), mais seuls archivistes, managers et administrateurs
+             les préparent et les exécutent (ACL ci-dessus). -->
+        <record id="rule_disposition_company" model="ir.rule">
+            <field name="name">Bordereau d'élimination : multi-société</field>
+            <field name="model_id" ref="model_aite_ecm_disposition"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+    </data>
+</odoo>

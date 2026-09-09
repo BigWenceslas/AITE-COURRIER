@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_disposition_form" model="ir.ui.view">
+        <field name="name">aite.ecm.disposition.form</field>
+        <field name="model">aite.ecm.disposition</field>
+        <field name="arch" type="xml">
+            <form string="Bordereau d'élimination">
+                <header>
+                    <button name="action_collect" string="Rassembler les documents échus"
+                            type="object" class="btn-secondary" invisible="state != 'draft'"/>
+                    <button name="action_submit" string="Soumettre à validation" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Valider" type="object"
+                            class="btn-primary" invisible="state != 'to_approve'"
+                            groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+                    <button name="action_execute" string="Exécuter l'élimination" type="object"
+                            class="btn-danger" invisible="state != 'approved'"
+                            groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"
+                            confirm="Les documents listés seront définitivement supprimés. Un certificat sera généré. Confirmer ?"/>
+                    <button name="action_cancel" string="Annuler" type="object"
+                            invisible="state in ('done', 'cancel')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,to_approve,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="prepared_by"/>
+                            <field name="line_count"/>
+                        </group>
+                        <group>
+                            <field name="approved_by"/>
+                            <field name="approval_date"/>
+                            <field name="executed_date"/>
+                            <field name="certificate_document_id" invisible="state != 'done'"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state not in ('draft',)">
+                        <list>
+                            <field name="reference"/>
+                            <field name="title"/>
+                            <field name="folder"/>
+                            <field name="retention_rule"/>
+                            <field name="retention_deadline"/>
+                            <field name="destroyed"/>
+                            <field name="sha256" optional="hide"/>
+                            <field name="document_id" optional="hide"/>
+                        </list>
+                    </field>
+                    <group string="Observations">
+                        <field name="note" nolabel="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_disposition_list" model="ir.ui.view">
+        <field name="name">aite.ecm.disposition.list</field>
+        <field name="model">aite.ecm.disposition</field>
+        <field name="arch" type="xml">
+            <list string="Bordereaux d'élimination">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="prepared_by"/>
+                <field name="line_count"/>
+                <field name="approved_by"/>
+                <field name="executed_date"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-warning="state == 'approved'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_disposition" model="ir.actions.act_window">
+        <field name="name">Bordereaux d'élimination</field>
+        <field name="res_model">aite.ecm.disposition</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun bordereau</p>
+            <p>Créez un bordereau, cliquez « Rassembler les documents échus », faites-le valider,
+               puis exécutez : un certificat de destruction est déposé dans l'ECM.</p>
+        </field>
+    </record>
+</odoo>

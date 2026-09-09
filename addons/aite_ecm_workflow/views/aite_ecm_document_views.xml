@@ -73,7 +73,8 @@
                 <separator/>
                 <filter name="filter_wf_running" string="En circuit" domain="[('wf_status', '=', 'running')]"/>
                 <filter name="filter_wf_overdue" string="En retard (SLA)" domain="[('wf_is_overdue', '=', True)]"/>
-                <filter name="filter_wf_mine" string="À traiter par moi" domain="[('wf_status', '=', 'running'), ('wf_can_act', '=', True)]"/>
+                <filter name="filter_wf_running_mine" string="En circuit — mes documents"
+                        domain="[('wf_status', '=', 'running'), ('owner_id', '=', uid)]"/>
             </xpath>
         </field>
     </record>
@@ -88,7 +89,7 @@
                 <field name="active_circuit_id"/>
                 <field name="wf_finalize"/>
             </xpath>
-            <xpath expr="//group[@string='Description']" position="before">
+            <xpath expr="//field[@name='description']/.." position="before">
                 <group string="Circuits de validation">
                     <field name="circuit_ids" nolabel="1" colspan="2"
                            context="{'default_res_model': 'aite.ecm.document', 'default_document_type_id': id}">

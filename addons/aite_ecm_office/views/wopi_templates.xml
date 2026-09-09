@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Page hôte WOPI : formulaire POST du jeton vers l'éditeur, dans une iframe plein écran -->
+    <template id="wopi_host" name="AITE ECM — éditeur en ligne">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <title t-out="doc.name"/>
+                <style>
+                    html, body { margin: 0; height: 100%; overflow: hidden; background: #f4f4f4; }
+                    #ecm_office_frame { width: 100%; height: 100%; border: 0; }
+                    .ecm_office_bar { position: fixed; top: 0; right: 0; z-index: 2; padding: 4px 10px;
+                        font: 12px sans-serif; color: #714b67; background: rgba(255,255,255,.85);
+                        border-bottom-left-radius: 6px; }
+                </style>
+            </t>
+            <div class="ecm_office_bar">
+                <t t-out="doc.reference"/> — <t t-out="doc.name"/>
+                <t t-if="readonly"> · lecture seule</t>
+            </div>
+            <form id="ecm_office_form" t-att-action="editor_url" method="post" target="ecm_office_frame">
+                <input type="hidden" name="access_token" t-att-value="access_token"/>
+                <input type="hidden" name="access_token_ttl" t-att-value="access_token_ttl"/>
+            </form>
+            <iframe id="ecm_office_frame" name="ecm_office_frame" title="Éditeur en ligne"
+                    allow="clipboard-read; clipboard-write; fullscreen"/>
+            <script>document.getElementById('ecm_office_form').submit();</script>
+        </t>
+    </template>
+</odoo>

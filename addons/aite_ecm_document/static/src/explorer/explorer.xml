@@ -233,7 +233,7 @@
                         <div class="d-flex flex-wrap gap-1 mb-3">
                             <button class="btn btn-sm btn-primary" t-on-click="() => this.openRecord(rec)"><i class="fa fa-external-link me-1"/>Fiche</button>
                             <button class="btn btn-sm btn-secondary" t-if="rec.attachment_id" t-on-click="() => this.preview(rec)"><i class="fa fa-eye me-1"/>Aperçu</button>
-                            <button class="btn btn-sm btn-secondary" t-if="rec.attachment_id" t-on-click="() => this.download(rec)"><i class="fa fa-download me-1"/>Télécharger</button>
+                            <button name="inspector_download" class="btn btn-sm btn-secondary" t-if="rec.attachment_id" t-on-click="() => this.download(rec)"><i class="fa fa-download me-1"/>Télécharger</button>
                             <button class="btn btn-sm btn-secondary" t-if="rec.can_write and !rec.is_locked and rec.active" t-on-click="triggerVersionUpload"><i class="fa fa-upload me-1"/>Nouvelle version</button>
                             <button class="btn btn-sm btn-secondary" t-if="!rec.is_checked_out and !rec.is_locked and rec.active and rec.can_write" t-on-click="() => this.bulk('checkout', [rec.id])"><i class="fa fa-lock me-1"/>Réserver</button>
                             <button class="btn btn-sm btn-warning" t-if="rec.is_checked_out and (rec.checked_out_by_me or state.meta.is_manager)" t-on-click="() => this.bulk('checkin', [rec.id])"><i class="fa fa-unlock me-1"/>Libérer</button>
@@ -241,9 +241,15 @@
                             <button class="btn btn-sm btn-primary" t-if="rec.wf_status === 'running' and rec.wf_can_act" t-on-click="() => this.wfWizard(rec)"><i class="fa fa-random me-1"/>Traiter</button>
                             <button class="btn btn-sm btn-success" t-if="rec.state === 'draft' and rec.wf_status !== 'running' and rec.attachment_id and rec.can_write and rec.active" t-on-click="() => this.bulk('final', [rec.id])"><i class="fa fa-check me-1"/>Finaliser</button>
                             <button class="btn btn-sm btn-secondary" t-if="state.meta.share_installed and rec.attachment_id and rec.active" t-on-click="() => this.share(rec)"><i class="fa fa-share-alt me-1"/>Partager</button>
+                            <t t-foreach="rec.extra_actions or []" t-as="xa" t-key="xa.key">
+                                <button t-attf-class="btn btn-sm #{xa.cls || 'btn-secondary'}" t-on-click="() => this.extraAction(rec, xa)" t-att-title="xa.help || ''">
+                                    <i t-attf-class="fa #{xa.icon || 'fa-external-link'} me-1"/><t t-esc="xa.label"/>
+                                </button>
+                            </t>
                             <button class="btn btn-sm btn-outline-danger" t-if="rec.active and rec.can_write" t-on-click="() => this.bulk('trash', [rec.id])"><i class="fa fa-trash-o me-1"/>Corbeille</button>
                             <button class="btn btn-sm btn-outline-success" t-if="!rec.active" t-on-click="() => this.bulk('restore', [rec.id])"><i class="fa fa-undo me-1"/>Restaurer</button>
                         </div>
+                        <div class="o_ecm_ext_actions d-flex flex-wrap gap-1 mb-3"/>
                         <dl class="o_ecm_props small">
                             <dt>Fichier</dt><dd><t t-esc="rec.file_name or '—'"/> <span class="text-muted" t-if="rec.file_size">(<t t-esc="formatSize(rec.file_size)"/>)</span></dd>
                             <dt>Versions</dt><dd t-esc="rec.version_count"/>

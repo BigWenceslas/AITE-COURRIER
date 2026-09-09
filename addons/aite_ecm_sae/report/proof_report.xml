@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="report_proof" model="ir.actions.report">
+        <field name="name">Attestation d'intégrité</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aite_ecm_sae.report_proof_document</field>
+        <field name="report_file">aite_ecm_sae.report_proof_document</field>
+        <field name="binding_model_id" ref="aite_ecm_document.model_aite_ecm_document"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_proof_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Attestation d'intégrité</h2>
+                        <p class="text-muted">
+                            Émise le <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y à %H:%M')"/>
+                            par <span t-field="user.name"/>.
+                        </p>
+                        <table class="table table-sm mt-3">
+                            <tr><th style="width: 30%;">Référence</th><td><span t-field="doc.reference"/></td></tr>
+                            <tr><th>Titre</th><td><span t-field="doc.name"/></td></tr>
+                            <tr><th>Type</th><td><span t-field="doc.type_id.name"/></td></tr>
+                            <tr><th>Dossier de classement</th><td><span t-field="doc.folder_id.complete_name"/></td></tr>
+                            <tr><th>Statut</th><td><span t-field="doc.state"/></td></tr>
+                            <tr><th>Propriétaire</th><td><span t-field="doc.owner_id.name"/></td></tr>
+                            <tr><th>Dernière vérification</th><td>
+                                <span t-field="doc.integrity_date"/> —
+                                <span t-field="doc.integrity_state"/></td></tr>
+                        </table>
+
+                        <h4 class="mt-4">Versions et empreintes</h4>
+                        <table class="table table-sm">
+                            <thead><tr><th>Version</th><th>Fichier</th><th>Déposée le</th><th>Par</th><th>Empreinte SHA-256</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="doc.version_ids" t-as="v">
+                                    <td><span t-field="v.version"/></td>
+                                    <td><span t-field="v.file_name"/></td>
+                                    <td><span t-field="v.upload_date"/></td>
+                                    <td><span t-field="v.uploaded_by.name"/></td>
+                                    <td style="font-size: 8px; word-break: break-all;"><span t-field="v.sha256"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">Journal de preuve</h4>
+                        <table class="table table-sm">
+                            <thead><tr><th>Horodatage</th><th>Événement</th><th>Par</th><th>Sceau (SHA-256)</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="doc.seal_ids" t-as="seal">
+                                    <td><span t-field="seal.timestamp"/></td>
+                                    <td><span t-field="seal.event"/></td>
+                                    <td><span t-field="seal.user_id.name"/></td>
+                                    <td style="font-size: 8px; word-break: break-all;"><span t-field="seal.seal_hash"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p class="mt-4" style="font-size: 10px;">
+                            Chaque sceau couvre le contenu du fichier, les données de l'événement et
+                            l'empreinte du sceau précédent : la chaîne ainsi formée permet de détecter
+                            toute altération ou suppression a posteriori. Les horodatages sont signés
+                            avec la clé du serveur, ou délivrés par une autorité de certification
+                            lorsque celle-ci est configurée.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

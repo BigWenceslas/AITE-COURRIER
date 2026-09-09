@@ -214,7 +214,29 @@ class AiteEcmDocument(models.Model):
             'wf_deadline': fields.Datetime.to_string(self.wf_deadline)
             if getattr(self, 'wf_deadline', False) else False,
             'wf_is_overdue': bool(getattr(self, 'wf_is_overdue', False)),
+            'extra_actions': self._explorer_extra_actions(),
         }
+
+    def _explorer_extra_actions(self):
+        """Boutons supplémentaires de l'inspecteur, fournis par les modules
+        complémentaires : liste de dicts ``{key, label, icon, kind, url|method,
+        cls}`` — ``kind`` vaut ``url`` (ouvrir l'URL, y compris un schéma
+        d'application comme ``ms-word:``) ou ``method`` (méthode de modèle qui
+        renvoie une action)."""
+        self.ensure_one()
+        return []
+
+    @api.model
+    def explorer_call(self, doc_id, method):
+        """Exécute une action déclarée par ``_explorer_extra_actions``."""
+        doc = self.browse(int(doc_id)).exists()
+        if not doc:
+            return False
+        allowed = {a['method'] for a in doc._explorer_extra_actions()
+                   if a.get('kind') == 'method'}
+        if method not in allowed:
+            raise UserError(_("Action non autorisée : %s") % method)
+        return getattr(doc, method)() or True
 
     @api.model
     def explorer_search(self, params=None):

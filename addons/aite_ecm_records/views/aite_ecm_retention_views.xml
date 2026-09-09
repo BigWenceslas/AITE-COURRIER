@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_retention_rule_form" model="ir.ui.view">
+        <field name="name">aite.ecm.retention.rule.form</field>
+        <field name="model">aite.ecm.retention.rule</field>
+        <field name="arch" type="xml">
+            <form string="Règle de conservation">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_documents" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="document_count" widget="statinfo" string="Documents"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivée" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title"><h1><field name="name" placeholder="Ex. Pièces comptables — 10 ans"/></h1></div>
+                    <group>
+                        <group string="Périmètre">
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="document_type_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="folder_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="confidentiality_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Durée et sort final">
+                            <label for="duration"/>
+                            <div class="o_row">
+                                <field name="duration" class="oe_inline"/>
+                                <field name="duration_unit" class="oe_inline"/>
+                            </div>
+                            <field name="trigger"/>
+                            <field name="trigger_property" invisible="trigger != 'meta'"
+                                   required="trigger == 'meta'" placeholder="contrat_date_fin"/>
+                            <field name="final_fate"/>
+                            <field name="review_user_id" invisible="final_fate != 'review'"/>
+                        </group>
+                    </group>
+                    <group string="Base légale">
+                        <field name="legal_basis" nolabel="1" placeholder="Acte uniforme OHADA…"/>
+                    </group>
+                    <group string="Commentaire">
+                        <field name="note" nolabel="1"/>
+                    </group>
+                    <div class="alert alert-info" role="status">
+                        La règle applicable à un document est la <b>première</b> (par priorité)
+                        dont le périmètre correspond. L'échéance se calcule à partir du point de
+                        départ ; le recalcul est quotidien, ou immédiat avec le bouton ci-dessous.
+                    </div>
+                    <button name="action_apply_now" type="object" string="Recalculer tout le fonds"
+                            class="btn-secondary" icon="fa-refresh"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_retention_rule_list" model="ir.ui.view">
+        <field name="name">aite.ecm.retention.rule.list</field>
+        <field name="model">aite.ecm.retention.rule</field>
+        <field name="arch" type="xml">
+            <list string="Règles de conservation">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="duration"/>
+                <field name="duration_unit"/>
+                <field name="trigger"/>
+                <field name="final_fate" widget="badge"
+                       decoration-danger="final_fate == 'destroy'"
+                       decoration-success="final_fate == 'keep'"/>
+                <field name="document_count"/>
+                <field name="legal_basis" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_retention_rule" model="ir.actions.act_window">
+        <field name="name">Règles de conservation</field>
+        <field name="res_model">aite.ecm.retention.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Définissez votre politique de conservation</p>
+            <p>Chaque règle indique combien de temps garder un type de documents, à partir de
+               quel événement, et ce qu'il advient à l'échéance.</p>
+        </field>
+    </record>
+</odoo>

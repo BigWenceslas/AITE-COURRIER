@@ -26,6 +26,18 @@
     <menuitem id="menu_aite_ecm_config" name="Configuration"
               parent="menu_aite_ecm_root" sequence="90"
               groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+    <record id="action_aite_ecm_settings" model="ir.actions.act_window">
+        <field name="name">Paramètres</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'aite_ecm_document'}</field>
+    </record>
+
+    <menuitem id="menu_aite_ecm_settings" name="Paramètres"
+              parent="menu_aite_ecm_config" action="action_aite_ecm_settings"
+              sequence="5" groups="base.group_system"/>
+
     <menuitem id="menu_aite_ecm_document_type" name="Types de documents"
               parent="menu_aite_ecm_config" action="action_aite_ecm_document_type" sequence="10"/>
     <menuitem id="menu_aite_ecm_tag" name="Étiquettes"

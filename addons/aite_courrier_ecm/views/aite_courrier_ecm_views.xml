@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Courrier : bouton vers ses documents ECM -->
+    <record id="view_aite_courrier_form_ecm" model="ir.ui.view">
+        <field name="name">aite.courrier.form.ecm.bridge</field>
+        <field name="model">aite.courrier</field>
+        <field name="inherit_id" ref="aite_courrier_ged.view_aite_courrier_form_ged"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_ecm_documents" type="object"
+                        class="oe_stat_button" icon="fa-file-text-o"
+                        invisible="ecm_document_count == 0">
+                    <field name="ecm_document_count" widget="statinfo" string="Documents ECM"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Document ECM : retour vers le courrier d'origine -->
+    <record id="view_aite_ecm_document_form_courrier" model="ir.ui.view">
+        <field name="name">aite.ecm.document.form.courrier</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_courrier" type="object"
+                        class="oe_stat_button" icon="fa-envelope-o"
+                        string="Courrier d'origine" invisible="not courrier_piece_id"/>
+            </xpath>
+            <xpath expr="//field[@name='res_display']" position="after">
+                <field name="courrier_piece_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Pièce de courrier : lien vers son jumeau ECM -->
+    <record id="view_document_form_ecm_bridge" model="ir.ui.view">
+        <field name="name">aite.courrier.document.form.ecm.bridge</field>
+        <field name="model">aite.courrier.document</field>
+        <field name="inherit_id" ref="aite_courrier_ged.view_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="ECM" name="ecm" invisible="not ecm_document_id">
+                    <group>
+                        <field name="ecm_document_id" readonly="1"/>
+                    </group>
+                    <p class="text-muted">
+                        Cette pièce est reflétée dans l'ECM : mêmes fichiers (non dupliqués),
+                        classement <b>Courrier / année / référence</b>, recherche plein texte,
+                        partages, politique de conservation. Le courrier reste la source.
+                    </p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="ir_cron_ecm_mirror" model="ir.cron">
+        <field name="name">AITE ECM : miroir des pièces de courrier</field>
+        <field name="model_id" ref="aite_courrier_ged.model_aite_courrier_document"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_ecm_mirror()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

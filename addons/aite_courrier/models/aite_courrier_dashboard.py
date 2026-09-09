@@ -24,14 +24,24 @@ class AiteCourrier(models.Model):
         archived = Courrier.search_count([('state', '=', 'ar')])
         closed = rejected + archived
 
-        # Charge par étape (courriers en cours).
+        # Charge par étape (courriers en cours). Deux circuits peuvent avoir
+        # des étapes homonymes : la clé est l'identifiant de l'étape, et le
+        # libellé est complété par le circuit quand le nom est ambigu.
         by_step = []
         for step, count in Courrier._read_group(
                 active_domain, ['current_step_id'], ['__count']):
             by_step.append({
+                'id': step.id if step else 0,
                 'label': step.name if step else "Sans étape",
+                'circuit': step.circuit_id.name if step else '',
                 'count': count,
             })
+        seen = {}
+        for row in by_step:
+            seen[row['label']] = seen.get(row['label'], 0) + 1
+        for row in by_step:
+            if seen.get(row['label'], 0) > 1 and row['circuit']:
+                row['label'] = "%s (%s)" % (row['label'], row['circuit'])
         by_step.sort(key=lambda r: r['count'], reverse=True)
         max_step = max((r['count'] for r in by_step), default=0)
         for row in by_step:
@@ -43,6 +53,7 @@ class AiteCourrier(models.Model):
         for category, count in Courrier._read_group(
                 [('state', '!=', 'draft')], ['category'], ['__count']):
             by_category.append({
+                'key': category or 'none',
                 'label': cat_labels.get(category, "Non défini") if category
                          else "Non défini",
                 'count': count,

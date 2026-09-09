@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_document_form_webdav" model="ir.ui.view">
+        <field name="name">aite.ecm.document.form.webdav</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_open_in_office" type="object" icon="fa-file-word-o"
+                        string="Ouvrir dans Office" invisible="not office_uri"/>
+            </xpath>
+            <xpath expr="//field[@name='file_name']" position="after">
+                <field name="webdav_url" widget="CopyClipboardChar" invisible="not webdav_url"/>
+                <field name="office_uri" invisible="1"/>
+                <field name="office_app" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

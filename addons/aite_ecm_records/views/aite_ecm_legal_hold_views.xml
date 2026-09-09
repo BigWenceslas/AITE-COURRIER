@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_legal_hold_form" model="ir.ui.view">
+        <field name="name">aite.ecm.legal.hold.form</field>
+        <field name="model">aite.ecm.legal.hold</field>
+        <field name="arch" type="xml">
+            <form string="Gel juridique">
+                <header>
+                    <button name="action_activate" string="Poser le gel" type="object"
+                            class="btn-primary" invisible="state != 'draft'"
+                            confirm="Les documents visés deviendront non modifiables et non destructibles. Confirmer ?"/>
+                    <button name="action_lift" string="Lever le gel" type="object"
+                            class="btn-warning" invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,lifted"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_documents" type="object" class="oe_stat_button" icon="fa-lock">
+                            <field name="document_count" widget="statinfo" string="Documents gelés"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name" placeholder="Ex. Contentieux ETS KAMDEM"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="reference"/>
+                            <field name="requested_by"/>
+                            <field name="responsible_id"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end" invisible="state != 'lifted'"/>
+                        </group>
+                    </group>
+                    <group string="Motif">
+                        <field name="reason" nolabel="1" placeholder="Litige, contrôle fiscal, audit…"/>
+                    </group>
+                    <group string="Motif de la levée" invisible="state == 'draft'">
+                        <field name="lift_reason" nolabel="1" readonly="state == 'lifted'"/>
+                    </group>
+                    <notebook>
+                        <page string="Périmètre" name="scope">
+                            <group>
+                                <field name="folder_ids" widget="many2many_tags" options="{'no_create': True}"
+                                       readonly="state == 'lifted'"/>
+                            </group>
+                            <field name="document_ids" readonly="state == 'lifted'">
+                                <list>
+                                    <field name="reference"/>
+                                    <field name="name"/>
+                                    <field name="folder_id"/>
+                                    <field name="retention_state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_legal_hold_list" model="ir.ui.view">
+        <field name="name">aite.ecm.legal.hold.list</field>
+        <field name="model">aite.ecm.legal.hold</field>
+        <field name="arch" type="xml">
+            <list string="Gels juridiques" decoration-warning="state == 'active'">
+                <field name="name"/>
+                <field name="reference"/>
+                <field name="responsible_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="document_count"/>
+                <field name="state" widget="badge" decoration-warning="state == 'active'"
+                       decoration-muted="state == 'lifted'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_legal_hold" model="ir.actions.act_window">
+        <field name="name">Gels juridiques</field>
+        <field name="res_model">aite.ecm.legal.hold</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun gel juridique</p>
+            <p>Un gel suspend toute destruction et toute modification des documents visés,
+               le temps d'un litige, d'un audit ou d'un contrôle.</p>
+        </field>
+    </record>
+</odoo>

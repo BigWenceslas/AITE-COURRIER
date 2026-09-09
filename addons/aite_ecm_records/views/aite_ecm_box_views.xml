@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_box_form" model="ir.ui.view">
+        <field name="name">aite.ecm.box.form</field>
+        <field name="model">aite.ecm.box</field>
+        <field name="arch" type="xml">
+            <form string="Boîte d'archives">
+                <header>
+                    <button name="action_lend" string="Sortir (prêt)" type="object"
+                            invisible="state != 'stored'"/>
+                    <button name="action_store" string="Ranger" type="object" class="btn-primary"
+                            invisible="state == 'stored'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,stored,lent"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="code"/><h3><field name="code" readonly="1"/></h3>
+                        <h1><field name="name" placeholder="Ex. Factures fournisseurs 2019"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="location" placeholder="Salle 2 — travée B — étagère 3"/>
+                            <field name="document_count"/>
+                        </group>
+                        <group>
+                            <field name="borrower_id" invisible="state != 'lent'"/>
+                            <field name="borrow_date" invisible="state != 'lent'"/>
+                            <field name="return_due" invisible="state != 'lent'"/>
+                        </group>
+                    </group>
+                    <field name="document_ids">
+                        <list>
+                            <field name="reference"/>
+                            <field name="name"/>
+                            <field name="retention_state"/>
+                            <field name="retention_deadline"/>
+                        </list>
+                    </field>
+                    <group string="Notes"><field name="note" nolabel="1"/></group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_box_list" model="ir.ui.view">
+        <field name="name">aite.ecm.box.list</field>
+        <field name="model">aite.ecm.box</field>
+        <field name="arch" type="xml">
+            <list string="Boîtes d'archives" decoration-warning="state == 'lent'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="location"/>
+                <field name="document_count"/>
+                <field name="borrower_id"/>
+                <field name="return_due"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_box" model="ir.actions.act_window">
+        <field name="name">Archives physiques</field>
+        <field name="res_model">aite.ecm.box</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

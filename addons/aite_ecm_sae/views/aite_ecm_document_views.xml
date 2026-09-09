@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_document_form_sae" model="ir.ui.view">
+        <field name="name">aite.ecm.document.form.sae</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_seals" type="object" class="oe_stat_button"
+                        icon="fa-shield" invisible="seal_count == 0">
+                    <field name="seal_count" widget="statinfo" string="Sceaux"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='description']" position="before">
+                <page string="Preuve" name="sae">
+                    <group>
+                        <group>
+                            <field name="integrity_state" widget="badge"
+                                   decoration-success="integrity_state == 'ok'"
+                                   decoration-danger="integrity_state == 'broken'"/>
+                            <field name="integrity_date"/>
+                            <field name="seal_count"/>
+                            <field name="last_seal_hash"/>
+                        </group>
+                        <group>
+                            <field name="pdfa_version_id"/>
+                        </group>
+                    </group>
+                    <div class="mb-3">
+                        <button name="action_verify_integrity" type="object" class="btn-primary me-2"
+                                string="Vérifier l'intégrité" icon="fa-check-circle"/>
+                        <button name="action_proof_report" type="object" class="btn-secondary me-2"
+                                string="Attestation d'intégrité" icon="fa-file-pdf-o"
+                                invisible="seal_count == 0"/>
+                        <button name="action_create_pdfa" type="object" class="btn-secondary"
+                                string="Créer la copie PDF/A" icon="fa-archive"
+                                invisible="pdfa_version_id or version_count == 0"
+                                groups="aite_courrier_base.group_archive,aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+                    </div>
+                    <field name="seal_ids" readonly="1">
+                        <list>
+                            <field name="timestamp"/>
+                            <field name="event"/>
+                            <field name="version_label"/>
+                            <field name="user_id"/>
+                            <field name="detail"/>
+                            <field name="seal_hash" optional="show"/>
+                        </list>
+                    </field>
+                    <div class="alert alert-info mt-2" role="status">
+                        Chaque sceau couvre le contenu du fichier, l'événement et l'empreinte du
+                        sceau précédent. La chaîne est vérifiée chaque semaine ; toute rupture est
+                        signalée au journal d'audit.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_document_search_sae" model="ir.ui.view">
+        <field name="name">aite.ecm.document.search.sae</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_trashed']" position="after">
+                <separator/>
+                <filter name="filter_integrity_broken" string="Anomalie d'intégrité"
+                        domain="[('integrity_state', '=', 'broken')]"/>
+                <filter name="filter_pdfa" string="Sans copie PDF/A"
+                        domain="[('pdfa_version_id', '=', False), ('state', '=', 'archived')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

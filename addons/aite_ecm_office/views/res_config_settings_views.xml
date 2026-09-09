@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_office" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.office</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="aite_ecm_document.res_config_settings_view_form_ecm"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='aite_ecm']" position="inside">
+                <block title="Office et Google Docs" name="ecm_office_block">
+                    <setting string="Word, Excel, PowerPoint, LibreOffice" id="ecm_office_webdav"
+                             help="Les boutons « Ouvrir dans Word / Excel / PowerPoint / LibreOffice » utilisent cette adresse WebDAV. Office exige HTTPS pour s'authentifier ; l'ouverture réserve le document et chaque enregistrement crée une version.">
+                        <div class="row mt8">
+                            <label for="ecm_webdav_url" class="col-lg-4 o_light_label"/>
+                            <field name="ecm_webdav_url" readonly="1"/>
+                        </div>
+                    </setting>
+                    <setting string="Édition dans le navigateur (Collabora Online / OnlyOffice)" id="ecm_office_wopi"
+                             help="Serveur WOPI auto-hébergé (Docker : collabora/code ou onlyoffice/documentserver avec WOPI activé). Odoo doit pouvoir joindre le serveur, et le serveur doit pouvoir joindre l'URL publique d'Odoo.">
+                        <div class="row mt8">
+                            <label for="ecm_wopi_server_url" class="col-lg-4 o_light_label"/>
+                            <field name="ecm_wopi_server_url" placeholder="https://office.exemple.cm"/>
+                        </div>
+                        <div class="row">
+                            <label for="ecm_wopi_token_hours" class="col-lg-4 o_light_label"/>
+                            <field name="ecm_wopi_token_hours"/>
+                        </div>
+                        <div class="mt8">
+                            <button name="action_ecm_wopi_test" type="object" string="Tester le serveur"
+                                    class="btn-link" icon="fa-plug"/>
+                        </div>
+                    </setting>
+                    <setting string="Google Docs / Sheets / Slides" id="ecm_office_google"
+                             help="Créez un client OAuth « application Web » dans Google Cloud (API Drive activée), déclarez l'URI de redirection ci-dessous, puis chaque utilisateur autorise l'accès au premier clic sur « Ouvrir dans Google Docs ».">
+                        <div class="row mt8">
+                            <label for="ecm_google_client_id" class="col-lg-4 o_light_label"/>
+                            <field name="ecm_google_client_id"/>
+                        </div>
+                        <div class="row">
+                            <label for="ecm_google_client_secret" class="col-lg-4 o_light_label"/>
+                            <field name="ecm_google_client_secret" password="True"/>
+                        </div>
+                        <div class="row">
+                            <label for="ecm_google_redirect" class="col-lg-4 o_light_label"/>
+                            <field name="ecm_google_redirect" readonly="1"/>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

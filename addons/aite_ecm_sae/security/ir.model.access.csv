@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ecm_seal_agent,ecm seal agent,model_aite_ecm_seal,aite_courrier_base.group_agent,1,0,0,0
+access_ecm_seal_assistant,ecm seal assistant,model_aite_ecm_seal,aite_courrier_base.group_assistant,1,0,0,0
+access_ecm_seal_manager,ecm seal manager,model_aite_ecm_seal,aite_courrier_base.group_manager,1,0,0,0
+access_ecm_seal_compta,ecm seal compta,model_aite_ecm_seal,aite_courrier_base.group_compta,1,0,0,0
+access_ecm_seal_signer,ecm seal signer,model_aite_ecm_seal,aite_courrier_base.group_signer,1,0,0,0
+access_ecm_seal_archive,ecm seal archive,model_aite_ecm_seal,aite_courrier_base.group_archive,1,0,0,0
+access_ecm_seal_audit,ecm seal audit,model_aite_ecm_seal,aite_courrier_base.group_audit,1,0,0,0
+access_ecm_seal_admin,ecm seal admin,model_aite_ecm_seal,aite_courrier_base.group_admin,1,0,0,0
+access_ecm_seda_agent,ecm seda agent,model_aite_ecm_seda_export,aite_courrier_base.group_agent,0,0,0,0
+access_ecm_seda_assistant,ecm seda assistant,model_aite_ecm_seda_export,aite_courrier_base.group_assistant,0,0,0,0
+access_ecm_seda_manager,ecm seda manager,model_aite_ecm_seda_export,aite_courrier_base.group_manager,1,1,1,1
+access_ecm_seda_compta,ecm seda compta,model_aite_ecm_seda_export,aite_courrier_base.group_compta,0,0,0,0
+access_ecm_seda_signer,ecm seda signer,model_aite_ecm_seda_export,aite_courrier_base.group_signer,0,0,0,0
+access_ecm_seda_archive,ecm seda archive,model_aite_ecm_seda_export,aite_courrier_base.group_archive,1,1,1,1
+access_ecm_seda_audit,ecm seda audit,model_aite_ecm_seda_export,aite_courrier_base.group_audit,0,0,0,0
+access_ecm_seda_admin,ecm seda admin,model_aite_ecm_seda_export,aite_courrier_base.group_admin,1,1,1,1

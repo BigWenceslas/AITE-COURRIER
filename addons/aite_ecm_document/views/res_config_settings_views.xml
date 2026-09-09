@@ -60,15 +60,4 @@
         </field>
     </record>
 
-    <record id="action_aite_ecm_settings" model="ir.actions.act_window">
-        <field name="name">Paramètres</field>
-        <field name="res_model">res.config.settings</field>
-        <field name="view_mode">form</field>
-        <field name="target">inline</field>
-        <field name="context">{'module': 'aite_ecm_document'}</field>
-    </record>
-
-    <menuitem id="menu_aite_ecm_settings" name="Paramètres"
-              parent="menu_aite_ecm_config" action="action_aite_ecm_settings"
-              sequence="5" groups="base.group_system"/>
 </odoo>

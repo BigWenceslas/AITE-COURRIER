@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="folder_courrier" model="aite.ecm.folder">
+            <field name="name">Courrier</field>
+            <field name="sequence">5</field>
+            <field name="description">Pièces des courriers entrants, sortants et internes (miroir automatique).</field>
+        </record>
+        <record id="type_courrier" model="aite.ecm.document.type">
+            <field name="code">COUR</field>
+            <field name="name">Pièce de courrier</field>
+            <field name="sequence">15</field>
+            <field name="default_folder_id" ref="folder_courrier"/>
+            <field name="metadata_definition" eval="[
+                {'name': 'cour_reference', 'string': 'Référence du courrier', 'type': 'char'},
+                {'name': 'cour_type', 'string': 'Type de courrier', 'type': 'char'},
+                {'name': 'cour_expediteur', 'string': 'Expéditeur', 'type': 'char'},
+                {'name': 'cour_date', 'string': 'Date du courrier', 'type': 'date'},
+            ]"/>
+        </record>
+    </data>
+</odoo>

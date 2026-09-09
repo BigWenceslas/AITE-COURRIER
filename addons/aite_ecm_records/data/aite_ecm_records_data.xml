@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="folder_records" model="aite.ecm.folder">
+            <field name="name">Archives et éliminations</field>
+            <field name="sequence">80</field>
+            <field name="description">Bordereaux, certificats de destruction et pièces de gouvernance archivistique.</field>
+        </record>
+
+        <!-- Règles de conservation livrées (à ajuster par le client) -->
+        <record id="rule_comptable" model="aite.ecm.retention.rule">
+            <field name="code">OHADA-10</field>
+            <field name="name">Pièces comptables — 10 ans (OHADA)</field>
+            <field name="sequence">10</field>
+            <field name="legal_basis">Acte uniforme OHADA relatif au droit comptable : conservation des pièces justificatives pendant 10 ans.</field>
+            <field name="document_type_ids" eval="[(4, ref('aite_ecm_document.type_facture_fournisseur'))]"/>
+            <field name="folder_ids" eval="[(4, ref('aite_ecm_document.folder_finance'))]"/>
+            <field name="duration">10</field>
+            <field name="duration_unit">year</field>
+            <field name="trigger">final</field>
+            <field name="final_fate">destroy</field>
+        </record>
+        <record id="rule_contrat" model="aite.ecm.retention.rule">
+            <field name="code">CONTRAT-10</field>
+            <field name="name">Contrats — 10 ans après la fin du contrat</field>
+            <field name="sequence">20</field>
+            <field name="legal_basis">Prescription décennale ; délai de contestation contractuelle.</field>
+            <field name="document_type_ids" eval="[(4, ref('aite_ecm_document.type_contrat'))]"/>
+            <field name="duration">10</field>
+            <field name="duration_unit">year</field>
+            <field name="trigger">meta</field>
+            <field name="trigger_property">contrat_date_fin</field>
+            <field name="final_fate">review</field>
+        </record>
+        <record id="rule_rh" model="aite.ecm.retention.rule">
+            <field name="code">RH-5</field>
+            <field name="name">Dossiers du personnel — 5 ans après le départ</field>
+            <field name="sequence">30</field>
+            <field name="legal_basis">Code du travail : conservation des pièces du dossier du salarié.</field>
+            <field name="document_type_ids" eval="[(4, ref('aite_ecm_document.type_piece_rh'))]"/>
+            <field name="duration">5</field>
+            <field name="duration_unit">year</field>
+            <field name="trigger">archive</field>
+            <field name="final_fate">review</field>
+        </record>
+        <record id="rule_pv" model="aite.ecm.retention.rule">
+            <field name="code">PV-PERM</field>
+            <field name="name">Procès-verbaux et actes de gouvernance — définitif</field>
+            <field name="sequence">40</field>
+            <field name="legal_basis">Mémoire de l'organisation : conservation sans limite.</field>
+            <field name="document_type_ids" eval="[(4, ref('aite_ecm_document.type_pv'))]"/>
+            <field name="duration">1</field>
+            <field name="duration_unit">year</field>
+            <field name="trigger">final</field>
+            <field name="final_fate">keep</field>
+        </record>
+        <record id="rule_procedure" model="aite.ecm.retention.rule">
+            <field name="code">PROC-3</field>
+            <field name="name">Procédures — 3 ans après remplacement</field>
+            <field name="sequence">50</field>
+            <field name="document_type_ids" eval="[(4, ref('aite_ecm_document.type_procedure'))]"/>
+            <field name="duration">3</field>
+            <field name="duration_unit">year</field>
+            <field name="trigger">archive</field>
+            <field name="final_fate">review</field>
+        </record>
+    </data>
+</odoo>

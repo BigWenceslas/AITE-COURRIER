@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_aite_ecm_records" name="Conservation"
+              parent="aite_ecm_document.menu_aite_ecm_root" sequence="40"
+              groups="aite_courrier_base.group_archive,aite_courrier_base.group_manager,aite_courrier_base.group_admin,aite_courrier_base.group_audit"/>
+    <menuitem id="menu_aite_ecm_document_expired" name="Documents échus"
+              parent="menu_aite_ecm_records" action="action_aite_ecm_document_expired" sequence="10"/>
+    <menuitem id="menu_aite_ecm_disposition" name="Bordereaux d'élimination"
+              parent="menu_aite_ecm_records" action="action_aite_ecm_disposition" sequence="20"/>
+    <menuitem id="menu_aite_ecm_legal_hold" name="Gels juridiques"
+              parent="menu_aite_ecm_records" action="action_aite_ecm_legal_hold" sequence="30"/>
+    <menuitem id="menu_aite_ecm_box" name="Archives physiques"
+              parent="menu_aite_ecm_records" action="action_aite_ecm_box" sequence="40"/>
+    <menuitem id="menu_aite_ecm_retention_rule" name="Règles de conservation"
+              parent="aite_ecm_document.menu_aite_ecm_config"
+              action="action_aite_ecm_retention_rule" sequence="60"
+              groups="aite_courrier_base.group_archive,aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+</odoo>

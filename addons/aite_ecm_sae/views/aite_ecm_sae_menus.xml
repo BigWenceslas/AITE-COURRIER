@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_aite_ecm_sae" name="Preuve et archivage"
+              parent="aite_ecm_document.menu_aite_ecm_root" sequence="45"
+              groups="aite_courrier_base.group_archive,aite_courrier_base.group_manager,aite_courrier_base.group_admin,aite_courrier_base.group_audit"/>
+    <menuitem id="menu_aite_ecm_seal" name="Journal de preuve"
+              parent="menu_aite_ecm_sae" action="action_aite_ecm_seal" sequence="10"/>
+    <menuitem id="menu_aite_ecm_seal_verify" name="Vérifier l'intégrité"
+              parent="menu_aite_ecm_sae" action="action_aite_ecm_seal_verify" sequence="20"
+              groups="aite_courrier_base.group_archive,aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+    <menuitem id="menu_aite_ecm_seda_export" name="Export de paquet d'archives"
+              parent="menu_aite_ecm_sae" action="action_aite_ecm_seda_export" sequence="30"
+              groups="aite_courrier_base.group_archive,aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+</odoo>

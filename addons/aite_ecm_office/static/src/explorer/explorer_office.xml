@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="aite_ecm_office.ExplorerButtons" t-inherit="aite_ecm_document.Explorer" t-inherit-mode="extension">
+        <xpath expr="//button[@name='inspector_download']" position="after">
+            <button class="btn btn-sm btn-primary" t-if="rec.wopi_available and !rec.is_locked and rec.active"
+                    t-on-click="() => this.editOnline(rec)"><i class="fa fa-edit me-1"/>Modifier en ligne</button>
+            <button class="btn btn-sm btn-secondary" t-if="rec.libreoffice_uri and !rec.is_locked and rec.active and rec.can_write"
+                    t-on-click="() => this.openDesktop(rec, rec.libreoffice_uri)"><i class="fa fa-file-text-o me-1"/>LibreOffice</button>
+            <button class="btn btn-sm btn-secondary" t-if="state.meta.google_configured and rec.libreoffice_uri and !rec.is_locked and rec.active and !rec.gdrive_file_id and rec.can_write"
+                    t-on-click="() => this.googleAction(rec, 'action_open_google')"><i class="fa fa-google me-1"/>Google Docs</button>
+            <button class="btn btn-sm btn-warning" t-if="rec.gdrive_file_id"
+                    t-on-click="() => this.googleAction(rec, 'action_google_finish')"><i class="fa fa-check me-1"/>Terminer l'édition Google</button>
+        </xpath>
+    </t>
+</templates>

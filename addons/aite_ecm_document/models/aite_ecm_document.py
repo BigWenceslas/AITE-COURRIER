@@ -126,10 +126,10 @@ class AiteEcmDocument(models.Model):
         comodel_name='aite.ecm.document.version', inverse_name='document_id',
         string="Versions")
     version_count = fields.Integer(string="Nb versions",
-                                   compute='_compute_versions')
+                                   compute='_compute_versions', store=True)
     latest_version_id = fields.Many2one(
         comodel_name='aite.ecm.document.version',
-        string="Dernière version", compute='_compute_versions')
+        string="Dernière version", compute='_compute_versions', store=True)
     file_name = fields.Char(related='latest_version_id.file_name',
                             string="Fichier")
     file_extension = fields.Char(related='latest_version_id.file_extension',

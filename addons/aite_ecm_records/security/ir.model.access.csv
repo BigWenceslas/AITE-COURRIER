@@ -1,0 +1,41 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_aite_ecm_retention_rule_agent,aite ecm retention rule agent,model_aite_ecm_retention_rule,aite_courrier_base.group_agent,1,0,0,0
+access_aite_ecm_retention_rule_assistant,aite ecm retention rule assistant,model_aite_ecm_retention_rule,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_ecm_retention_rule_manager,aite ecm retention rule manager,model_aite_ecm_retention_rule,aite_courrier_base.group_manager,1,1,1,0
+access_aite_ecm_retention_rule_compta,aite ecm retention rule compta,model_aite_ecm_retention_rule,aite_courrier_base.group_compta,1,0,0,0
+access_aite_ecm_retention_rule_signer,aite ecm retention rule signer,model_aite_ecm_retention_rule,aite_courrier_base.group_signer,1,0,0,0
+access_aite_ecm_retention_rule_archive,aite ecm retention rule archive,model_aite_ecm_retention_rule,aite_courrier_base.group_archive,1,1,1,0
+access_aite_ecm_retention_rule_audit,aite ecm retention rule audit,model_aite_ecm_retention_rule,aite_courrier_base.group_audit,1,0,0,0
+access_aite_ecm_retention_rule_admin,aite ecm retention rule admin,model_aite_ecm_retention_rule,aite_courrier_base.group_admin,1,1,1,1
+access_aite_ecm_legal_hold_agent,aite ecm legal hold agent,model_aite_ecm_legal_hold,aite_courrier_base.group_agent,1,0,0,0
+access_aite_ecm_legal_hold_assistant,aite ecm legal hold assistant,model_aite_ecm_legal_hold,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_ecm_legal_hold_manager,aite ecm legal hold manager,model_aite_ecm_legal_hold,aite_courrier_base.group_manager,1,1,1,0
+access_aite_ecm_legal_hold_compta,aite ecm legal hold compta,model_aite_ecm_legal_hold,aite_courrier_base.group_compta,1,0,0,0
+access_aite_ecm_legal_hold_signer,aite ecm legal hold signer,model_aite_ecm_legal_hold,aite_courrier_base.group_signer,1,0,0,0
+access_aite_ecm_legal_hold_archive,aite ecm legal hold archive,model_aite_ecm_legal_hold,aite_courrier_base.group_archive,1,1,1,0
+access_aite_ecm_legal_hold_audit,aite ecm legal hold audit,model_aite_ecm_legal_hold,aite_courrier_base.group_audit,1,0,0,0
+access_aite_ecm_legal_hold_admin,aite ecm legal hold admin,model_aite_ecm_legal_hold,aite_courrier_base.group_admin,1,1,1,1
+access_aite_ecm_disposition_agent,aite ecm disposition agent,model_aite_ecm_disposition,aite_courrier_base.group_agent,1,0,0,0
+access_aite_ecm_disposition_assistant,aite ecm disposition assistant,model_aite_ecm_disposition,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_ecm_disposition_manager,aite ecm disposition manager,model_aite_ecm_disposition,aite_courrier_base.group_manager,1,1,1,1
+access_aite_ecm_disposition_compta,aite ecm disposition compta,model_aite_ecm_disposition,aite_courrier_base.group_compta,1,0,0,0
+access_aite_ecm_disposition_signer,aite ecm disposition signer,model_aite_ecm_disposition,aite_courrier_base.group_signer,1,0,0,0
+access_aite_ecm_disposition_archive,aite ecm disposition archive,model_aite_ecm_disposition,aite_courrier_base.group_archive,1,1,1,0
+access_aite_ecm_disposition_audit,aite ecm disposition audit,model_aite_ecm_disposition,aite_courrier_base.group_audit,1,0,0,0
+access_aite_ecm_disposition_admin,aite ecm disposition admin,model_aite_ecm_disposition,aite_courrier_base.group_admin,1,1,1,1
+access_aite_ecm_disposition_line_agent,aite ecm disposition line agent,model_aite_ecm_disposition_line,aite_courrier_base.group_agent,1,0,0,0
+access_aite_ecm_disposition_line_assistant,aite ecm disposition line assistant,model_aite_ecm_disposition_line,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_ecm_disposition_line_manager,aite ecm disposition line manager,model_aite_ecm_disposition_line,aite_courrier_base.group_manager,1,1,1,1
+access_aite_ecm_disposition_line_compta,aite ecm disposition line compta,model_aite_ecm_disposition_line,aite_courrier_base.group_compta,1,0,0,0
+access_aite_ecm_disposition_line_signer,aite ecm disposition line signer,model_aite_ecm_disposition_line,aite_courrier_base.group_signer,1,0,0,0
+access_aite_ecm_disposition_line_archive,aite ecm disposition line archive,model_aite_ecm_disposition_line,aite_courrier_base.group_archive,1,1,1,1
+access_aite_ecm_disposition_line_audit,aite ecm disposition line audit,model_aite_ecm_disposition_line,aite_courrier_base.group_audit,1,0,0,0
+access_aite_ecm_disposition_line_admin,aite ecm disposition line admin,model_aite_ecm_disposition_line,aite_courrier_base.group_admin,1,1,1,1
+access_aite_ecm_box_agent,aite ecm box agent,model_aite_ecm_box,aite_courrier_base.group_agent,1,0,0,0
+access_aite_ecm_box_assistant,aite ecm box assistant,model_aite_ecm_box,aite_courrier_base.group_assistant,1,0,0,0
+access_aite_ecm_box_manager,aite ecm box manager,model_aite_ecm_box,aite_courrier_base.group_manager,1,1,1,0
+access_aite_ecm_box_compta,aite ecm box compta,model_aite_ecm_box,aite_courrier_base.group_compta,1,0,0,0
+access_aite_ecm_box_signer,aite ecm box signer,model_aite_ecm_box,aite_courrier_base.group_signer,1,0,0,0
+access_aite_ecm_box_archive,aite ecm box archive,model_aite_ecm_box,aite_courrier_base.group_archive,1,1,1,1
+access_aite_ecm_box_audit,aite ecm box audit,model_aite_ecm_box,aite_courrier_base.group_audit,1,0,0,0
+access_aite_ecm_box_admin,aite ecm box admin,model_aite_ecm_box,aite_courrier_base.group_admin,1,1,1,1

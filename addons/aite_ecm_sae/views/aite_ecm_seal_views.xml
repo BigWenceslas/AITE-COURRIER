@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_seal_list" model="ir.ui.view">
+        <field name="name">aite.ecm.seal.list</field>
+        <field name="model">aite.ecm.seal</field>
+        <field name="arch" type="xml">
+            <list string="Journal de preuve" create="false" edit="false" delete="false">
+                <field name="timestamp"/>
+                <field name="document_reference"/>
+                <field name="event" widget="badge"/>
+                <field name="version_label"/>
+                <field name="user_id"/>
+                <field name="detail" optional="show"/>
+                <field name="seal_hash" optional="show"/>
+                <field name="previous_hash" optional="hide"/>
+                <field name="content_sha256" optional="hide"/>
+                <field name="timestamp_source" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_seal_form" model="ir.ui.view">
+        <field name="name">aite.ecm.seal.form</field>
+        <field name="model">aite.ecm.seal</field>
+        <field name="arch" type="xml">
+            <form string="Sceau" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="document_reference"/>
+                            <field name="document_id"/>
+                            <field name="event"/>
+                            <field name="version_label"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="timestamp"/>
+                            <field name="timestamp_source"/>
+                            <field name="content_sha256"/>
+                            <field name="previous_hash"/>
+                            <field name="seal_hash"/>
+                        </group>
+                    </group>
+                    <group string="Détail"><field name="detail" nolabel="1"/></group>
+                    <group string="Données scellées"><field name="payload" nolabel="1"/></group>
+                    <group string="Jeton d'horodatage"><field name="timestamp_token" nolabel="1"/></group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_aite_ecm_seal_search" model="ir.ui.view">
+        <field name="name">aite.ecm.seal.search</field>
+        <field name="model">aite.ecm.seal</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="document_reference"/>
+                <field name="seal_hash"/>
+                <field name="user_id"/>
+                <filter name="filter_version" string="Dépôts de version" domain="[('event', '=', 'version')]"/>
+                <filter name="filter_dispose" string="Éliminations" domain="[('event', '=', 'dispose')]"/>
+                <filter name="filter_check" string="Vérifications" domain="[('event', '=', 'check')]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_event" string="Événement" context="{'group_by': 'event'}"/>
+                    <filter name="group_doc" string="Document" context="{'group_by': 'document_reference'}"/>
+                    <filter name="group_day" string="Jour" context="{'group_by': 'timestamp:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_aite_ecm_seal" model="ir.actions.act_window">
+        <field name="name">Journal de preuve</field>
+        <field name="res_model">aite.ecm.seal</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_aite_ecm_seal_search"/>
+    </record>
+
+    <record id="action_aite_ecm_seal_verify" model="ir.actions.server">
+        <field name="name">Vérifier tout le journal</field>
+        <field name="model_id" ref="model_aite_ecm_seal"/>
+        <field name="state">code</field>
+        <field name="code">
+problems = env['aite.ecm.seal'].verify_chain() + env['aite.ecm.seal'].verify_documents()
+action = {'type': 'ir.actions.client', 'tag': 'display_notification', 'params': {
+    'title': "Vérification d'intégrité",
+    'type': 'danger' if problems else 'success',
+    'sticky': bool(problems),
+    'message': ("%d anomalie(s) : %s" % (len(problems), problems[:3])) if problems
+               else "Chaîne de preuve cohérente et fichiers intègres.",
+}}
+        </field>
+    </record>
+</odoo>

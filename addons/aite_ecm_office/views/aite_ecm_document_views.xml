@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_ecm_document_form_office" model="ir.ui.view">
+        <field name="name">aite.ecm.document.form.office</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_preview_latest']" position="after">
+                <button name="action_office_edit_online" type="object" icon="fa-edit"
+                        string="Modifier en ligne" class="btn-primary"
+                        invisible="not wopi_available or is_locked"/>
+                <button name="action_office_view_online" type="object" icon="fa-eye"
+                        string="Voir en ligne" invisible="not wopi_available or not is_locked"/>
+                <button name="action_open_libreoffice" type="object" icon="fa-file-text-o"
+                        string="LibreOffice" invisible="not libreoffice_uri or is_locked"/>
+                <button name="action_open_google" type="object" icon="fa-google"
+                        string="Ouvrir dans Google Docs"
+                        invisible="not google_configured or not libreoffice_uri or is_locked or gdrive_file_id"/>
+                <button name="action_google_pull" type="object" icon="fa-refresh"
+                        string="Récupérer depuis Google" invisible="not gdrive_file_id"/>
+                <button name="action_google_finish" type="object" icon="fa-check"
+                        string="Terminer l'édition Google" invisible="not gdrive_file_id"
+                        class="btn-warning"/>
+            </xpath>
+            <xpath expr="//field[@name='file_name']" position="after">
+
+                <field name="wopi_available" invisible="1"/>
+
+                <field name="libreoffice_uri" invisible="1"/>
+                <field name="google_configured" invisible="1"/>
+                <field name="gdrive_url" widget="url" invisible="not gdrive_file_id"/>
+                <field name="gdrive_user_id" invisible="not gdrive_file_id"/>
+                <field name="gdrive_error" invisible="not gdrive_error"/>
+                <field name="gdrive_file_id" invisible="1"/>
+                <field name="webdav_url" widget="CopyClipboardChar" invisible="not webdav_url"
+                       groups="aite_courrier_base.group_manager,aite_courrier_base.group_admin"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_users_form_google" model="ir.ui.view">
+        <field name="name">res.users.form.google</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Google Docs" name="ecm_google">
+                    <group>
+                        <field name="ecm_google_linked"/>
+                        <button name="action_google_unlink" type="object" string="Révoquer l'autorisation Google"
+                                class="btn-secondary" invisible="not ecm_google_linked"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

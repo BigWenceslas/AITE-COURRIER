@@ -63,7 +63,7 @@
                         <div t-if="!state.data.by_step.length" class="text-muted">
                             Aucun courrier en cours.
                         </div>
-                        <t t-foreach="state.data.by_step" t-as="row" t-key="row.label">
+                        <t t-foreach="state.data.by_step" t-as="row" t-key="row.id">
                             <div class="o_aite_barrow">
                                 <span class="o_aite_barlabel" t-esc="row.label"/>
                                 <div class="o_aite_bar">
@@ -80,7 +80,7 @@
                         <div t-if="!state.data.by_category.length" class="text-muted">
                             Aucune donnée.
                         </div>
-                        <t t-foreach="state.data.by_category" t-as="row" t-key="row.label">
+                        <t t-foreach="state.data.by_category" t-as="row" t-key="row.key">
                             <div class="o_aite_catrow">
                                 <span class="o_aite_catlabel" t-esc="row.label"/>
                                 <span class="o_aite_catcount" t-esc="row.count"/>
