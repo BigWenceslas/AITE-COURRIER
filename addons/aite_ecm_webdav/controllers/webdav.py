@@ -3,6 +3,7 @@
 import base64
 import logging
 import uuid
+from datetime import timezone
 from email.utils import format_datetime
 from urllib.parse import quote, unquote, urlparse
 from xml.sax.saxutils import escape
@@ -16,6 +17,17 @@ from ..models.aite_ecm_webdav import WebdavError, WebdavNotFound
 _logger = logging.getLogger(__name__)
 ROOT_PATH = '/webdav/aite_ecm'
 ALLOW = 'OPTIONS, GET, HEAD, PUT, DELETE, PROPFIND, PROPPATCH, MKCOL, MOVE, LOCK, UNLOCK'
+
+
+def http_date(value):
+    """Date HTTP (RFC 1123) à partir d'un datetime Odoo, qui est *naïf* et
+    exprimé en UTC : ``format_datetime(..., usegmt=True)`` exige un datetime
+    portant explicitement le fuseau UTC."""
+    if not value:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return format_datetime(value.astimezone(timezone.utc), usegmt=True)
 
 
 class AiteEcmWebdavController(http.Controller):
@@ -100,7 +112,7 @@ class AiteEcmWebdavController(http.Controller):
                     props.append('<D:getetag>%s</D:getetag>' % escape(res['etag']))
             if res.get('mtime'):
                 props.append('<D:getlastmodified>%s</D:getlastmodified>'
-                             % format_datetime(res['mtime'], usegmt=True))
+                             % http_date(res['mtime']))
             if res.get('ctime'):
                 props.append('<D:creationdate>%sZ</D:creationdate>'
                              % res['ctime'].replace(microsecond=0).isoformat())
@@ -162,8 +174,7 @@ class AiteEcmWebdavController(http.Controller):
         return Response(raw, status=200, headers=[
             ('Content-Type', mimetype), ('Content-Length', str(len(raw))),
             ('ETag', '"%s"' % (version.sha256 or version.id)),
-            ('Last-Modified', format_datetime(version.upload_date or doc.write_date,
-                                              usegmt=True))])
+            ('Last-Modified', http_date(version.upload_date or doc.write_date))])
 
     def _handle_head(self, subpath):
         resp = self._handle_get(subpath)
