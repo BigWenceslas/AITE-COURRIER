@@ -2,6 +2,61 @@
 
 *Audit du code au 8 septembre 2026 (branche `main`, commit unique `0133173` « initial commit »). Document de référence pour la roadmap « ECM complet avec WebDAV fonctionnel ».*
 
+> ## ⚠️ Addendum du 10 septembre 2026 — ce document est un instantané daté
+>
+> Cet audit décrit le dépôt au commit `0133173`. Il a été suivi de la livraison
+> `8ac0a08` (« maj ok ») puis d'une **campagne de recette exécutée sur instance
+> réelle** — Odoo 18 Community installé, jeu de 346 documents, 34 scénarios,
+> 152 tests automatisés, 32 cas protocolaires WebDAV. Résultats et preuves :
+> **[`docs/uat/DOSSIER_UAT.md`](../uat/DOSSIER_UAT.md)** (et sa version PDF).
+>
+> Le corps de l'audit est **conservé tel quel** : c'est un état de référence, et
+> plusieurs de ses constats portent sur des parties non réauditées depuis. Mais
+> **quatre des dix constats qui structurent la roadmap sont désormais fermés**,
+> et il ne faut plus planifier sur leur base :
+>
+> | Constat § 1.3 | État au 10/09/2026 | Preuve |
+> |---|---|---|
+> | **1.** L'ECM n'a aucune exposition « système de fichiers » | ✅ **Fermé** — `aite_ecm_webdav` monte le plan de classement, les dossiers et les documents | SC-11.0 à SC-11.25 |
+> | **2.** WebDAV non prêt pour Word/Excel/Finder : verrous factices, pas d'ETag, fichiers temporaires | ✅ **Fermé** — verrous réels adossés au check-out ECM (423 sur écriture concurrente), ETag = SHA-256 de la version, `Last-Modified` RFC 1123, fichiers `~$…`/`.tmp` refusés en 403 | SC-11.12 à SC-11.19 |
+> | **4.** La machine à états du courrier n'utilise que 4 de ses 6 statuts | ✅ **Fermé** — « En traitement » posé au franchissement d'étape, « Validé » retiré | ANO-08 |
+> | **8.** Aucune rétention, archivage légal, scellement ni conformité | ✅ **Fermé** — `aite_ecm_records` (DUA, sort final, gel juridique, bordereaux, archives physiques) et `aite_ecm_sae` (sceaux SHA-256 chaînés, export SEDA 2.1), testés | SC-06, SC-07 |
+>
+> **Ce qui reste ouvert, et qui appartient toujours à la roadmap :**
+>
+> - **Constat 3** (deux moteurs de workflow), **7** (pont Documents Enterprise),
+>   **9** (documentation produit périmée), **10** (industrialisation : ni CI, ni
+>   traduction, ni gestion de dépendances) : **non traités**.
+> - **Constat 6** (couverture de tests) : **partiellement traité**. Le banc de
+>   test ECM, qui était inopérant, est réparé et la suite est verte
+>   (152 tests, 0 échec). Mais **11 modules sur 28 n'ont toujours aucun test**,
+>   dont précisément les couches exposées aux tiers que l'audit visait :
+>   `aite_ecm_api`, `aite_ecm_share`, `aite_courrier_portal`,
+>   `aite_courrier_capture`, `aite_courrier_ocr`, `aite_courrier_reponse`.
+>   L'API REST et le partage externe ont été validés **manuellement** en
+>   campagne (SC-09, SC-05) — ce n'est pas de la non-régression.
+> - **Constat 5** (matrice de droits) : le cloisonnement effectif a été
+>   **mesuré** (§ SC-12 du dossier de recette : 346 documents, 8 comptes, le
+>   compte Audit ne voit aucun document confidentiel) et il est cohérent. La
+>   critique de conception de l'audit n'a pas été réinstruite pour autant.
+> - **§ 5.3, ligne « Authentification entreprise (2FA, SSO, clés API) »** :
+>   **toujours absent**, et vérifié le 10/09/2026. Le WebDAV ECM
+>   s'authentifie uniquement par mot de passe, et se ré-authentifie à chaque
+>   requête. Une clé d'API valide est **refusée en 401** par le WebDAV alors que
+>   la même clé est acceptée en 200 par l'API REST. Conséquence de déploiement :
+>   **un compte avec 2FA activée, ou un compte SSO sans mot de passe local, ne
+>   peut pas monter le lecteur réseau.** À traiter avant un déploiement où la
+>   2FA est imposée.
+> - **Prérequis de déploiement** (nouveau, pas un défaut) : le serveur doit
+>   exposer **une seule base résolvable** (`db_name` ou `--db-filter`). Un client
+>   WebDAV n'envoie aucun cookie de session, la base ne peut donc pas être
+>   déduite, et les deux points d'entrée répondent 404 sans cela.
+>
+> Le choix d'architecture posé au § 5.3 — WebDAV servi par Odoo *ou* Nextcloud
+> comme espace fichiers — est tranché de fait : **la voie WebDAV est en place et
+> vérifiée**. Le connecteur Nextcloud reste disponible et testé sur simulateur,
+> mais n'est plus le seul chemin vers « voir les documents comme des fichiers ».
+
 **Méthode.** Lecture intégrale des 23 modules (12 887 lignes Python, 5 591 lignes XML, 752 lignes JavaScript, 20 fichiers de tests, 14 cahiers de tests, 5 documents produit), vérification statique (compilation Python, validité XML/CSV, inventaire des modèles, routes, règles, crons), croisement documentation ↔ code. **Odoo n'est pas installé dans l'environnement d'audit : aucun test n'a été exécuté.** Les comportements dépendant du framework ou de l'app Documents Enterprise sont signalés « à confirmer sur instance ». Chaque constat est référencé par fichier et ligne.
 
 ---

@@ -748,17 +748,29 @@ six défauts, tous corrigés :
 est envisageable sur l'ensemble des domaines, **lecteur réseau WebDAV compris**. L'objectif d'un ECM
 complet avec WebDAV fonctionnel est atteint et vérifié par une campagne protocolaire rejouable.
 
-Trois recommandations d'exploitation subsistent, sans caractère bloquant :
+Quatre points d'exploitation subsistent. Aucun n'est une anomalie produit, mais **le second
+conditionne le déploiement** dans un environnement où la double authentification est imposée.
 
 1. **Prérequis de déploiement WebDAV.** Le serveur doit exposer une seule base résolvable (`db_name`
    ou `--db-filter`) : un client WebDAV n'envoie aucun cookie de session, la base ne peut donc pas
    être déduite. Sans cela, les deux points d'entrée répondent 404. Ce n'est pas un défaut du
    produit mais une contrainte à porter dans la procédure d'installation.
-2. **Compléter la couverture d'environnement.** Génération PDF (`wkhtmltopdf`), OCR image
+
+2. **Le lecteur réseau n'accepte que le mot de passe.** Vérifié le 10 septembre 2026 : une clé
+   d'API valide est refusée en **401** par `/webdav/aite_ecm`, alors que la **même clé** est
+   acceptée en **200** par `/api/ecm/v1`. `_authenticate()` n'appelle `session.authenticate()`
+   qu'avec `type: 'password'`, et le fait à chaque requête. Conséquence : **un compte avec 2FA
+   activée, ou un compte SSO sans mot de passe local, ne peut pas monter le lecteur réseau.** Deux
+   voies selon la cible : accepter la clé d'API comme mot de passe Basic — c'est le mécanisme prévu
+   par Odoo pour les clients incapables de 2FA — ou réserver le lecteur réseau à des comptes de
+   service dédiés. À trancher avant mise en production si la 2FA est imposée.
+3. **Compléter la couverture d'environnement.** Génération PDF (`wkhtmltopdf`), OCR image
    (`tesseract`), SMTP/IMAP et une instance Nextcloud réelle n'ont pas pu être exercés ; ces
    fonctions restent à valider en pré-production.
-3. **Tenir la suite automatisée à zéro échec.** Elle est désormais un socle de non-régression fiable
-   — c'est précisément son silence qui avait laissé passer une anomalie bloquante.
+4. **Tenir la suite automatisée à zéro échec.** Elle est désormais un socle de non-régression
+   fiable — c'est précisément son silence qui avait laissé passer une anomalie bloquante. Onze
+   modules sur vingt-huit n'ont toujours aucun test, dont l'API REST et le partage externe,
+   validés en campagne mais **manuellement** (SC-09, SC-05).
 
 ---
 
