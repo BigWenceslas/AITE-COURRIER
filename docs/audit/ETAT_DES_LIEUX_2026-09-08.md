@@ -10,9 +10,18 @@
 > 152 tests automatisés, 32 cas protocolaires WebDAV. Résultats et preuves :
 > **[`docs/uat/DOSSIER_UAT.md`](../uat/DOSSIER_UAT.md)** (et sa version PDF).
 >
-> Le corps de l'audit est **conservé tel quel** : c'est un état de référence, et
-> plusieurs de ses constats portent sur des parties non réauditées depuis. Mais
-> **quatre des dix constats qui structurent la roadmap sont désormais fermés**,
+> **L'analyse du corps n'est pas réécrite** — c'est un état de référence daté —
+> mais tous les endroits que la recette contredit sont **annotés sur place**, afin
+> qu'un lecteur qui entre par le § 5.3 ou le § 9 ne lise pas un verdict périmé :
+>
+> - § 1.1 et § 1.2 : notes datées sur les constats devenus faux ;
+> - § 5.3 : le tableau de verdict WebDAV distingue désormais les **deux** points
+>   d'entrée, celui de l'ECM (livré depuis) et celui du courrier (inchangé) ;
+> - § 9 : le tableau des 22 constats porte une colonne **« État au 10/09/2026 »**,
+>   où « — non réinstruit » signifie *ni confirmé, ni infirmé* — à ne pas lire
+>   comme corrigé.
+>
+> Sur les dix constats qui structurent la roadmap (§ 1.3), **quatre sont fermés**
 > et il ne faut plus planifier sur leur base :
 >
 > | Constat § 1.3 | État au 10/09/2026 | Preuve |
@@ -68,7 +77,9 @@
 Le dépôt contient **deux produits emboîtés** : une suite de gestion du courrier (v1, 13 modules) et une « Fondation ECM » (v2.0, 10 modules) qui s'appuie sur son socle. Le cœur est réel, cohérent et testé par cahiers (133 tests, tous au niveau ORM). Mais, au regard de l'objectif :
 
 * **L'ECM n'est pas « complet »** : le référentiel documentaire, le plan de classement avec droits hérités, les versions, le check-out, les métadonnées, l'explorateur natif, les dossiers métier, le workflow polymorphe, le partage sécurisé et l'API existent ; il manque la rétention/archivage, le scellement, la recherche unifiée (OCR limité au courrier), un moteur de workflow unique, une API CRUD complète, la traduction, et plusieurs briques livrées sans test ni règles de visibilité (partages, dossiers, historique de circuit).
+  > **10/09/2026 — partiellement obsolète.** La rétention/archivage (`aite_ecm_records`) et le scellement (`aite_ecm_sae`) sont livrés et testés. Restent vrais : moteur de workflow unique, API CRUD complète, traduction, et l'absence de règle de visibilité sur les **partages** (`aite_ecm_share/security/` ne contient toujours aucun `ir.rule`) et sur l'**historique de circuit** (`aite_ecm_workflow/security/` non plus) — les dossiers métier, eux, ont désormais leurs règles.
 * **Le WebDAV n'est pas « fonctionnel » au sens bureautique** : il fonctionne en consultation et dépôt avec rclone/curl sur les **pièces de courrier uniquement**. Il **n'expose pas l'ECM**, ses verrous sont factices, il n'a ni ETag ni gestion des fichiers temporaires d'Office/Finder, il exclut les comptes 2FA/SSO, se ré-authentifie à chaque requête, et sa couche HTTP n'a aucun test. Le montage lecteur réseau Windows n'est pas documenté comme validé.
+  > **10/09/2026 — obsolète pour l'ECM, toujours vrai pour le courrier.** Ce constat portait sur `aite_courrier_webdav`, seul point d'entrée existant alors. Un **second** point d'entrée a été livré depuis, `aite_ecm_webdav` (`/webdav/aite_ecm`), qui expose le plan de classement, adosse ses verrous au check-out ECM, publie un ETag SHA-256 et refuse les fichiers temporaires d'Office : **32 cas protocolaires sur 32**, couche HTTP testée. Le point d'entrée **courrier** (`/webdav/aite_courrier`), lui, n'a reçu que les correctifs `HEAD`, 415 et `readonly` : vérifié le 10/09/2026, il **n'a toujours ni ETag ni verrou réel**. Enfin, l'exclusion des comptes 2FA/SSO reste vraie **pour les deux** (cf. addendum en tête).
 * **Une alternative crédible existe** : le connecteur Nextcloud (miroir bidirectionnel testé sur un faux serveur) couvre synchronisation, édition en ligne et liens publics, au prix d'une copie des fichiers et d'un rapprochement de comptes non fait.
 
 ### 1.2 Maturité par bloc
@@ -77,15 +88,18 @@ Le dépôt contient **deux produits emboîtés** : une suite de gestion du courr
 |---|---|---|
 | Socle (référentiels, groupes, audit) | ✅ Opérationnel, testé | audit immuable, 8 rôles ; pas de rétention du journal, pas de multi-société |
 | Moteur de circuits + 5 circuits | ✅ Opérationnel, testé | linéaire ; pas de parallélisme, conditions, calendrier ouvré ; circuits non instanciés |
-| Courrier (cycle de vie, SLA, AR) | 🟡 Opérationnel, testé, incomplet | statuts « En traitement »/« Validé » jamais atteints ; matrice de droits incohérente avec les rôles ; notifications massives |
+| Courrier (cycle de vie, SLA, AR) | 🟡 Opérationnel, testé, incomplet | ~~statuts « En traitement »/« Validé » jamais atteints~~ **corrigé 10/09** ; matrice de droits incohérente avec les rôles ; notifications massives |
 | Validation | ✅ Opérationnel, testé | contrôle serveur systématique ; commentaire ouvert à tout lecteur |
 | GED courrier | 🟡 Opérationnel, testé | suppression sans garde-fou, MIME par extension, pas de dédoublonnage |
-| WebDAV courrier | 🟡 Partiel | cf. §5 : classe 1 partielle, classe 2 annoncée mais factice, HTTP non testé |
+| WebDAV courrier | 🟡 Partiel | cf. §5 : classe 1 partielle, classe 2 annoncée mais factice, HTTP non testé — **inchangé au 10/09** (ni ETag ni verrou réel) |
+| **WebDAV ECM** *(livré après l'audit)* | ✅ **Opérationnel, testé** | `aite_ecm_webdav` : plan de classement monté, verrous adossés au check-out, ETag SHA-256, 32 cas protocolaires sur 32 ; n'accepte que le mot de passe (pas de clé d'API, donc 2FA incompatible) |
 | Tableau de bord | ✅ Opérationnel | KPI « en cours » et « délai moyen » approximatifs |
 | Capture e-mail, OCR, Réponses | 🟡 Livrés, **0 test** | défauts de conception (duplication, file OCR bloquante, PDF sans destinataire) |
 | Signature (Sign), Portail | 🟡 Optionnels, **0 test** | trous de contrôle d'accès, PDF signé non rapatrié, jetons permanents |
 | Pont Documents (courrier + ECM) | 🔴 Enterprise, fragile | confidentialité non projetée, adoption ECM probablement inopérante, contournement des règles ECM |
-| Socle ECM (documents, dossiers, versions, explorateur) | ✅ Opérationnel, testé | le module le plus abouti ; pas de rétention, pas de scellement, pas de WebDAV |
+| Socle ECM (documents, dossiers, versions, explorateur) | ✅ Opérationnel, testé | le module le plus abouti ; ~~pas de rétention, pas de scellement, pas de WebDAV~~ **les trois sont livrés et testés au 10/09** |
+| **Conservation, archivage légal** *(livré après l'audit)* | ✅ **Opérationnel, testé** | `aite_ecm_records` : DUA, sort final, gel juridique, bordereaux d'élimination, archives physiques |
+| **Valeur probante** *(livré après l'audit)* | ✅ **Opérationnel, testé** | `aite_ecm_sae` : sceaux SHA-256 chaînés, journal de preuve, export SEDA 2.1 |
 | Workflow polymorphe, Dossiers métier | 🟡 Opérationnels, testés a minima | bug de filtre, doublon de moteur, aucune règle de visibilité sur dossiers/historique |
 | Partage sécurisé, API REST | 🟡 Livrés, **0 test** | partages lisibles par tous, consultation seule non contraignante, CORS inopérant, CRUD partiel |
 | Nextcloud | 🟡 Opérationnel sur simulateur | non validé sur instance réelle ; comptes non rapprochés ; confidentiel courrier non filtré |
@@ -427,16 +441,23 @@ C'est le point central de l'objectif « ECM complet avec WebDAV fonctionnel ». 
 
 ### 5.3 Verdict WebDAV
 
-| Critère | Verdict |
-|---|---|
-| Consultation / téléchargement des pièces de courrier via rclone, cadaver, navigateur | **Fonctionnel** |
-| Dépôt d'un PDF/DOCX dans un courrier via rclone ou `curl` | **Fonctionnel** |
-| Montage lecteur réseau Windows/macOS et édition directe dans Word/Excel | **Non fiable** (points 6, 7, 8, 11) |
-| Accès WebDAV au référentiel ECM (plan de classement, documents, dossiers métier) | **Absent** |
-| Verrouillage collaboratif réel (LOCK ↔ check-out) | **Absent** |
-| Authentification entreprise (2FA, SSO, clés API) | **Absent** |
-| Conformité RFC 4918 classe 1 | **Partielle** |
-| Conformité RFC 4918 classe 2 (verrous) | **Annoncée mais non implémentée** |
+La colonne « 10/09/2026 » a été ajoutée après la campagne de recette. Les verdicts d'origine
+portaient sur le seul point d'entrée existant alors, `/webdav/aite_courrier` ; la mise à jour
+distingue les **deux** points d'entrée, celui de l'ECM ayant été livré depuis.
+
+| Critère | Verdict 08/09 (courrier) | **10/09 — ECM (`/webdav/aite_ecm`)** | **10/09 — courrier** |
+|---|---|---|---|
+| Consultation / téléchargement via rclone, cadaver, navigateur | **Fonctionnel** | ✅ Fonctionnel | ✅ Inchangé |
+| Dépôt d'un PDF/DOCX via rclone ou `curl` | **Fonctionnel** | ✅ Fonctionnel, **relisible au chemin déposé** | ✅ Inchangé |
+| Montage lecteur réseau Windows/macOS et édition directe dans Word/Excel | **Non fiable** (points 6, 7, 8, 11) | ✅ **Parcours validé** de bout en bout (SC-11.8 à SC-11.19) — montage sur poste réel non rejoué | ⚠️ Toujours non fiable |
+| Accès WebDAV au référentiel ECM (plan de classement, documents, dossiers métier) | **Absent** | ✅ **Livré** — `aite_ecm_webdav` | *(sans objet)* |
+| Verrouillage collaboratif réel (LOCK ↔ check-out) | **Absent** | ✅ **Livré** — 423 sur écriture concurrente | ❌ **Toujours absent** (vérifié 10/09) |
+| `getetag` | *(point 8)* **Absent** | ✅ **Livré** — SHA-256 de la version | ❌ **Toujours absent** (vérifié 10/09) |
+| Gestion des fichiers temporaires Office/Finder | **Absente** | ✅ **Livrée** — `~$…` et `.tmp` refusés en 403 | ❌ Toujours absente |
+| Authentification entreprise (2FA, SSO, clés API) | **Absent** | ❌ **Toujours absent** — clé d'API refusée en 401 alors que l'API REST l'accepte en 200 (vérifié 10/09) | ❌ Toujours absent |
+| Conformité RFC 4918 classe 1 | **Partielle** | ✅ Conforme sur les verbes exercés | ⚠️ Toujours partielle |
+| Conformité RFC 4918 classe 2 (verrous) | **Annoncée mais non implémentée** | ✅ **Implémentée** — `LOCK`/`UNLOCK` adossés au check-out | ❌ Toujours annoncée seulement |
+| Couche HTTP testée | **Non** (0 test) | ✅ Tests `HttpCase` + campagne `curl` rejouable | ❌ Toujours 0 test |
 
 Deux voies existent dans le dépôt pour « voir les documents comme des fichiers » et la roadmap doit trancher (ou combiner) :
 
@@ -579,30 +600,38 @@ Le cahier de recette manuelle (`docs/produits/AITE_Courrier_scenarios_test.md`, 
 
 Classement : **Bloquant** = empêche l'objectif ou expose des données ; **Majeur** = défaut visible par l'utilisateur ou dette structurante ; **Mineur** = à corriger au fil de l'eau. Tous les points ci-dessous ont été vérifiés dans le code sauf mention « à confirmer ».
 
-| # | Gravité | Domaine | Constat | Référence |
-|---|---|---|---|---|
-| 1 | Bloquant | WebDAV | Référentiel ECM non exposé | `aite_courrier_webdav/models/aite_courrier_webdav.py:92-120` |
-| 2 | Bloquant | WebDAV | Verrous factices annoncés classe 2 ; pas d'ETag ; fichiers temporaires Office/Finder créent des documents ou échouent en 409 | `controllers/webdav.py:180,251-267`, `models/…:216-245` |
-| 3 | Bloquant | WebDAV | Comptes 2FA/SSO exclus ; pas de clés d'API ; ré-authentification et `commit` par requête | `controllers/webdav.py:85-106` |
-| 4 | Bloquant | Sécurité | Partages externes lisibles (URL comprise) par tous les rôles ECM ; consultation seule non contraignante ; filigrane en repli silencieux | `aite_ecm_share/security/`, `controllers/share.py:34-47` |
-| 5 | Bloquant | Sécurité | Dossiers métier (RH inclus) et historique de circuit sans règle de visibilité | `aite_ecm_dossier/security/`, `aite_ecm_workflow/security/` |
-| 6 | Bloquant | Sécurité | Pont Documents : adoption en `sudo` contourne droits de dossier, formats, taille, circuit ; confidentialité non projetée (courrier et ECM) | `aite_ecm_documents/models/documents_document.py:32-40`, `aite_courrier_ged_documents` |
-| 7 | Bloquant | Qualité | 11 modules sans test, dont toutes les surfaces exposées (portail, API, partage, capture) ; pas de CI | §7 |
-| 8 | Majeur | Courrier | Statuts « En traitement » / « Validé » jamais atteints ; KPI et portail faussés | `aite_courrier_core/models/aite_courrier.py:72-82,323` |
-| 9 | Majeur | Courrier | Matrice de droits incohérente avec les rôles (signataire, archiviste, assistant, manager) ; agent peut supprimer documents et versions sans contrôle de verrou | `aite_courrier_core/security/ir.model.access.csv`, `aite_courrier_ged/security/ir.model.access.csv` |
-| 10 | Majeur | ECM | Bug : filtre « À traiter par moi » sur champ non stocké sans `search` | `aite_ecm_workflow/views/aite_ecm_document_views.xml:76` |
-| 11 | Majeur | ECM | Adoption Documents → ECM probablement inopérante (garde `res_model`) — à confirmer sur instance | `aite_ecm_documents/models/documents_document.py:22-24` |
-| 12 | Majeur | ECM | Deux moteurs de workflow, deux historiques, pas de relance/escalade SLA côté mixin | §4.2 |
-| 13 | Majeur | ECM | Aucune rétention, durée de conservation, sort final, scellement | §4.1 |
-| 14 | Majeur | API | CORS inopérant, clé en paramètre d'URL, détails internes en 500, CRUD partiel, pas de limitation de débit | `aite_ecm_api/controllers/api.py:32-58` |
-| 15 | Majeur | Nextcloud | Pièces de courrier confidentielles miroitées sans filtre ; mot de passe en clair ; comptes non rapprochés | `aite_ecm_nextcloud_courrier/models/aite_courrier_document.py:13-14` |
-| 16 | Majeur | Démo | Boucle infinie du cron sans le module Courrier | `aite_ecm_demo/seed/generator.py:282` |
-| 17 | Majeur | OCR | File bloquante sans compteur de tentatives ; état « Indexé » avec texte vide ; texte jamais affiché ; pas d'OCR sur l'ECM | `aite_courrier_ocr/models/aite_courrier_document_version.py:97-132` |
-| 18 | Majeur | Signature / Portail | Demande de signature sans contrôle d'habilitation ; PDF signé non rapatrié ; pièces toutes exposées au tiers, jetons permanents | `aite_courrier_sign/models/aite_courrier.py:53-119`, `aite_courrier_portal/controllers/portal.py:103-114` |
-| 19 | Majeur | Documentation | README et fiches produit décrivent 7 modules et des promesses fausses | §8 |
-| 20 | Mineur | Courrier | Circuit non instancié ; SLA calendaire ; notifications massives ; séquence sans remise à zéro annuelle ; pas de multi-société | §3.2 |
-| 21 | Mineur | Performance | Recherches non bornées (`_accessible_courriers`, `_compute_duplicates`, `_nc_poll`, plein texte) | §7.3 |
-| 22 | Mineur | Divers | Fichier mort `documents_workspace_data.xml` dans la GED ; manifestes/commentaires périmés ; pas d'icône sur `aite_ecm` ; `t-esc` déprécié | §3.2, §4.9 |
+> **Colonne « État au 10/09/2026 », ajoutée après la campagne de recette.** Elle ne réécrit pas les
+> constats : elle dit ce qu'ils sont devenus. Trois valeurs seulement :
+> **✅ Fermé** = corrigé *et* vérifié, avec le cas de recette en référence ·
+> **❌ Ouvert / 🟡 Partiel** = revérifié le 10/09 et toujours vrai, en tout ou partie ·
+> **« — non réinstruit »** = ni confirmé, ni infirmé. Ces derniers n'ont pas été rouverts, faute
+> d'environnement (Odoo Enterprise, `tesseract`, instance Nextcloud) ou parce qu'ils sortaient du
+> périmètre de la campagne. **Ne pas les lire comme corrigés.**
+
+| # | Gravité | Domaine | Constat | Référence | **État au 10/09/2026** |
+|---|---|---|---|---|---|
+| 1 | Bloquant | WebDAV | Référentiel ECM non exposé | `aite_courrier_webdav/models/aite_courrier_webdav.py:92-120` | ✅ **Fermé** — `aite_ecm_webdav` expose le plan de classement (SC-11) |
+| 2 | Bloquant | WebDAV | Verrous factices annoncés classe 2 ; pas d'ETag ; fichiers temporaires Office/Finder créent des documents ou échouent en 409 | `controllers/webdav.py:180,251-267`, `models/…:216-245` | ✅ **Fermé pour l'ECM** (verrous réels, ETag SHA-256, `~$…`/`.tmp` en 403) · ❌ **ouvert pour le courrier**, vérifié 10/09 |
+| 3 | Bloquant | WebDAV | Comptes 2FA/SSO exclus ; pas de clés d'API ; ré-authentification et `commit` par requête | `controllers/webdav.py:85-106` | ❌ **Ouvert** — clé d'API refusée en 401 par le WebDAV, acceptée en 200 par l'API REST (vérifié 10/09) ; 2FA/SSO donc exclus |
+| 4 | Bloquant | Sécurité | Partages externes lisibles (URL comprise) par tous les rôles ECM ; consultation seule non contraignante ; filigrane en repli silencieux | `aite_ecm_share/security/`, `controllers/share.py:34-47` | ❌ **Ouvert** — `aite_ecm_share/security/` ne contient toujours aucun `ir.rule` (vérifié 10/09) |
+| 5 | Bloquant | Sécurité | Dossiers métier (RH inclus) et historique de circuit sans règle de visibilité | `aite_ecm_dossier/security/`, `aite_ecm_workflow/security/` | 🟡 **Partiel** — les dossiers métier ont désormais leurs règles ; `aite_ecm_workflow/security/` n'en a toujours aucune (vérifié 10/09) |
+| 6 | Bloquant | Sécurité | Pont Documents : adoption en `sudo` contourne droits de dossier, formats, taille, circuit ; confidentialité non projetée (courrier et ECM) | `aite_ecm_documents/models/documents_document.py:32-40`, `aite_courrier_ged_documents` | — non réinstruit (Enterprise, non installable dans l'environnement de recette) |
+| 7 | Bloquant | Qualité | 11 modules sans test, dont toutes les surfaces exposées (portail, API, partage, capture) ; pas de CI | §7 | 🟡 **Partiel** — banc de test réparé, suite verte (152 tests, 0 échec) ; mais **11 modules sur 28** toujours sans test, et toujours pas de CI |
+| 8 | Majeur | Courrier | Statuts « En traitement » / « Validé » jamais atteints ; KPI et portail faussés | `aite_courrier_core/models/aite_courrier.py:72-82,323` | ✅ **Fermé** — « En traitement » posé au franchissement d'étape, « Validé » retiré |
+| 9 | Majeur | Courrier | Matrice de droits incohérente avec les rôles (signataire, archiviste, assistant, manager) ; agent peut supprimer documents et versions sans contrôle de verrou | `aite_courrier_core/security/ir.model.access.csv`, `aite_courrier_ged/security/ir.model.access.csv` | — non réinstruit ; le cloisonnement **effectif** a été mesuré et est cohérent (SC-12) |
+| 10 | Majeur | ECM | Bug : filtre « À traiter par moi » sur champ non stocké sans `search` | `aite_ecm_workflow/views/aite_ecm_document_views.xml:76` | — non réinstruit |
+| 11 | Majeur | ECM | Adoption Documents → ECM probablement inopérante (garde `res_model`) — à confirmer sur instance | `aite_ecm_documents/models/documents_document.py:22-24` | — non réinstruit (Enterprise) |
+| 12 | Majeur | ECM | Deux moteurs de workflow, deux historiques, pas de relance/escalade SLA côté mixin | §4.2 | ❌ **Ouvert** — les deux moteurs coexistent toujours |
+| 13 | Majeur | ECM | Aucune rétention, durée de conservation, sort final, scellement | §4.1 | ✅ **Fermé** — `aite_ecm_records` (DUA, sort final, gel, bordereaux) et `aite_ecm_sae` (sceaux chaînés, SEDA 2.1), testés |
+| 14 | Majeur | API | CORS inopérant, clé en paramètre d'URL, détails internes en 500, CRUD partiel, pas de limitation de débit | `aite_ecm_api/controllers/api.py:32-58` | — non réinstruit ; seul le curseur en lecture seule a été corrigé sur ces routes |
+| 15 | Majeur | Nextcloud | Pièces de courrier confidentielles miroitées sans filtre ; mot de passe en clair ; comptes non rapprochés | `aite_ecm_nextcloud_courrier/models/aite_courrier_document.py:13-14` | — non réinstruit (simulateur uniquement) |
+| 16 | Majeur | Démo | Boucle infinie du cron sans le module Courrier | `aite_ecm_demo/seed/generator.py:282` | — non réinstruit |
+| 17 | Majeur | OCR | File bloquante sans compteur de tentatives ; état « Indexé » avec texte vide ; texte jamais affiché ; pas d'OCR sur l'ECM | `aite_courrier_ocr/models/aite_courrier_document_version.py:97-132` | — non réinstruit (OCR image non exerçable : `tesseract` absent) |
+| 18 | Majeur | Signature / Portail | Demande de signature sans contrôle d'habilitation ; PDF signé non rapatrié ; pièces toutes exposées au tiers, jetons permanents | `aite_courrier_sign/models/aite_courrier.py:53-119`, `aite_courrier_portal/controllers/portal.py:103-114` | — non réinstruit (Sign : Enterprise ; portail : sans test) |
+| 19 | Majeur | Documentation | README et fiches produit décrivent 7 modules et des promesses fausses | §8 | ❌ **Ouvert** — README et fiches produit non reprises |
+| 20 | Mineur | Courrier | Circuit non instancié ; SLA calendaire ; notifications massives ; séquence sans remise à zéro annuelle ; pas de multi-société | §3.2 | — non réinstruit |
+| 21 | Mineur | Performance | Recherches non bornées (`_accessible_courriers`, `_compute_duplicates`, `_nc_poll`, plein texte) | §7.3 | — non réinstruit |
+| 22 | Mineur | Divers | Fichier mort `documents_workspace_data.xml` dans la GED ; manifestes/commentaires périmés ; pas d'icône sur `aite_ecm` ; `t-esc` déprécié | §3.2, §4.9 | — non réinstruit |
 
 ---
 
