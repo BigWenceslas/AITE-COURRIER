@@ -125,7 +125,7 @@
                         </page>
                         <page string="Accès" name="access">
                             <div class="alert alert-info" role="status">
-                                <i class="fa fa-shield me-1"/><field name="access_summary" nolabel="1" readonly="1" class="d-inline"/>
+                                <i class="fa fa-shield me-1" title="Droits d'accès" role="img" aria-label="Droits d'accès"/><field name="access_summary" nolabel="1" readonly="1" class="d-inline"/>
                             </div>
                             <group>
                                 <group string="Partage nominatif">
@@ -204,7 +204,7 @@
                         <div class="d-flex flex-column p-2">
                             <strong><field name="name"/></strong>
                             <small class="text-muted"><field name="reference"/> · <field name="type_id"/></small>
-                            <small t-if="record.file_name.raw_value"><i class="fa fa-paperclip me-1"/><field name="file_name"/></small>
+                            <small t-if="record.file_name.raw_value"><i class="fa fa-paperclip me-1" title="Pièce jointe" role="img" aria-label="Pièce jointe"/><field name="file_name"/></small>
                             <span t-if="record.is_checked_out.raw_value" class="badge text-bg-warning mt-1">Réservé</span>
                         </div>
                     </t>

@@ -85,6 +85,20 @@ class AiteEcmDocument(models.Model):
     # ------------------------------------------------------------------ #
     # Vérification
     # ------------------------------------------------------------------ #
+    @api.model
+    def _records_free_fields(self):
+        """Un gel juridique n'empêche pas de **constater** l'intégrité d'un
+        document ni d'y adjoindre sa copie de préservation : ces champs ne
+        touchent pas au contenu scellé.
+
+        Le crochet appartient à ``aite_ecm_records``, qui peut ne pas être
+        installé : on ne suppose donc pas son existence.
+        """
+        inherited = getattr(super(), '_records_free_fields', None)
+        base = inherited() if inherited else set()
+        return base | {'integrity_state', 'integrity_date',
+                       'pdfa_version_id', 'last_seal_hash', 'seal_ids'}
+
     def action_verify_integrity(self):
         """Vérifie les fichiers et la portion de chaîne du document."""
         Seal = self.env['aite.ecm.seal']

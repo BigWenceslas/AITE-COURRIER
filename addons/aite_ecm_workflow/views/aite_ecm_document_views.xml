@@ -21,9 +21,9 @@
             <xpath expr="//header/button[@name='action_mark_final']" position="attributes">
                 <attribute name="invisible">state != 'draft' or wf_status == 'running'</attribute>
             </xpath>
-            <xpath expr="//div[@class='oe_title']" position="before">
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
                 <div class="alert alert-info mb-3" role="status" invisible="wf_status != 'running'">
-                    <i class="fa fa-random me-1"/>Circuit en cours — étape
+                    <i class="fa fa-random me-1" title="Circuit" role="img" aria-label="Circuit"/>Circuit en cours — étape
                     <field name="wf_step_id" readonly="1" class="fw-bold"/>
                     <span invisible="not wf_deadline"> · échéance <field name="wf_deadline" readonly="1"/></span>
                     <span class="badge text-bg-danger ms-2" invisible="not wf_is_overdue">En retard</span>

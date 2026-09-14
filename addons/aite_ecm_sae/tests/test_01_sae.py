@@ -111,3 +111,25 @@ class TestSae(TransactionCase):
             seals = json.loads(archive.read('journal_de_preuve.json'))
             self.assertTrue(seals and seals[0]['seal_hash'])
         self.assertIn('export', self.doc.seal_ids.mapped('event'))
+
+    def test_07_verify_under_legal_hold(self):
+        """Un gel juridique interdit de modifier le document, pas de
+        **constater** son intégrité : la vérification doit rester possible,
+        sinon l'audit demandé par le gel est impossible."""
+        if 'aite.ecm.legal.hold' not in self.env:
+            self.skipTest("aite_ecm_records non installé")
+        self.doc.action_mark_final()
+        hold = self.env['aite.ecm.legal.hold'].create({
+            'name': "Litige probatoire",
+            'reason': "Pièce réclamée par le tribunal.",
+            'document_ids': [(6, 0, self.doc.ids)]})
+        hold.action_activate()
+        self.doc.invalidate_recordset()
+        self.assertTrue(self.doc.legal_hold_active)
+        self.doc.action_verify_integrity()
+        self.assertEqual(self.doc.integrity_state, 'ok')
+        self.assertTrue(self.doc.integrity_date)
+        self.assertIn('check', self.doc.seal_ids.mapped('event'))
+        # Le contenu, lui, reste bien verrouillé.
+        with self.assertRaises(UserError):
+            self.doc.write({'name': "Renommé pendant le gel"})

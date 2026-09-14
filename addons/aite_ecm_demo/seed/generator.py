@@ -37,20 +37,21 @@ DEFAULT_PROFILE = 'leger'
 PROFILES = {
     'leger': dict(partners=60, courriers_per_type=30, replies=15,
                   ecm_documents=60, dossiers_fournisseur=20, dossiers_salarie=20,
-                  links=40, shares=30, checkouts=12, trashed=8),
+                  links=40, shares=30, checkouts=12, trashed=8,
+                  boxes=4, holds=2, expired=6),
     'standard': dict(partners=100, courriers_per_type=60, replies=30,
                      ecm_documents=120, dossiers_fournisseur=50,
                      dossiers_salarie=50, links=80, shares=60, checkouts=25,
-                     trashed=12),
+                     trashed=12, boxes=8, holds=3, expired=12),
     'complet': dict(partners=130, courriers_per_type=100, replies=60,
                     ecm_documents=200, dossiers_fournisseur=100,
                     dossiers_salarie=100, links=120, shares=100, checkouts=40,
-                    trashed=20),
+                    trashed=20, boxes=12, holds=4, expired=20),
 }
 COURRIER_CODES = ('ENTR', 'FACT', 'SORT', 'DEVIS', 'INT')
 PHASES = ['users', 'departments', 'partners', 'structure', 'courriers',
           'replies', 'documents', 'dossiers', 'links', 'shares', 'checkouts',
-          'trash', 'done']
+          'trash', 'records', 'sae', 'done']
 ROLE_USERS = [  # (login, prénom, nom, groupes)
     ("demo.agent1", "Aurélie", "Mbarga", ['group_agent']),
     ("demo.agent2", "Boris", "Tchoumi", ['group_agent']),
@@ -136,6 +137,16 @@ class DemoSeeder:
 
     def _ref(self, xmlid):
         return self.env.ref(xmlid)
+
+    def _model(self, name):
+        """Modèle si son module est chargé, sinon ``None``.
+
+        La suite s'installe par briques : le générateur doit fonctionner
+        aussi bien sur la fondation ECM seule que sur la suite complète, et
+        pendant l'installation — où un modèle d'un module chargé plus tard
+        n'est pas encore au registre.
+        """
+        return self.env[name] if name in self.env else None
 
     def _choice(self, seq):
         return self.rnd.choice(list(seq))
@@ -247,9 +258,12 @@ class DemoSeeder:
     # Chargement du contexte (à chaque lot)
     # ================================================================== #
     def _demo_records(self, model):
+        Model = self._model(model)
+        if Model is None:
+            return None
         entries = self.env['ir.model.data'].search_read(
             [('module', '=', MODULE), ('model', '=', model)], ['res_id'])
-        return self.env[model].with_context(active_test=False).browse(
+        return Model.with_context(active_test=False).browse(
             [e['res_id'] for e in entries]).exists()
 
     def _load_context(self):
@@ -273,9 +287,9 @@ class DemoSeeder:
             self.by_group.get(self._ref('aite_courrier_base.group_assistant').id, []
                               )) or self.managers
         self.actors = list(self.users.values())[:10] or self.managers
-        self.departments = self.env['hr.department'].search(
-            [('name', 'in', D.DEPARTMENTS)]) \
-            if 'hr.department' in self.env else []
+        Dept = self._model('hr.department')
+        self.departments = Dept.search([('name', 'in', D.DEPARTMENTS)]) \
+            if Dept is not None else []
         self.partners = self._demo_records('res.partner')
         self.companies = self.partners.filtered('is_company')
         self.persons = self.partners - self.companies
@@ -300,7 +314,10 @@ class DemoSeeder:
     # ================================================================== #
     def _phase_total(self, phase):
         c = self.counts
-        has_courrier = 'aite.courrier' in self.env
+        # Toute la pile courrier est nécessaire : le courrier lui-même et ses
+        # pièces (`aite_courrier_ged`).
+        has_courrier = ('aite.courrier' in self.env
+                        and 'aite.courrier.document' in self.env)
         return {
             'courriers': c['courriers_per_type'] * len(COURRIER_CODES)
             if has_courrier else 0,
@@ -308,6 +325,9 @@ class DemoSeeder:
             'departments': 1 if 'hr.department' in self.env else 0,
             'documents': c['ecm_documents'],
             'dossiers': c['dossiers_fournisseur'] + c['dossiers_salarie'],
+            # v2.1 : seulement si les modules correspondants sont installés
+            'records': 1 if 'aite.ecm.retention.rule' in self.env else 0,
+            'sae': 1 if 'aite.ecm.seal' in self.env else 0,
         }.get(phase, 1)
 
     def _next_phase(self):
@@ -341,7 +361,16 @@ class DemoSeeder:
                 continue
             self._seed_unit(phase, index)
             unit = getattr(self, '_unit_' + phase)
+            before = dict(self.stats)
             if self._safe('unité %s' % phase, lambda: unit(index)) is None:
+                # L'unité a été annulée (savepoint) : ses compteurs aussi,
+                # sinon le résumé annoncerait des données inexistantes.
+                ignored = self.stats.get('ignorés (unité %s)' % phase)
+                self.stats.clear()
+                self.stats.update(before)
+                if ignored is not None:
+                    self.stats['ignorés (unité %s)' % phase] = ignored
+                self.state['stats'] = self.stats
                 self.state['last_error'] = "%s #%d" % (phase, index)
             units += 1
             if index + 1 >= self._phase_total(phase):
@@ -399,7 +428,9 @@ class DemoSeeder:
         return True
 
     def _unit_departments(self, _index):
-        Dept = self.env['hr.department']
+        Dept = self._model('hr.department')
+        if Dept is None:
+            return True
         for name in D.DEPARTMENTS:
             if Dept.search([('name', '=', name)], limit=1):
                 continue
@@ -646,7 +677,9 @@ class DemoSeeder:
         history.invalidate_recordset()
 
     def _unit_replies(self, _index):
-        if 'reply_to_courrier_id' not in self.env['aite.courrier']._fields:
+        Courrier = self._model('aite.courrier')
+        if Courrier is None or not self.courriers \
+                or 'reply_to_courrier_id' not in Courrier._fields:
             return True
         origins = self.courriers.filtered(
             lambda c: c.category == 'entrant' and c.state != 'draft')
@@ -1086,6 +1119,145 @@ class DemoSeeder:
                 doc.invalidate_recordset()
         return True
 
+    # ================================================================== #
+    # Conservation et valeur probante (v2.1)
+    # ================================================================== #
+    def _unit_records(self, _index):
+        """Politique de conservation : cycle de vie calculé, gels juridiques,
+        boîtes d'archives physiques, données personnelles, bordereau
+        d'élimination prêt à valider."""
+        Rule = self._model('aite.ecm.retention.rule')
+        if Rule is None or not self.documents:
+            return True
+        archivist = self._user_in('group_archive')
+        manager = self._choice(self.managers)
+
+        # 1. Cycle de vie archivistique de tout le fonds.
+        self._safe('politique de conservation',
+                   lambda: self.documents._retention_compute())
+        self._count('documents sous politique', len(self.documents.filtered(
+            lambda d: d.retention_rule_id)))
+
+        # 2. Quelques documents dont la DUA est échue : on recule leur date
+        #    de finalisation, seule façon réaliste de simuler l'ancienneté.
+        finals = list(self.documents.filtered(
+            lambda d: d.state in ('final', 'archived') and d.active))
+        aged = self.rnd.sample(finals, min(self.counts['expired'], len(finals)))
+        for doc in aged:
+            years = self.rnd.choice([6, 11, 12, 15])
+            doc.sudo().write({'final_date': self.now - timedelta(days=365 * years),
+                              'archived_date': doc.archived_date and
+                              self.now - timedelta(days=365 * years)})
+            self._safe('échéance', lambda: doc._retention_compute())
+        self._count('documents à échéance ancienne', len(aged))
+
+        # 3. Archives physiques : boîtes, rangement, un prêt en cours.
+        Box = self.env['aite.ecm.box']
+        papers = [d for d in self.documents.filtered('active')
+                  if d.state in ('final', 'archived')
+                  and not d.legal_hold_active]
+        self.rnd.shuffle(papers)
+        for i in range(self.counts['boxes']):
+            box = self._safe('boîte', lambda: self._as(Box, archivist).create({
+                'name': "%s %d" % (self._choice(
+                    ["Factures", "Contrats", "Dossiers RH", "PV du conseil",
+                     "Marchés publics"]), 2019 + i),
+                'location': "Salle %d — travée %s — étagère %d" % (
+                    self.rnd.randint(1, 3),
+                    self.rnd.choice("ABCD"), self.rnd.randint(1, 6)),
+            }))
+            if box is None:
+                continue
+            self._xmlid(box, 'box')
+            self._count('boîtes d\'archives')
+            batch, papers = papers[:6], papers[6:]
+            if batch:
+                self.env['aite.ecm.document'].browse(
+                    [d.id for d in batch]).sudo().write(
+                        {'box_id': box.id, 'paper_original': True})
+                self._count('originaux papier', len(batch))
+            self._safe('rangement', lambda: self._as(box, archivist)
+                       .action_store())
+            if i == 0:
+                self._safe('prêt', lambda: self._as(box, archivist)
+                           .action_lend())
+                self._count('boîtes en prêt')
+
+        # Données personnelles (RGPD / registre des traitements).
+        rh = [d for d in self.documents
+              if 'RH' in (d.type_id.name or '') and not d.legal_hold_active]
+        if rh:
+            self.env['aite.ecm.document'].browse(
+                [d.id for d in rh]).sudo().write({'personal_data': True})
+            self._count('documents à données personnelles', len(rh))
+
+        # 4. Gels juridiques : un sur dossier, un sur documents nommés.
+        Hold = self.env['aite.ecm.legal.hold']
+        for i in range(self.counts['holds']):
+            if i % 2 == 0 and self.folders:
+                folder = self._choice(list(self.folders.values()))
+                vals = {'name': "Contentieux %s" % folder.name,
+                        'reference': "LIT-%04d" % (2026 + i),
+                        'reason': "Procédure contentieuse en cours : les "
+                                  "pièces du dossier sont gelées.",
+                        'requested_by': "Direction juridique",
+                        'folder_ids': [(6, 0, [folder.id])]}
+            else:
+                targets = self.rnd.sample(
+                    list(self.documents.filtered('active')),
+                    min(5, len(self.documents)))
+                vals = {'name': "Audit interne %d" % (2026 + i),
+                        'reference': "AUD-%04d" % (2026 + i),
+                        'reason': "Pièces réclamées par l'auditeur.",
+                        'requested_by': "Comité d'audit",
+                        'document_ids': [(6, 0, [d.id for d in targets])]}
+            hold = self._safe('gel juridique', lambda: self._as(
+                Hold, manager).create(vals))
+            if hold is None:
+                continue
+            self._xmlid(hold, 'hold')
+            if self._safe('pose du gel', lambda: self._as(
+                    hold, manager).action_activate()) is not None:
+                self._count('gels juridiques')
+
+        # 5. Bordereau d'élimination laissé « à valider » : le stagiaire de
+        #    recette doit pouvoir dérouler validation puis exécution.
+        slip = self._safe('bordereau', lambda: self._as(
+            self.env['aite.ecm.disposition'], manager).create(
+                {'note': "Campagne d'élimination annuelle — jeu de test."}))
+        if slip is not None:
+            self._xmlid(slip, 'disposition')
+            if self._safe('constitution du bordereau',
+                          lambda: self._as(slip, manager).action_collect()) \
+                    is not None and slip.line_ids:
+                self._safe('soumission', lambda: self._as(slip, manager)
+                           .action_submit())
+                self._count('bordereaux d\'élimination')
+                self._count('lignes de bordereau', len(slip.line_ids))
+        self.documents.invalidate_recordset()
+        return True
+
+    def _unit_sae(self, _index):
+        """Valeur probante : sceaux déjà posés par les opérations, on ajoute
+        des vérifications d'intégrité pour peupler le journal de preuve."""
+        Seal = self._model('aite.ecm.seal')
+        if Seal is None or not self.documents:
+            return True
+        archivist = self._user_in('group_archive')
+        self._count('sceaux au journal', Seal.sudo().search_count([]))
+        sealed = list(self.documents.filtered(
+            lambda d: d.active and d.state in ('final', 'archived')))
+        for doc in self.rnd.sample(sealed, min(10, len(sealed))):
+            if self._safe('vérification d\'intégrité',
+                          lambda: self._as(doc, archivist)
+                          .action_verify_integrity()) is not None:
+                self._count('vérifications d\'intégrité')
+        problems = self._safe('contrôle de la chaîne',
+                              lambda: Seal.sudo().verify_chain())
+        if problems is not None:
+            self._count('anomalies de chaîne', len(problems))
+        return True
+
     def _unit_done(self, _index):
         return True
 
@@ -1110,15 +1282,36 @@ def purge(env, log=None):
     log = log or (lambda m: _logger.info("[aite_ecm_demo] %s", m))
     env = env(su=True)
     Data = env['ir.model.data']
-    order = ['aite.ecm.share', 'aite.ecm.document.link', 'aite.ecm.dossier',
+    # Les gels juridiques et les bordereaux verrouillent les documents : ils
+    # partent en premier, et le marqueur stocké « sous gel » est recalculé
+    # dans la foulée (sinon la protection survivrait à la levée). Les
+    # modèles absents (modules non installés) sont simplement sautés.
+    holds = Data.search([('module', '=', MODULE),
+                         ('model', '=', 'aite.ecm.legal.hold')])
+    if holds and 'aite.ecm.legal.hold' in env:
+        frozen = env['aite.ecm.legal.hold'].browse(
+            holds.mapped('res_id')).exists()
+        documents = env['aite.ecm.document'].browse([])
+        for hold in frozen:
+            documents |= hold._all_documents()
+        frozen.unlink()
+        holds.unlink()
+        if documents:
+            documents.with_context(active_test=False)._legal_hold_recompute()
+        log("aite.ecm.legal.hold : %d supprimé(s)" % len(frozen))
+    order = ['aite.ecm.legal.hold', 'aite.ecm.disposition', 'aite.ecm.box',
+             'aite.ecm.share', 'aite.ecm.document.link', 'aite.ecm.dossier',
              'aite.ecm.document', 'aite.courrier', 'aite.ecm.tag',
              'aite.ecm.folder', 'res.partner', 'hr.department', 'res.users']
     for model in order:
+        if model not in env:
+            continue
         entries = Data.search([('module', '=', MODULE), ('model', '=', model)])
         if not entries:
             continue
-        records = env[model].with_context(active_test=False).browse(
-            entries.mapped('res_id')).exists()
+        records = env[model].with_context(
+            active_test=False, force_unlink=True, disposition=True).browse(
+                entries.mapped('res_id')).exists()
         if model == 'res.users':
             records.write({'active': False})
         else:

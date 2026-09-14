@@ -287,14 +287,25 @@ class AiteEcmDocument(models.Model):
     # ================================================================== #
     # Protections
     # ================================================================== #
+    @api.model
+    def _records_free_fields(self):
+        """Champs qu'un gel juridique laisse écrire.
+
+        Le gel interdit de **modifier le document** ; il n'interdit pas de le
+        gérer : recalculer sa politique de conservation, le ranger en boîte,
+        échanger dans le chatter, ou constater son intégrité. Les modules qui
+        ajoutent des champs de cette nature (scellement, miroirs) complètent
+        cette liste plutôt que d'utiliser ``records_bypass``.
+        """
+        return {'legal_hold_ids', 'retention_rule_id', 'retention_start',
+                'retention_deadline', 'retention_state', 'final_fate',
+                'retention_note', 'legal_hold_active', 'box_id',
+                'paper_original', 'personal_data', 'message_ids',
+                'activity_ids', 'message_follower_ids'}
+
     def write(self, vals):
         if not self.env.context.get('records_bypass'):
-            protected = set(vals) - {'legal_hold_ids', 'retention_rule_id',
-                                     'retention_start', 'retention_deadline',
-                                     'retention_state', 'final_fate',
-                                     'retention_note', 'legal_hold_active',
-                                     'box_id', 'message_ids', 'activity_ids',
-                                     'message_follower_ids'}
+            protected = set(vals) - self._records_free_fields()
             if protected:
                 held = self.filtered('legal_hold_active')
                 if held:

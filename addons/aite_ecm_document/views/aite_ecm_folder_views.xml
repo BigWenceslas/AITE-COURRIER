@@ -37,7 +37,7 @@
                         </group>
                     </group>
                     <div class="alert alert-info" role="status">
-                        <i class="fa fa-shield me-1"/><field name="access_summary" nolabel="1" readonly="1" class="d-inline"/>
+                        <i class="fa fa-shield me-1" title="Droits d'accès" role="img" aria-label="Droits d'accès"/><field name="access_summary" nolabel="1" readonly="1" class="d-inline"/>
                     </div>
                     <group>
                         <group string="Droits effectifs (héritage inclus)">

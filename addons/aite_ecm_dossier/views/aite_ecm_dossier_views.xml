@@ -35,7 +35,7 @@
                             invisible="wf_status != 'rejected'"/>
                     <div class="alert alert-info mb-3" role="status"
                          invisible="wf_status != 'running'">
-                        <i class="fa fa-random me-1"/>Circuit en cours — étape
+                        <i class="fa fa-random me-1" title="Circuit" role="img" aria-label="Circuit"/>Circuit en cours — étape
                         <field name="wf_step_id" readonly="1" class="fw-bold"/>
                         <span invisible="not wf_deadline"> · échéance
                             <field name="wf_deadline" readonly="1"/></span>
@@ -155,7 +155,7 @@
                         <div class="d-flex flex-column p-2">
                             <strong><field name="name"/></strong>
                             <small class="text-muted"><field name="reference"/> · <field name="partner_id"/></small>
-                            <small t-if="record.wf_step_id.raw_value"><i class="fa fa-random me-1"/><field name="wf_step_id"/></small>
+                            <small t-if="record.wf_step_id.raw_value"><i class="fa fa-random me-1" title="Circuit" role="img" aria-label="Circuit"/><field name="wf_step_id"/></small>
                             <field name="completion_rate" widget="progressbar" class="mt-1"/>
                         </div>
                     </t>

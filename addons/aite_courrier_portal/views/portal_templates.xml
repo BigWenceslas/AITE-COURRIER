@@ -147,7 +147,7 @@
                         <h5>Pièces du dossier</h5>
                         <ul class="list-unstyled">
                             <li t-foreach="documents" t-as="doc" class="mb-1">
-                                <i class="fa fa-paperclip me-1"/>
+                                <i class="fa fa-paperclip me-1" title="Pièce jointe" role="img" aria-label="Pièce jointe"/>
                                 <a t-att-href="doc['url']">
                                     <t t-out="doc['filename'] or doc['name']"/>
                                 </a>
