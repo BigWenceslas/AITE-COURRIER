@@ -89,9 +89,19 @@
     <!-- ============ Détail : suivi d'avancement ============ -->
     <template id="portal_courrier_detail" name="Suivi du courrier">
         <t t-call="portal.portal_layout">
+            <!-- La référence n'est attribuée qu'à l'enregistrement du
+                 courrier par le service : on ne la promet donc au tiers que
+                 lorsqu'elle existe réellement. -->
             <div t-if="submitted" class="alert alert-success" role="status">
-                <i class="fa fa-check me-1"/>Votre demande a bien été
-                enregistrée. Conservez sa référence pour vos échanges.
+                <i class="fa fa-check me-1" title="Demande enregistrée"
+                   role="img" aria-label="Demande enregistrée"/>
+                <t t-if="courrier.reference">Votre demande a bien été
+                    enregistrée sous la référence
+                    <strong t-out="courrier.reference"/>. Conservez-la pour
+                    vos échanges.</t>
+                <t t-else="">Votre demande a bien été reçue. Sa référence
+                    vous sera communiquée dès sa prise en charge ; vous la
+                    retrouverez sur cette page.</t>
             </div>
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -199,9 +209,14 @@
                 <div class="mb-3">
                     <label class="form-label" for="description">Votre
                         message</label>
+                    <!-- Le contenu par défaut se place DANS la zone de
+                         saisie : porté par `t-out` sur la balise elle-même,
+                         le `textarea` disparaît de la page quand la valeur
+                         est vide — le tiers voyait l'intitulé sans le champ. -->
                     <textarea class="form-control" id="description"
                               name="description" rows="6"
-                              t-out="default.get('description')"/>
+                              placeholder="Décrivez votre demande…"
+                    ><t t-out="default.get('description') or ''"/></textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="attachments">Pièces

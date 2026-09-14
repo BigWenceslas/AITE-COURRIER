@@ -79,6 +79,11 @@ class AiteCourrier(models.Model):
             ('ar', "Archivé"),
         ],
         string="Statut", default='draft', required=True, tracking=True,
+        help="Brouillon : saisi, pas encore enregistré. Nouveau : enregistré, "
+             "à l'étape d'arrivée du circuit. En traitement : le circuit est "
+             "engagé. Validé : réservé aux circuits qui distinguent la "
+             "validation de l'archivage (aucune étape standard ne le pose). "
+             "Rejeté / Archivé : circuit terminé.",
     )
     circuit_id = fields.Many2one(
         comodel_name='aite.workflow.circuit', string="Circuit", readonly=True,
@@ -497,6 +502,12 @@ class AiteCourrier(models.Model):
         vals = {'current_step_id': step.id}
         if step.is_final:
             vals['state'] = 'ar'
+        elif not step.is_initial and self.state == 'nw':
+            # Le courrier a quitté son étape d'arrivée : il est pris en
+            # charge. Sans cela, le statut restait « Nouveau » de bout en
+            # bout et « En traitement » n'apparaissait jamais — ni dans les
+            # filtres, ni sur le tableau de bord.
+            vals['state'] = 'pr'
         self.with_context(skip_courrier_audit=True).write(vals)
         # L'entrée nouvellement créée ne porte PAS de commentaire : le commentaire
         # et la transition appartiennent à l'étape *quittée* (action effectuée),

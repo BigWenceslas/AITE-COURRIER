@@ -52,6 +52,25 @@ class TestValidation(TransactionCase):
         self.assertTrue(closed.left_date, "L'historique de l'étape quittée est clôturé.")
         self.assertTrue(self._audits(courrier, 'ok'))
 
+    # --- TC-01b : le statut suit l'avancement du circuit ---
+    def test_tc01b_state_follows_the_circuit(self):
+        """« Nouveau » à l'arrivée, « En traitement » dès la première
+        transition, « Archivé » sur l'étape finale.
+
+        Sans cela, le statut restait « Nouveau » pendant tout le circuit :
+        les filtres « en cours » et le tableau de bord ne voyaient jamais de
+        courrier en traitement."""
+        courrier = self._launch()
+        self.assertEqual(courrier.state, 'nw')
+        courrier.do_transition(
+            self._ref('aite_courrier_workflow.trans_entr_1_2'))
+        self.assertEqual(courrier.state, 'pr',
+                         "le courrier engagé doit passer « En traitement »")
+        # Un retour en arrière ne remet pas le courrier à l'état d'arrivée.
+        courrier.do_transition(
+            self._ref('aite_courrier_workflow.trans_entr_2_1'), "à revoir")
+        self.assertEqual(courrier.state, 'pr')
+
     # --- TC-02 : rejet avec commentaire ---
     def test_tc02_reject_with_comment(self):
         courrier = self._launch()

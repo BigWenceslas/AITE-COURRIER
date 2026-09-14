@@ -1,0 +1,694 @@
+{
+  "base_url": "http://localhost:8169",
+  "date": "2026-09-14 15:36:07",
+  "scenarios": [
+    {
+      "code": "SC01",
+      "title": "Enregistrer un courrier entrant et lancer son circuit",
+      "role": "Agent courrier",
+      "login": "demo.agent1",
+      "goal": "Un agent d'accueil enregistre le courrier du jour et le met en circulation.",
+      "status": "ok",
+      "duration": 56.7,
+      "steps": [
+        {
+          "label": "Écran d'accueil de l'agent",
+          "status": "ok",
+          "shot": "SC01_01_ecran_d_accueil_de_l_agent.png",
+          "check": "« Courrier » affiché"
+        },
+        {
+          "label": "Liste des courriers",
+          "status": "ok",
+          "shot": "SC01_02_liste_des_courriers.png",
+          "check": "80 courrier(s) déjà enregistré(s)"
+        },
+        {
+          "label": "Formulaire de saisie",
+          "status": "ok",
+          "shot": "SC01_03_formulaire_de_saisie.png",
+          "check": "« Objet » affiché"
+        },
+        {
+          "label": "Courrier renseigné (objet, expéditeur, type)",
+          "status": "ok",
+          "shot": "SC01_04_courrier_renseigne_objet_expediteur_type.png",
+          "check": "objet et expéditeur saisis"
+        },
+        {
+          "label": "Courrier enregistré",
+          "status": "ok",
+          "shot": "SC01_05_courrier_enregistre.png",
+          "check": "« Brouillon » affiché"
+        },
+        {
+          "label": "Circuit lancé — la référence est attribuée",
+          "status": "ok",
+          "shot": "SC01_06_circuit_lance_la_reference_est_attribuee.png",
+          "check": "référence COUR-2026-0137, courrier sorti du brouillon"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC01_01_ecran_d_accueil_de_l_agent.png",
+          "label": "Écran d'accueil de l'agent"
+        },
+        {
+          "file": "SC01_02_liste_des_courriers.png",
+          "label": "Liste des courriers"
+        },
+        {
+          "file": "SC01_03_formulaire_de_saisie.png",
+          "label": "Formulaire de saisie"
+        },
+        {
+          "file": "SC01_04_courrier_renseigne_objet_expediteur_type.png",
+          "label": "Courrier renseigné (objet, expéditeur, type)"
+        },
+        {
+          "file": "SC01_05_courrier_enregistre.png",
+          "label": "Courrier enregistré"
+        },
+        {
+          "file": "SC01_06_circuit_lance_la_reference_est_attribuee.png",
+          "label": "Circuit lancé — la référence est attribuée"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC02",
+      "title": "Faire avancer un courrier d'une étape du circuit",
+      "role": "Manager",
+      "login": "demo.manager1",
+      "goal": "Un responsable de service prend un courrier en cours et le fait passer à l'étape suivante, commentaire à l'appui.",
+      "status": "ok",
+      "duration": 39.0,
+      "steps": [
+        {
+          "label": "Courriers en traitement du service",
+          "status": "ok",
+          "shot": "SC02_01_courriers_en_traitement_du_service.png",
+          "check": "61 courrier(s) affiché(s)"
+        },
+        {
+          "label": "Fiche du courrier à traiter",
+          "status": "ok",
+          "shot": "SC02_02_fiche_du_courrier_a_traiter.png",
+          "check": "COUR-2026-0011 — étape « Traitement »"
+        },
+        {
+          "label": "Assistant de traitement",
+          "status": "ok",
+          "shot": "SC02_03_assistant_de_traitement.png",
+          "check": "« Action » affiché"
+        },
+        {
+          "label": "Transition appliquée",
+          "status": "ok",
+          "shot": "SC02_04_transition_appliquee.png",
+          "check": "étape « Traitement » → « Archivage » (statut : Archivé)"
+        },
+        {
+          "label": "Historique du circuit",
+          "status": "ok",
+          "shot": "SC02_05_historique_du_circuit.png",
+          "check": "historique du circuit affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC02_01_courriers_en_traitement_du_service.png",
+          "label": "Courriers en traitement du service"
+        },
+        {
+          "file": "SC02_02_fiche_du_courrier_a_traiter.png",
+          "label": "Fiche du courrier à traiter"
+        },
+        {
+          "file": "SC02_03_assistant_de_traitement.png",
+          "label": "Assistant de traitement"
+        },
+        {
+          "file": "SC02_04_transition_appliquee.png",
+          "label": "Transition appliquée"
+        },
+        {
+          "file": "SC02_05_historique_du_circuit.png",
+          "label": "Historique du circuit"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC03",
+      "title": "Espace documentaire : consulter une pièce et ses versions",
+      "role": "Assistante",
+      "login": "demo.assist1",
+      "goal": "L'assistante retrouve une pièce d'un courrier et vérifie ses versions.",
+      "status": "ok",
+      "duration": 25.8,
+      "steps": [
+        {
+          "label": "Espace documentaire",
+          "status": "ok",
+          "shot": "SC03_01_espace_documentaire.png",
+          "check": "4 groupe(s) de pièce affiché(s)"
+        },
+        {
+          "label": "Fiche d'une pièce",
+          "status": "ok",
+          "shot": "SC03_02_fiche_d_une_piece.png",
+          "check": "« Versions » affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC03_01_espace_documentaire.png",
+          "label": "Espace documentaire"
+        },
+        {
+          "file": "SC03_02_fiche_d_une_piece.png",
+          "label": "Fiche d'une pièce"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC04",
+      "title": "Explorateur ECM : parcourir le fonds documentaire",
+      "role": "Archiviste",
+      "login": "demo.archive",
+      "goal": "L'archiviste navigue dans le plan de classement et ouvre un document.",
+      "status": "ok",
+      "duration": 28.9,
+      "steps": [
+        {
+          "label": "Documents ECM",
+          "status": "ok",
+          "shot": "SC04_01_documents_ecm.png",
+          "check": "80 document(s) affiché(s)"
+        },
+        {
+          "label": "Fiche document",
+          "status": "ok",
+          "shot": "SC04_02_fiche_document.png",
+          "check": "« Référence » affiché"
+        },
+        {
+          "label": "Plan de classement",
+          "status": "ok",
+          "shot": "SC04_03_plan_de_classement.png",
+          "check": "80 dossier de classement(s) affiché(s)"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC04_01_documents_ecm.png",
+          "label": "Documents ECM"
+        },
+        {
+          "file": "SC04_02_fiche_document.png",
+          "label": "Fiche document"
+        },
+        {
+          "file": "SC04_03_plan_de_classement.png",
+          "label": "Plan de classement"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC05",
+      "title": "Créer un document ECM et y déposer un fichier",
+      "role": "Archiviste",
+      "login": "demo.archive",
+      "goal": "Création d'un document typé, dépôt d'une version, finalisation.",
+      "status": "ok",
+      "duration": 31.5,
+      "steps": [
+        {
+          "label": "Documents ECM",
+          "status": "ok",
+          "shot": "SC05_01_documents_ecm.png",
+          "check": null
+        },
+        {
+          "label": "Formulaire de création",
+          "status": "ok",
+          "shot": "SC05_02_formulaire_de_creation.png",
+          "check": "« Nom » affiché"
+        },
+        {
+          "label": "Document renseigné",
+          "status": "ok",
+          "shot": "SC05_03_document_renseigne.png",
+          "check": null
+        },
+        {
+          "label": "Document enregistré",
+          "status": "ok",
+          "shot": "SC05_04_document_enregistre.png",
+          "check": "référence DOC-2026-00352 attribuée"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC05_01_documents_ecm.png",
+          "label": "Documents ECM"
+        },
+        {
+          "file": "SC05_02_formulaire_de_creation.png",
+          "label": "Formulaire de création"
+        },
+        {
+          "file": "SC05_03_document_renseigne.png",
+          "label": "Document renseigné"
+        },
+        {
+          "file": "SC05_04_document_enregistre.png",
+          "label": "Document enregistré"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC06",
+      "title": "Conservation : règles, documents échus, gel juridique",
+      "role": "Archiviste",
+      "login": "demo.archive",
+      "goal": "Contrôle du cycle de vie archivistique et des protections.",
+      "status": "ok",
+      "duration": 29.9,
+      "steps": [
+        {
+          "label": "Règles de conservation",
+          "status": "ok",
+          "shot": "SC06_01_regles_de_conservation.png",
+          "check": "5 règle de conservation(s) affiché(s)"
+        },
+        {
+          "label": "Documents échus",
+          "status": "ok",
+          "shot": "SC06_02_documents_echus.png",
+          "check": "1 document(s) échu(s)"
+        },
+        {
+          "label": "Gels juridiques",
+          "status": "ok",
+          "shot": "SC06_03_gels_juridiques.png",
+          "check": "2 gel juridique(s) affiché(s)"
+        },
+        {
+          "label": "Détail d'un gel",
+          "status": "ok",
+          "shot": "SC06_04_detail_d_un_gel.png",
+          "check": "« Motif » affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC06_01_regles_de_conservation.png",
+          "label": "Règles de conservation"
+        },
+        {
+          "file": "SC06_02_documents_echus.png",
+          "label": "Documents échus"
+        },
+        {
+          "file": "SC06_03_gels_juridiques.png",
+          "label": "Gels juridiques"
+        },
+        {
+          "file": "SC06_04_detail_d_un_gel.png",
+          "label": "Détail d'un gel"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC07",
+      "title": "Bordereau d'élimination : de la constitution à l'exécution",
+      "role": "Manager",
+      "login": "demo.manager1",
+      "goal": "Le bordereau préparé par l'archiviste est validé puis exécuté.",
+      "status": "ok",
+      "duration": 26.0,
+      "steps": [
+        {
+          "label": "Bordereaux d'élimination",
+          "status": "ok",
+          "shot": "SC07_01_bordereaux_d_elimination.png",
+          "check": "1 bordereau(s) affiché(s)"
+        },
+        {
+          "label": "Bordereau à valider",
+          "status": "ok",
+          "shot": "SC07_02_bordereau_a_valider.png",
+          "check": "« Bordereau » affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC07_01_bordereaux_d_elimination.png",
+          "label": "Bordereaux d'élimination"
+        },
+        {
+          "file": "SC07_02_bordereau_a_valider.png",
+          "label": "Bordereau à valider"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC08",
+      "title": "Valeur probante : journal de preuve scellé",
+      "role": "Audit",
+      "login": "demo.audit",
+      "goal": "L'auditeur consulte la chaîne de sceaux et son horodatage.",
+      "status": "ok",
+      "duration": 25.3,
+      "steps": [
+        {
+          "label": "Journal de preuve",
+          "status": "ok",
+          "shot": "SC08_01_journal_de_preuve.png",
+          "check": "80 sceau(s) affiché(s)"
+        },
+        {
+          "label": "Détail d'un sceau",
+          "status": "ok",
+          "shot": "SC08_02_detail_d_un_sceau.png",
+          "check": "« Empreinte » affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC08_01_journal_de_preuve.png",
+          "label": "Journal de preuve"
+        },
+        {
+          "file": "SC08_02_detail_d_un_sceau.png",
+          "label": "Détail d'un sceau"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC09",
+      "title": "Archives physiques : boîtes, emplacement et prêts",
+      "role": "Archiviste",
+      "login": "demo.archive",
+      "goal": "Suivi des boîtes d'archives et de leurs sorties.",
+      "status": "ok",
+      "duration": 25.0,
+      "steps": [
+        {
+          "label": "Boîtes d'archives",
+          "status": "ok",
+          "shot": "SC09_01_boites_d_archives.png",
+          "check": "4 boîte(s) affiché(s)"
+        },
+        {
+          "label": "Détail d'une boîte",
+          "status": "ok",
+          "shot": "SC09_02_detail_d_une_boite.png",
+          "check": "« Emplacement » affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC09_01_boites_d_archives.png",
+          "label": "Boîtes d'archives"
+        },
+        {
+          "file": "SC09_02_detail_d_une_boite.png",
+          "label": "Détail d'une boîte"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC10",
+      "title": "Partages externes : liens, quotas et expiration",
+      "role": "Manager",
+      "login": "demo.manager2",
+      "goal": "Contrôle des liens diffusés hors de l'organisation.",
+      "status": "ok",
+      "duration": 25.4,
+      "steps": [
+        {
+          "label": "Partages externes",
+          "status": "ok",
+          "shot": "SC10_01_partages_externes.png",
+          "check": "27 partage(s) affiché(s)"
+        },
+        {
+          "label": "Détail d'un partage",
+          "status": "ok",
+          "shot": "SC10_02_detail_d_un_partage.png",
+          "check": "lien public http://localhost:8169/ecm/share/c8nPyaZXau_Cr0jsLJuXCQ3JarUeHLKg"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC10_01_partages_externes.png",
+          "label": "Partages externes"
+        },
+        {
+          "file": "SC10_02_detail_d_un_partage.png",
+          "label": "Détail d'un partage"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC11",
+      "title": "Dossiers métier : complétude et circuit",
+      "role": "Comptabilité",
+      "login": "demo.compta",
+      "goal": "Un dossier fournisseur et ses pièces attendues.",
+      "status": "ok",
+      "duration": 26.2,
+      "steps": [
+        {
+          "label": "Dossiers métier",
+          "status": "ok",
+          "shot": "SC11_01_dossiers_metier.png",
+          "check": "40 dossier métier(s) affiché(s)"
+        },
+        {
+          "label": "Détail d'un dossier",
+          "status": "ok",
+          "shot": "SC11_02_detail_d_un_dossier.png",
+          "check": "« Complétude » affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC11_01_dossiers_metier.png",
+          "label": "Dossiers métier"
+        },
+        {
+          "file": "SC11_02_detail_d_un_dossier.png",
+          "label": "Détail d'un dossier"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC12",
+      "title": "Tableau de bord de pilotage",
+      "role": "Manager",
+      "login": "demo.manager2",
+      "goal": "Vue de direction : volumes, charge par étape, retards.",
+      "status": "ok",
+      "duration": 104.2,
+      "steps": [
+        {
+          "label": "Tableau de bord",
+          "status": "ok",
+          "shot": "SC12_01_tableau_de_bord.png",
+          "check": "6 bloc(s) d'indicateurs, 718 caractères affichés"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC12_01_tableau_de_bord.png",
+          "label": "Tableau de bord"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC13",
+      "title": "Journal d'audit : qui a fait quoi",
+      "role": "Audit",
+      "login": "demo.audit",
+      "goal": "Traçabilité transverse des opérations.",
+      "status": "ok",
+      "duration": 23.7,
+      "steps": [
+        {
+          "label": "Journal d'audit",
+          "status": "ok",
+          "shot": "SC13_01_journal_d_audit.png",
+          "check": "80 entrée d'audit(s) affiché(s)"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC13_01_journal_d_audit.png",
+          "label": "Journal d'audit"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC14",
+      "title": "Cloisonnement : un agent ne voit pas un courrier confidentiel d'un tiers",
+      "role": "Agent courrier",
+      "login": "demo.agent3",
+      "goal": "Contrôle de la confidentialité entre agents.",
+      "status": "ok",
+      "duration": 26.5,
+      "steps": [
+        {
+          "label": "Courriers visibles par l'agent",
+          "status": "ok",
+          "shot": "SC14_01_courriers_visibles_par_l_agent.png",
+          "check": "80 courrier(s) visibles"
+        },
+        {
+          "label": "Recherche des courriers « Secret »",
+          "status": "ok",
+          "shot": "SC14_02_recherche_des_courriers_secret.png",
+          "check": "0 résultat(s) — les courriers confidentiels d'un tiers restent masqués"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC14_01_courriers_visibles_par_l_agent.png",
+          "label": "Courriers visibles par l'agent"
+        },
+        {
+          "file": "SC14_02_recherche_des_courriers_secret.png",
+          "label": "Recherche des courriers « Secret »"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC15",
+      "title": "Portail : un tiers dépose une demande et la suit",
+      "role": "Tiers externe (portail)",
+      "login": "portail.recette",
+      "goal": "Parcours d'un correspondant externe, hors de l'application.",
+      "status": "ok",
+      "duration": 6.7,
+      "steps": [
+        {
+          "label": "Espace personnel du tiers",
+          "status": "ok",
+          "shot": "SC15_01_espace_personnel_du_tiers.png",
+          "check": "« Mes courriers » affiché"
+        },
+        {
+          "label": "Mes courriers",
+          "status": "ok",
+          "shot": "SC15_02_mes_courriers.png",
+          "check": "« courrier » affiché"
+        },
+        {
+          "label": "Formulaire de dépôt",
+          "status": "ok",
+          "shot": "SC15_03_formulaire_de_depot.png",
+          "check": "« Objet » affiché"
+        },
+        {
+          "label": "Demande déposée",
+          "status": "ok",
+          "shot": "SC15_04_demande_deposee.png",
+          "check": "« Réclamation sur la facture de mars » affiché"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC15_01_espace_personnel_du_tiers.png",
+          "label": "Espace personnel du tiers"
+        },
+        {
+          "file": "SC15_02_mes_courriers.png",
+          "label": "Mes courriers"
+        },
+        {
+          "file": "SC15_03_formulaire_de_depot.png",
+          "label": "Formulaire de dépôt"
+        },
+        {
+          "file": "SC15_04_demande_deposee.png",
+          "label": "Demande déposée"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC16",
+      "title": "Vérifier l'intégrité d'un document scellé",
+      "role": "Archiviste",
+      "login": "demo.archive",
+      "goal": "Contrôle à la demande de la chaîne de preuve d'un document.",
+      "status": "ok",
+      "duration": 28.1,
+      "steps": [
+        {
+          "label": "Document scellé et son journal de preuve",
+          "status": "ok",
+          "shot": "SC16_01_document_scelle_et_son_journal_de_preuve.png",
+          "check": "document DOC-2026-00352"
+        },
+        {
+          "label": "Vérification d'intégrité",
+          "status": "ok",
+          "shot": "SC16_02_verification_d_integrite.png",
+          "check": "intégrité confirmée (Intègre)"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC16_01_document_scelle_et_son_journal_de_preuve.png",
+          "label": "Document scellé et son journal de preuve"
+        },
+        {
+          "file": "SC16_02_verification_d_integrite.png",
+          "label": "Vérification d'intégrité"
+        }
+      ],
+      "console": []
+    },
+    {
+      "code": "SC17",
+      "title": "Déposer une nouvelle version d'un document",
+      "role": "Assistante",
+      "login": "demo.assist2",
+      "goal": "Le versionnement conserve l'historique et l'empreinte.",
+      "status": "ok",
+      "duration": 28.4,
+      "steps": [
+        {
+          "label": "Document et son historique de versions",
+          "status": "ok",
+          "shot": "SC17_01_document_et_son_historique_de_versions.png",
+          "check": "DOC-2026-00351 — 2 version(s), la plus récente : v2\trecette_v2.pdf\tseconde version\t27\tLandry Nkolo\t14/09/2026 15:35:43\t · Ouvrir · Télécharger"
+        }
+      ],
+      "shots": [
+        {
+          "file": "SC17_01_document_et_son_historique_de_versions.png",
+          "label": "Document et son historique de versions"
+        }
+      ],
+      "console": []
+    }
+  ]
+}
