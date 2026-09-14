@@ -73,11 +73,14 @@ class AiteEcmDocument(models.Model):
                 self.env['aite.ecm.seal'].seal(
                     doc, 'dispose', detail=_("Document éliminé (%s)")
                     % (doc.latest_version_id.sha256 or ''))
-        # les sceaux ne sont pas supprimables : on détache le lien
-        self.env.cr.execute(
-            "UPDATE aite_ecm_seal SET document_id = NULL WHERE document_id IN %s",
-            (tuple(self.ids),)) if self.ids else None
-        return super().unlink()
+        # Les sceaux ne sont pas supprimables : le lien se détache tout seul
+        # (``ondelete='set null'``), le maillon reste dans la chaîne avec la
+        # référence et l'empreinte du document éliminé.
+        seals = self.env['aite.ecm.seal'].sudo().search(
+            [('document_id', 'in', self.ids)])
+        res = super().unlink()
+        seals.invalidate_recordset(['document_id'])
+        return res
 
     # ------------------------------------------------------------------ #
     # Vérification

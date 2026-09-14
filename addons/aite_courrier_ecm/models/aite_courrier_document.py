@@ -145,6 +145,17 @@ class AiteCourrierDocument(models.Model):
 
     def unlink(self):
         mirrors = self.mapped('ecm_document_id')
+        # Les versions ECM pointent sur l'``ir.attachment`` de la version
+        # courrier (fichier non dupliqué) avec ``ondelete='restrict'``. La
+        # suppression de la pièce détruit ces pièces jointes : on retire donc
+        # d'abord les versions miroir, sinon la base rejette la suppression.
+        shared = self.mapped('version_ids.attachment_id')
+        if mirrors and shared:
+            self.env['aite.ecm.document.version'].sudo().search([
+                ('document_id', 'in', mirrors.ids),
+                ('attachment_id', 'in', shared.ids),
+            ]).with_context(force_unlink=True,
+                            ecm_from_courrier=True).unlink()
         res = super().unlink()
         for ecm in mirrors:
             if ecm.exists() and ecm.active:

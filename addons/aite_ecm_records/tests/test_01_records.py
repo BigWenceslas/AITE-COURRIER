@@ -21,6 +21,7 @@ class TestRecords(TransactionCase):
         cls.manager = cls.env['res.users'].with_context(
             no_reset_password=True).create({
                 'name': "Manager records", 'login': "rec_manager",
+                'email': "rec_manager@aite.test",
                 'groups_id': [(6, 0, [cls.env.ref(
                     'aite_courrier_base.group_manager').id])]})
         cls.Document = cls.env['aite.ecm.document']
@@ -61,22 +62,40 @@ class TestRecords(TransactionCase):
         facture._retention_compute()
         self.assertTrue(facture.retention_deadline)
         self.assertEqual(facture.retention_state, 'current')
-        # échéance dépassée
-        facture.sudo().write({'retention_start':
-                              fields.Date.context_today(self)
+        # échéance dépassée : on recule la date de finalisation, qui est le
+        # déclencheur de la règle (la date de départ en est déduite).
+        facture.sudo().write({'final_date': fields.Datetime.now()
                               - relativedelta(years=11)})
         facture.sudo()._retention_compute()
         facture.invalidate_recordset()
+        self.assertEqual(facture.retention_start,
+                         fields.Date.context_today(facture)
+                         - relativedelta(years=11))
         self.assertEqual(facture.retention_state, 'expired')
         self.assertEqual(facture.final_fate, 'destroy')
         # conservation définitive
         pv = self._doc('aite_ecm_document.type_pv',
                        'aite_ecm_document.folder_direction')
         pv.action_mark_final()
-        pv.sudo().write({'retention_start': fields.Date.context_today(self)
+        pv.sudo().write({'final_date': fields.Datetime.now()
                          - relativedelta(years=2)})
         pv.sudo()._retention_compute()
         self.assertEqual(pv.retention_state, 'permanent')
+
+    def test_02b_start_does_not_drift(self):
+        """La date de départ ne bouge pas quand le document est retouché
+        après sa finalisation (sinon la DUA repartirait de zéro)."""
+        facture = self._doc('aite_ecm_document.type_facture_fournisseur',
+                            'aite_ecm_document.folder_finance')
+        facture.action_mark_final()
+        facture.sudo().write({'final_date': fields.Datetime.now()
+                              - relativedelta(years=9)})
+        facture.sudo()._retention_compute()
+        start, deadline = facture.retention_start, facture.retention_deadline
+        facture.sudo().write({'description': "Annotation du service"})
+        facture.sudo()._retention_compute()
+        self.assertEqual(facture.retention_start, start)
+        self.assertEqual(facture.retention_deadline, deadline)
 
     def test_03_legal_hold(self):
         folder = self.env['aite.ecm.folder'].create({'name': "Contentieux test"})
@@ -105,7 +124,7 @@ class TestRecords(TransactionCase):
         expired = self._doc('aite_ecm_document.type_facture_fournisseur',
                             'aite_ecm_document.folder_finance')
         expired.action_mark_final()
-        expired.sudo().write({'retention_start': fields.Date.context_today(self)
+        expired.sudo().write({'final_date': fields.Datetime.now()
                               - relativedelta(years=11)})
         expired.sudo()._retention_compute()
         keep = self._doc('aite_ecm_document.type_pv',
@@ -122,11 +141,12 @@ class TestRecords(TransactionCase):
         slip.action_submit()
         slip.with_user(self.manager).action_approve()
         self.assertEqual(slip.state, 'approved')
-        expired_id = expired.id
+        expired_id, expired_ref = expired.id, expired.reference
         slip.with_user(self.manager).action_execute()
         self.assertEqual(slip.state, 'done')
         self.assertFalse(self.Document.browse(expired_id).exists())
-        line = slip.line_ids.filtered(lambda l: l.reference == expired.reference)
+        # Le bordereau garde la trace de ce qui a été détruit.
+        line = slip.line_ids.filtered(lambda l: l.reference == expired_ref)
         self.assertTrue(line.destroyed and line.sha256)
 
     def test_05_protection(self):

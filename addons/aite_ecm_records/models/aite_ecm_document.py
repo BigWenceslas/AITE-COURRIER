@@ -53,7 +53,7 @@ class AiteEcmDocument(models.Model):
     legal_hold_active = fields.Boolean(
         string="Sous gel juridique", compute='_compute_legal_hold',
         store=True, index=True)
-    legal_hold_names = fields.Char(compute='_compute_legal_hold')
+    legal_hold_names = fields.Char(compute='_compute_legal_hold_names')
     disposition_line_ids = fields.One2many(
         comodel_name='aite.ecm.disposition.line', inverse_name='document_id',
         string="Bordereaux")
@@ -70,23 +70,39 @@ class AiteEcmDocument(models.Model):
     # ================================================================== #
     # Gel juridique
     # ================================================================== #
-    @api.depends('legal_hold_ids.state', 'folder_id')
-    def _compute_legal_hold(self):
+    def _legal_holds(self):
+        """Gels actifs qui couvrent chaque document (directement ou par un
+        dossier parent) : ``{id du document: gels}``."""
         Hold = self.env['aite.ecm.legal.hold'].sudo()
-        active_holds = Hold.search([('state', '=', 'active')])
         by_folder = {}
-        for hold in active_holds:
+        for hold in Hold.search([('state', '=', 'active')]):
             for folder in hold.folder_ids:
-                by_folder.setdefault(folder.id, self.env['aite.ecm.legal.hold'])
+                by_folder.setdefault(folder.id, Hold.browse())
                 by_folder[folder.id] |= hold
+        result = {}
         for doc in self:
             holds = doc.legal_hold_ids.filtered(lambda h: h.state == 'active')
             folder = doc.folder_id
             while folder:
                 holds |= by_folder.get(folder.id, Hold.browse())
                 folder = folder.parent_id
-            doc.legal_hold_active = bool(holds)
-            doc.legal_hold_names = ", ".join(holds.mapped('name'))
+            result[doc.id] = holds
+        return result
+
+    # Deux méthodes distinctes : Odoo refuse qu'un même calcul alimente à la
+    # fois un champ stocké et un champ non stocké.
+    @api.depends('legal_hold_ids.state', 'folder_id')
+    def _compute_legal_hold(self):
+        holds = self.sudo()._legal_holds()
+        for doc in self:
+            doc.legal_hold_active = bool(holds.get(doc.id))
+
+    @api.depends('legal_hold_ids.state', 'folder_id')
+    def _compute_legal_hold_names(self):
+        holds = self.sudo()._legal_holds()
+        for doc in self:
+            doc.legal_hold_names = ", ".join(
+                holds.get(doc.id, self.env['aite.ecm.legal.hold']).mapped('name'))
 
     # ================================================================== #
     # Détermination de la règle et de l'échéance
@@ -108,19 +124,22 @@ class AiteEcmDocument(models.Model):
         if rule.trigger == 'create':
             return fields.Date.to_date(self.create_date)
         if rule.trigger == 'final':
-            return fields.Date.to_date(self.write_date) \
-                if self.state in ('final', 'archived') else False
+            if self.state not in ('final', 'archived'):
+                return False
+            return fields.Date.to_date(self.final_date or self.write_date)
         if rule.trigger == 'archive':
-            return fields.Date.to_date(self.write_date) \
-                if self.state == 'archived' else False
+            if self.state != 'archived':
+                return False
+            return fields.Date.to_date(self.archived_date or self.write_date)
         if rule.trigger == 'close':
             if self.res_model and self.res_id:
                 record = self.env[self.res_model].sudo().browse(self.res_id)
                 for field_name in ('date_done', 'date_close', 'date_archived'):
                     if field_name in record._fields and record[field_name]:
                         return fields.Date.to_date(record[field_name])
-            return fields.Date.to_date(self.write_date) \
-                if self.state == 'archived' else False
+            if self.state != 'archived':
+                return False
+            return fields.Date.to_date(self.archived_date or self.write_date)
         if rule.trigger == 'meta':
             value = (self.properties or {})
             if isinstance(value, list):     # format liste de définitions
@@ -175,7 +194,21 @@ class AiteEcmDocument(models.Model):
             doc.sudo().write(vals)
         return True
 
+    def _legal_hold_recompute(self):
+        """Force le recalcul du gel juridique.
+
+        ``legal_hold_active`` est stocké et ne dépend que de
+        ``legal_hold_ids`` et de ``folder_id`` : un gel posé sur un *dossier*
+        ne déclenche donc aucun recalcul automatique sur les documents qu'il
+        contient. Sans cet appel explicite, la protection resterait inactive.
+        """
+        self.env.add_to_compute(self._fields['legal_hold_active'], self)
+        self.flush_recordset(['legal_hold_active'])
+        self.invalidate_recordset(['legal_hold_names'])
+        return True
+
     def _retention_recompute_ids(self):
+        self._legal_hold_recompute()
         return self._retention_compute()
 
     @api.model

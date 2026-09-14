@@ -20,10 +20,13 @@ class TestEcmDocument(TransactionCase):
         cls.g_agent = cls.env.ref('aite_courrier_base.group_agent')
         cls.g_manager = cls.env.ref('aite_courrier_base.group_manager')
         cls.agent = Users.create({'name': "Agent A", 'login': "ecm_agent_a",
+                                  'email': "ecm_agent_a@aite.test",
                                   'groups_id': [(6, 0, [cls.g_agent.id])]})
         cls.agent_b = Users.create({'name': "Agent B", 'login': "ecm_agent_b",
+                                    'email': "ecm_agent_b@aite.test",
                                     'groups_id': [(6, 0, [cls.g_agent.id])]})
         cls.manager = Users.create({'name': "Manager", 'login': "ecm_manager",
+                                    'email': "ecm_manager@aite.test",
                                     'groups_id': [(6, 0, [cls.g_manager.id])]})
         cls.type_contrat = cls.env.ref('aite_ecm_document.type_contrat')
         cls.folder_jur = cls.env.ref('aite_ecm_document.folder_juridique')
@@ -83,7 +86,12 @@ class TestEcmDocument(TransactionCase):
             v1.unlink()
 
     def test_07_trash_and_purge(self):
-        doc = self._doc(self.manager)
+        # Type générique : aucune règle de conservation ne s'y applique, la
+        # corbeille se purge donc même avec `aite_ecm_records` installé (la
+        # protection des documents sous conservation est testée là-bas).
+        doc = self._doc(self.manager,
+                        type_id=self.env.ref(
+                            'aite_ecm_document.type_generique').id)
         doc.action_trash()
         self.assertFalse(doc.active)
         doc.action_restore()
@@ -131,10 +139,13 @@ class TestEcmRightsAndScan(TransactionCase):
         g_agent = cls.env.ref('aite_courrier_base.group_agent')
         g_manager = cls.env.ref('aite_courrier_base.group_manager')
         cls.agent_a = Users.create({'name': "Agent A2", 'login': "ecm_r_agent_a",
+                                    'email': "ecm_r_agent_a@aite.test",
                                     'groups_id': [(6, 0, [g_agent.id])]})
         cls.agent_b = Users.create({'name': "Agent B2", 'login': "ecm_r_agent_b",
+                                    'email': "ecm_r_agent_b@aite.test",
                                     'groups_id': [(6, 0, [g_agent.id])]})
         cls.manager = Users.create({'name': "Manager 2", 'login': "ecm_r_manager",
+                                    'email': "ecm_r_manager@aite.test",
                                     'groups_id': [(6, 0, [g_manager.id])]})
         cls.internal = cls.env.ref('aite_courrier_base.confidentiality_internal')
         cls.conf = cls.env.ref('aite_courrier_base.confidentiality_confidential')
@@ -193,7 +204,10 @@ class TestEcmRightsAndScan(TransactionCase):
             images.append(buf.getvalue())
         pdf = Doc._images_to_pdf(images)
         self.assertTrue(pdf.startswith(b'%PDF'))
-        from pypdf import PdfReader
+        try:  # Odoo embarque pypdf (>= 3.13) ou PyPDF2 selon la distribution
+            from pypdf import PdfReader
+        except ImportError:
+            from PyPDF2 import PdfReader
         self.assertEqual(len(PdfReader(io.BytesIO(pdf)).pages), 2)
         # dossier de dépôt surveillé
         tmp = tempfile.mkdtemp()

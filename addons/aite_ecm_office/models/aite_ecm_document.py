@@ -148,7 +148,9 @@ class AiteEcmDocument(models.Model):
             raise UserError(_("Réservé par %s.", self.checkout_user_id.name))
         client = self._gdrive_client()
         if client is None:
-            return self.env['res.users']._google_authorize_action(
+            # Pas encore de jeton : on renvoie l'utilisateur courant vers le
+            # consentement Google (l'autorisation est individuelle).
+            return self.env.user._google_authorize_action(
                 return_model=self._name, return_id=self.id)
         if self.gdrive_file_id and self.gdrive_url:
             try:

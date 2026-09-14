@@ -28,7 +28,8 @@ class AiteCourrierDocumentVersion(models.Model):
     file_name = fields.Char(related='attachment_id.name', string="Nom du fichier")
     # Contenu de la pièce, exposé pour le téléchargement / l'aperçu depuis l'UI
     # (icône de téléchargement dans la liste des versions).
-    file_data = fields.Binary(related='attachment_id.datas', string="Fichier")
+    file_data = fields.Binary(related='attachment_id.datas',
+                              string="Contenu du fichier")
     file_extension = fields.Char(
         string="Extension", compute='_compute_file_extension', store=True)
     file_size = fields.Integer(string="Taille (octets)")

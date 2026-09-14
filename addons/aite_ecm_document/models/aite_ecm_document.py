@@ -19,7 +19,7 @@ class AiteEcmDocument(models.Model):
 
     _name = 'aite.ecm.document'
     _description = "Document ECM"
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['mail.thread', 'mail.activity.mixin', 'aite.chatter.mixin']
     _order = 'id desc'
 
     ALLOWED_EXTENSIONS = (
@@ -111,6 +111,13 @@ class AiteEcmDocument(models.Model):
         string="Statut", default='draft', required=True, tracking=True,
         index=True)
     is_locked = fields.Boolean(string="Verrouillé", compute='_compute_is_locked')
+    # Dates de franchissement d'étape : elles servent de point de départ aux
+    # durées de conservation. Elles sont figées à la transition — contrairement
+    # à ``write_date``, qui glisserait à chaque modification ultérieure.
+    final_date = fields.Datetime(string="Finalisé le", readonly=True,
+                                 copy=False, index=True)
+    archived_date = fields.Datetime(string="Archivé le", readonly=True,
+                                    copy=False, index=True)
     active = fields.Boolean(string="Actif", default=True,
                             help="Décoché = document dans la corbeille.")
     trashed_date = fields.Datetime(string="Mis à la corbeille le",
@@ -265,7 +272,7 @@ class AiteEcmDocument(models.Model):
         Type = self.env['aite.ecm.document.type']
         for vals in vals_list:
             if not vals.get('reference') or vals['reference'] == _("Nouveau"):
-                vals['reference'] = self.env['ir.sequence'].next_by_code(
+                vals['reference'] = self.env['ir.sequence'].sudo().next_by_code(
                     'aite.ecm.document') or _("Nouveau")
             doc_type = Type.browse(vals['type_id']) if vals.get('type_id') \
                 else Type
@@ -329,19 +336,29 @@ class AiteEcmDocument(models.Model):
     def _check_document_access(self, operation='read', user=None):
         """Règle d'accès unique (UI, API, partages, WebDAV à venir).
 
-        1. Superutilisateur, Manager et Administrateur : accès total.
-        2. Partage nominatif : lecteurs partagés (lecture), rédacteurs partagés
+        1. Verrou du cycle de vie : un document finalisé ou archivé n'est
+           modifiable par **aucun utilisateur**, Manager et Administrateur
+           compris — c'est ce qui donne sa valeur au figement (et au
+           scellement). Même contrat que les pièces de courrier
+           (``aite.courrier.document._check_document_access``). Seuls les
+           traitements système en ``sudo`` (copie de préservation PDF/A,
+           miroir d'un courrier, imports) restent autorisés.
+        2. Manager et Administrateur : accès total par ailleurs (ils peuvent
+           notamment passer outre une réservation).
+        3. Partage nominatif : lecteurs partagés (lecture), rédacteurs partagés
            (lecture et écriture) — quels que soient dossier et confidentialité.
-        3. Confidentiel / Secret : propriétaire ou créateur uniquement.
-        4. Droits du dossier de classement (lecture / écriture hérités).
-        5. Écriture : refusée si verrouillé ou réservé par un autre.
+        4. Confidentiel / Secret : propriétaire ou créateur uniquement.
+        5. Droits du dossier de classement (lecture / écriture hérités).
+        6. Écriture : refusée si réservé par un autre.
         """
         self.ensure_one()
         user = user or self.env.user
+        if operation != 'read' and self.is_locked and not self.env.su:
+            return False
         if self._is_manager(user):
             return True
-        if operation != 'read' and (self.is_locked or (
-                self.is_checked_out and self.checkout_user_id != user)):
+        if operation != 'read' and self.is_checked_out \
+                and self.checkout_user_id != user:
             return False
         if user in self.editor_user_ids:
             return True
@@ -453,13 +470,17 @@ class AiteEcmDocument(models.Model):
                 raise UserError(_("Impossible de finaliser sans version."))
             if doc.is_checked_out:
                 raise UserError(_("Libérez d'abord la réservation."))
-            doc.write({'state': 'final'})
+            doc.write({'state': 'final',
+                       'final_date': doc.final_date or fields.Datetime.now()})
             self._audit(doc, _("Document finalisé"), 'ok', doc.reference)
         return True
 
     def action_mark_archived(self):
         for doc in self:
-            doc.write({'state': 'archived'})
+            now = fields.Datetime.now()
+            doc.write({'state': 'archived',
+                       'final_date': doc.final_date or now,
+                       'archived_date': doc.archived_date or now})
             self._audit(doc, _("Document archivé"), 'ok', doc.reference)
         return True
 
@@ -468,7 +489,10 @@ class AiteEcmDocument(models.Model):
             raise AccessError(_(
                 "Seul un manager peut remettre un document en brouillon."))
         for doc in self:
-            doc.write({'state': 'draft'})
+            # Le retour en brouillon annule le franchissement d'étape : les
+            # dates repartiront de la prochaine finalisation.
+            doc.write({'state': 'draft', 'final_date': False,
+                       'archived_date': False})
             self._audit(doc, _("Retour en brouillon"), 'warn', doc.reference)
         return True
 
@@ -544,8 +568,14 @@ class AiteEcmDocument(models.Model):
         days = int(self.env['ir.config_parameter'].sudo().get_param(
             'aite_ecm.trash_retention_days', 30))
         limit = fields.Datetime.now() - timedelta(days=days)
-        expired = self.with_context(active_test=False).sudo().search([
-            ('active', '=', False), ('trashed_date', '<', limit)])
+        domain = [('active', '=', False), ('trashed_date', '<', limit)]
+        # ``purge_skip_ids`` : documents qu'un module amont protège (gel
+        # juridique, conservation en cours). Sans cette exclusion, leur
+        # suppression lève une erreur qui interromprait toute la purge.
+        skip = self.env.context.get('purge_skip_ids')
+        if skip:
+            domain.append(('id', 'not in', list(skip)))
+        expired = self.with_context(active_test=False).sudo().search(domain)
         for doc in expired:
             self._audit(doc, _("Purge de la corbeille"), 'warn',
                         doc.reference, source='system')

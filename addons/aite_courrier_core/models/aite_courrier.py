@@ -18,7 +18,7 @@ class AiteCourrier(models.Model):
 
     _name = 'aite.courrier'
     _description = "Courrier"
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['mail.thread', 'mail.activity.mixin', 'aite.chatter.mixin']
     _order = 'date_received desc, id desc'
 
     # Champs métier dont la modification déclenche un audit et qui sont
@@ -315,7 +315,7 @@ class AiteCourrier(models.Model):
                     "Le circuit « %s » ne définit pas d'étape initiale.",
                     circuit.display_name,
                 ))
-            reference = self.env['ir.sequence'].next_by_code('aite.courrier')
+            reference = self.env['ir.sequence'].sudo().next_by_code('aite.courrier')
             courrier.with_context(skip_courrier_audit=True).write({
                 'reference': reference,
                 'circuit_id': circuit.id,

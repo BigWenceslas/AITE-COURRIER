@@ -42,7 +42,9 @@ class FakeNextcloud:
             return {'fileid': fileid, 'etag': etag, 'size': len(data),
                     'is_dir': False, 'name': path.rsplit('/', 1)[-1]}
         if path.strip('/') in self.dirs:
-            return {'fileid': 'dir', 'etag': 'root-%d' % len(self.files),
+            # Comme un vrai serveur WebDAV, l'ETag d'un dossier change dès
+            # qu'un descendant change — pas seulement quand leur nombre varie.
+            return {'fileid': 'dir', 'etag': 'root-%d' % self._seq,
                     'is_dir': True, 'name': path}
         return None
 
@@ -98,6 +100,7 @@ class TestNextcloud(TransactionCase):
         cls.manager = cls.env['res.users'].with_context(
             no_reset_password=True).create({
                 'name': "Manager NC", 'login': "nc_manager",
+                'email': "nc_manager@aite.test",
                 'groups_id': [(6, 0, [cls.env.ref(
                     'aite_courrier_base.group_manager').id])]})
 
@@ -134,7 +137,7 @@ class TestNextcloud(TransactionCase):
         self.assertEqual(doc.nc_sync_state, 'synced')
         self.assertTrue(doc.nc_file_id and doc.nc_etag)
         log = self.env['aite.courrier.audit.log'].sudo().search(
-            [('res_model', '=', 'aite.ecm.document'), ('res_id', '=', doc.id),
+            [('model_name', '=', 'aite.ecm.document'), ('res_id', '=', doc.id),
              ('source', '=', 'nextcloud')])
         self.assertTrue(log)
 

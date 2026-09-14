@@ -25,7 +25,7 @@ class AiteEcmDocumentVersion(models.Model):
     file_name = fields.Char(related='attachment_id.name',
                             string="Nom du fichier")
     file_data = fields.Binary(related='attachment_id.datas',
-                              string="Fichier")
+                              string="Contenu du fichier")
     file_extension = fields.Char(
         string="Extension", compute='_compute_file_extension', store=True)
     file_size = fields.Integer(string="Taille (octets)")
@@ -63,9 +63,13 @@ class AiteEcmDocumentVersion(models.Model):
         }
 
     def unlink(self):
-        for version in self:
-            if version.document_id.is_locked:
-                raise UserError(_(
-                    "Impossible de supprimer une version d'un document "
-                    "finalisé ou archivé (« %s »).", version.document_id.name))
+        # ``force_unlink`` : purge technique (corbeille, élimination, miroir
+        # d'un objet source supprimé) — le verrou fonctionnel ne s'applique pas.
+        if not self.env.context.get('force_unlink'):
+            for version in self:
+                if version.document_id.is_locked:
+                    raise UserError(_(
+                        "Impossible de supprimer une version d'un document "
+                        "finalisé ou archivé (« %s »).",
+                        version.document_id.name))
         return super().unlink()

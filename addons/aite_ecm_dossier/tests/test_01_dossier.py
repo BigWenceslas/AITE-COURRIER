@@ -12,9 +12,11 @@ class TestEcmDossier(TransactionCase):
         Users = cls.env['res.users'].with_context(no_reset_password=True)
         cls.agent = Users.create({
             'name': "Agent", 'login': "dos_agent",
+            'email': "dos_agent@aite.test",
             'groups_id': [(6, 0, [cls.env.ref('aite_courrier_base.group_agent').id])]})
         cls.manager = Users.create({
             'name': "Manager", 'login': "dos_manager",
+            'email': "dos_manager@aite.test",
             'groups_id': [(6, 0, [cls.env.ref('aite_courrier_base.group_manager').id])]})
         cls.dtype = cls.env.ref('aite_ecm_dossier.dossier_type_fournisseur')
         cls.partner = cls.env['res.partner'].create({'name': "ETS KAMDEM"})

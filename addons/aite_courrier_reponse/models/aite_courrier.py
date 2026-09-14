@@ -17,7 +17,7 @@ class AiteCourrier(models.Model):
         string="Réponses",
     )
     reply_count = fields.Integer(
-        string="Réponses", compute='_compute_reply_count')
+        string="Nombre de réponses", compute='_compute_reply_count')
 
     @api.depends('reply_ids')
     def _compute_reply_count(self):

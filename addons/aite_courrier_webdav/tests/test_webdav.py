@@ -124,6 +124,7 @@ class TestWebdav(TransactionCase):
         conf_courrier.action_launch_circuit()
         agent = self.env['res.users'].create({
             'name': 'Agent', 'login': 'webdav_agent',
+            'email': 'webdav_agent@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_agent').id])],

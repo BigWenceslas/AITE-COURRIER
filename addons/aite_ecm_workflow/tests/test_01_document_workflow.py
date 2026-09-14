@@ -15,9 +15,11 @@ class TestDocumentWorkflow(TransactionCase):
         super().setUpClass()
         Users = cls.env['res.users'].with_context(no_reset_password=True)
         cls.agent = Users.create({'name': "Agent WF", 'login': "wf_agent",
+                                  'email': "wf_agent@aite.test",
                                   'groups_id': [(6, 0, [cls.env.ref(
                                       'aite_courrier_base.group_agent').id])]})
         cls.manager = Users.create({'name': "Manager WF", 'login': "wf_manager",
+                                    'email': "wf_manager@aite.test",
                                     'groups_id': [(6, 0, [cls.env.ref(
                                         'aite_courrier_base.group_manager').id])]})
         cls.proc_type = cls.env.ref('aite_ecm_document.type_procedure')

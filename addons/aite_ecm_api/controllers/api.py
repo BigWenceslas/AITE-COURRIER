@@ -24,9 +24,12 @@ def api_route(*urls, methods=('GET',)):
     """Route REST : auth par X-API-Key, exécution avec les droits de
     l'utilisateur, erreurs métier converties en JSON."""
     def decorator(func):
+        # ``readonly=False`` : l'authentification par clé d'API écrit
+        # (dernière utilisation de la clé), et les routes POST créent des
+        # versions — cf. commentaire du contrôleur WebDAV.
         @http.route([PREFIX + u for u in urls], type='http', auth='none',
                     methods=list(methods) + ['OPTIONS'], csrf=False,
-                    save_session=False)
+                    save_session=False, readonly=False)
         @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             if request.httprequest.method == 'OPTIONS':

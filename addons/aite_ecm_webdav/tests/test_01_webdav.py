@@ -16,10 +16,12 @@ class TestEcmWebdav(HttpCase):
         super().setUpClass()
         Users = cls.env['res.users'].with_context(no_reset_password=True)
         cls.agent = Users.create({'name': "Agent DAV", 'login': "dav_agent",
+                                  'email': "dav_agent@aite.test",
                                   'password': "dav_agent_pwd",
                                   'groups_id': [(6, 0, [cls.env.ref(
                                       'aite_courrier_base.group_agent').id])]})
         cls.other = Users.create({'name': "Autre DAV", 'login': "dav_other",
+                                  'email': "dav_other@aite.test",
                                   'password': "dav_other_pwd",
                                   'groups_id': [(6, 0, [cls.env.ref(
                                       'aite_courrier_base.group_agent').id])]})

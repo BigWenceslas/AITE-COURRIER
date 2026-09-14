@@ -25,6 +25,7 @@ class TestAuditImmutable(TransactionCase):
         cls.admin_user = cls.env['res.users'].create({
             'name': "Admin Courrier Test",
             'login': "admin_courrier_test",
+            'email': "admin_courrier_test@aite.test",
             'groups_id': [(6, 0, [
                 cls.env.ref('base.group_user').id,
                 cls.env.ref('aite_courrier_base.group_admin').id,

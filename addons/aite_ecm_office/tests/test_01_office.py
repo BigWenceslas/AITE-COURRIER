@@ -13,43 +13,50 @@ DOCX2 = base64.b64encode(b"PK\x03\x04 fake docx v2")
 
 
 class FakeDrive:
-    """Google Drive simulé : dépôt, export et suppression, sans réseau."""
+    """Google Drive simulé : mêmes signatures que ``GoogleDriveClient``
+    (dossier, dépôt converti, métadonnées, export, suppression), sans réseau."""
 
     def __init__(self):
         self.files = {}
         self.calls = []
-        self._seq = 100
+        self._seq = 0
 
-    def upload(self, name, content, mimetype, target_mime=None, folder=None):
+    def ensure_folder(self, name):
+        self.calls.append(('ensure_folder', name))
+        return 'folder-1'
+
+    def upload(self, name, content, mimetype, folder_id=None, convert_to=None):
         self._seq += 1
-        file_id = "gd-%d" % self._seq
+        file_id = "gfile-%d" % self._seq
         self.files[file_id] = {'name': name, 'content': content,
-                               'mimetype': target_mime or mimetype,
-                               'modified': '2026-09-09T10:00:00.000Z'}
+                               'mimeType': convert_to or mimetype,
+                               'modifiedTime': '2026-09-09T10:00:00.000Z',
+                               'trashed': False}
         self.calls.append(('upload', name))
-        return {'id': file_id, 'mimeType': self.files[file_id]['mimetype'],
-                'modifiedTime': self.files[file_id]['modified']}
+        return dict(self.files[file_id], id=file_id)
 
     def metadata(self, file_id):
         self.calls.append(('metadata', file_id))
-        return dict(self.files[file_id], id=file_id,
-                    modifiedTime=self.files[file_id]['modified'])
+        return dict(self.files[file_id], id=file_id)
 
-    def export(self, file_id, mimetype):
-        self.calls.append(('export', file_id))
-        return self.files[file_id]['content']
+    def download(self, file_id, mimetype):
+        """Export d'un document Google natif : renvoie (contenu, mime, ext)."""
+        self.calls.append(('download', file_id))
+        entry = self.files[file_id]
+        ext = {'application/vnd.google-apps.document': 'docx',
+               'application/vnd.google-apps.spreadsheet': 'xlsx',
+               'application/vnd.google-apps.presentation': 'pptx'}.get(
+                   entry['mimeType'])
+        return entry['content'], entry['mimeType'], ext
 
     def delete(self, file_id):
         self.calls.append(('delete', file_id))
         self.files.pop(file_id, None)
 
-    def edit_url(self, file_id, mimetype=None):
-        return "https://docs.google.com/document/d/%s/edit" % file_id
-
-    def touch(self, file_id, content):
-        """Simule une modification dans Google."""
+    def edit(self, file_id, content):
+        """Simule une modification faite dans l'éditeur Google."""
         self.files[file_id]['content'] = content
-        self.files[file_id]['modified'] = '2026-09-09T11:30:00.000Z"'.rstrip('"')
+        self.files[file_id]['modifiedTime'] = '2026-09-09T11:30:00.000Z'
 
 
 @tagged('post_install', '-at_install', 'aite_ecm_office')
@@ -63,6 +70,7 @@ class TestOfficeGoogle(TransactionCase):
         Param.set_param('web.base.url', 'https://ecm.test')
         self.user = self.env['res.users'].with_context(no_reset_password=True).create({
             'name': "Agent GD", 'login': "gd_agent",
+            'email': "gd_agent@aite.test",
             'groups_id': [(6, 0, [self.env.ref('aite_courrier_base.group_agent').id])]})
         self.doc = self.env['aite.ecm.document'].with_user(self.user).create({
             'name': "Note", 'confidentiality_id': self.env.ref(
@@ -111,8 +119,10 @@ class TestOfficeWopi(TransactionCase):
         Users = cls.env['res.users'].with_context(no_reset_password=True)
         g_agent = cls.env.ref('aite_courrier_base.group_agent')
         cls.agent = Users.create({'name': "Agent WOPI", 'login': "wopi_agent",
+                                  'email': "wopi_agent@aite.test",
                                   'groups_id': [(6, 0, [g_agent.id])]})
         cls.other = Users.create({'name': "Autre WOPI", 'login': "wopi_other",
+                                  'email': "wopi_other@aite.test",
                                   'groups_id': [(6, 0, [g_agent.id])]})
         Param = cls.env['ir.config_parameter'].sudo()
         Param.set_param('web.base.url', 'https://ecm.test')

@@ -9,7 +9,7 @@ class AiteEcmDossier(models.Model):
     _name = 'aite.ecm.dossier'
     _description = "Dossier métier"
     _inherit = ['aite.ecm.document.mixin', 'aite.workflow.mixin',
-                'mail.thread', 'mail.activity.mixin']
+                'mail.thread', 'mail.activity.mixin', 'aite.chatter.mixin']
     _order = 'id desc'
 
     reference = fields.Char(
@@ -73,7 +73,7 @@ class AiteEcmDossier(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if not vals.get('reference') or vals['reference'] == _("Nouveau"):
-                vals['reference'] = self.env['ir.sequence'].next_by_code(
+                vals['reference'] = self.env['ir.sequence'].sudo().next_by_code(
                     'aite.ecm.dossier') or _("Nouveau")
         dossiers = super().create(vals_list)
         for dossier in dossiers:

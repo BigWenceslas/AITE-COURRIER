@@ -109,12 +109,14 @@ class TestGed(TransactionCase):
         doc = self._new_document(courrier)
         manager = self.env['res.users'].create({
             'name': 'M', 'login': 'ged_manager',
+            'email': 'ged_manager@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_manager').id])],
         })
         agent = self.env['res.users'].create({
             'name': 'A', 'login': 'ged_agent',
+            'email': 'ged_agent@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_agent').id])],
@@ -132,6 +134,7 @@ class TestGed(TransactionCase):
     def test_tc08_operational_read_rule(self):
         agent = self.env['res.users'].create({
             'name': 'A', 'login': 'ged_rule_agent',
+            'email': 'ged_rule_agent@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_agent').id])],

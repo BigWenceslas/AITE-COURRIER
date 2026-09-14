@@ -23,12 +23,19 @@ class TestExplorer(TransactionCase):
         super().setUpClass()
         Users = cls.env['res.users'].with_context(no_reset_password=True)
         cls.agent = Users.create({'name': "Agent X", 'login': "ecm_x_agent",
+                                  'email': "ecm_x_agent@aite.test",
                                   'groups_id': [(6, 0, [cls.env.ref(
                                       'aite_courrier_base.group_agent').id])]})
         cls.manager = Users.create({'name': "Manager X", 'login': "ecm_x_manager",
+                                    'email': "ecm_x_manager@aite.test",
                                     'groups_id': [(6, 0, [cls.env.ref(
                                         'aite_courrier_base.group_manager').id])]})
-        cls.jur = cls.env.ref('aite_ecm_document.folder_juridique')
+        # Arborescence propre à la classe de test : les comptages restent
+        # exacts même quand la base contient déjà des documents (jeu de
+        # données de test, reprise de production).
+        cls.jur = cls.env['aite.ecm.folder'].create({
+            'name': "Juridique X",
+            'parent_id': cls.env.ref('aite_ecm_document.folder_juridique').id})
         cls.sub = cls.env['aite.ecm.folder'].create({'name': "Baux X",
                                                      'parent_id': cls.jur.id})
         cls.tag = cls.env['aite.ecm.tag'].create({'name': "Tag X"})

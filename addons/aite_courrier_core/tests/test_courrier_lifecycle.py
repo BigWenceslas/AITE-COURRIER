@@ -123,6 +123,7 @@ class TestCourrierLifecycle(TransactionCase):
         courrier = self._new_courrier(confidentiality_id=conf.id)
         manager = self.env['res.users'].create({
             'name': 'Manager', 'login': 'core_manager',
+            'email': 'core_manager@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_manager').id,
@@ -130,6 +131,7 @@ class TestCourrierLifecycle(TransactionCase):
         })
         agent = self.env['res.users'].create({
             'name': 'Agent', 'login': 'core_agent',
+            'email': 'core_agent@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_agent').id,
@@ -147,6 +149,7 @@ class TestCourrierLifecycle(TransactionCase):
     def test_step_arrival_schedules_activity(self):
         agent = self.env['res.users'].create({
             'name': 'Agent notif', 'login': 'notif_agent',
+            'email': 'notif_agent@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_agent').id])],

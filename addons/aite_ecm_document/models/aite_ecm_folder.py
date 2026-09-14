@@ -28,7 +28,7 @@ class AiteEcmFolder(models.Model):
     parent_id = fields.Many2one(
         comodel_name='aite.ecm.folder', string="Dossier parent",
         index=True, ondelete='cascade')
-    parent_path = fields.Char(index=True, unaccent=False)
+    parent_path = fields.Char(index=True)
     child_ids = fields.One2many(
         comodel_name='aite.ecm.folder', inverse_name='parent_id',
         string="Sous-dossiers")

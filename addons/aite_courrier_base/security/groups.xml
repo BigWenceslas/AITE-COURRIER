@@ -15,48 +15,61 @@
         Groupes opérationnels.
         Au MVP, chaque groupe correspond à un rôle métier simple ; les
         implications (hiérarchie) sont volontairement minimales.
+
+        Tous impliquent « Utilisateur interne » (base.group_user) : ce sont des
+        rôles d'agents internes, et sans cette implication un utilisateur à qui
+        l'on n'attribue qu'un rôle AITE n'est pas un utilisateur interne — il
+        n'a alors accès ni aux menus, ni aux séquences, ni au chatter.
+        Les tiers externes passent par le portail (base.group_portal).
     -->
 
     <record id="group_agent" model="res.groups">
         <field name="name">Agent courrier</field>
         <field name="category_id" ref="module_category_aite_courrier"/>
         <field name="comment">Agent de saisie et de traitement courant du courrier.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_assistant" model="res.groups">
         <field name="name">Assistant(e)</field>
         <field name="category_id" ref="module_category_aite_courrier"/>
         <field name="comment">Assistant(e) de direction : enregistrement et orientation du courrier.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_manager" model="res.groups">
         <field name="name">Manager</field>
         <field name="category_id" ref="module_category_aite_courrier"/>
         <field name="comment">Responsable de service : supervision et affectation du courrier.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_compta" model="res.groups">
         <field name="name">Comptabilité</field>
         <field name="category_id" ref="module_category_aite_courrier"/>
         <field name="comment">Traitement du courrier à dimension comptable/financière.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_signer" model="res.groups">
         <field name="name">Signataire</field>
         <field name="category_id" ref="module_category_aite_courrier"/>
         <field name="comment">Personne habilitée à valider/signer les courriers sortants.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_archive" model="res.groups">
         <field name="name">Archiviste</field>
         <field name="category_id" ref="module_category_aite_courrier"/>
         <field name="comment">Gestion du classement et de l'archivage documentaire (GED).</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_audit" model="res.groups">
         <field name="name">Audit</field>
         <field name="category_id" ref="module_category_aite_courrier"/>
         <field name="comment">Accès en lecture aux journaux d'audit et traces transverses.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <!--

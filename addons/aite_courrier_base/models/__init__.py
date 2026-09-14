@@ -1,3 +1,4 @@
+from . import aite_chatter_mixin
 from . import aite_courrier_type
 from . import aite_courrier_priority
 from . import aite_courrier_confidentiality

@@ -148,7 +148,7 @@ class AiteEcmLegalHold(models.Model):
 
     _name = 'aite.ecm.legal.hold'
     _description = "Gel juridique"
-    _inherit = ['mail.thread']
+    _inherit = ['mail.thread', 'aite.chatter.mixin']
     _order = 'id desc'
 
     name = fields.Char(string="Objet", required=True, tracking=True)
@@ -236,7 +236,7 @@ class AiteEcmDisposition(models.Model):
 
     _name = 'aite.ecm.disposition'
     _description = "Bordereau d'élimination"
-    _inherit = ['mail.thread']
+    _inherit = ['mail.thread', 'aite.chatter.mixin']
     _order = 'id desc'
 
     name = fields.Char(string="Référence", readonly=True, copy=False,
@@ -273,7 +273,7 @@ class AiteEcmDisposition(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if not vals.get('name') or vals['name'] == _("Nouveau"):
-                vals['name'] = self.env['ir.sequence'].next_by_code(
+                vals['name'] = self.env['ir.sequence'].sudo().next_by_code(
                     'aite.ecm.disposition') or _("Nouveau")
         return super().create(vals_list)
 
@@ -433,7 +433,7 @@ class AiteEcmBox(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if not vals.get('code') or vals['code'] == _("Nouvelle"):
-                vals['code'] = self.env['ir.sequence'].next_by_code(
+                vals['code'] = self.env['ir.sequence'].sudo().next_by_code(
                     'aite.ecm.box') or _("Nouvelle")
         return super().create(vals_list)
 

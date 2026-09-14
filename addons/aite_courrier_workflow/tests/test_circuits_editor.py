@@ -190,6 +190,7 @@ class TestCircuitsEditor(TransactionCase):
     def test_tc09_security_operational_read_only(self):
         agent = self.env['res.users'].create({
             'name': 'Agent', 'login': 'wf_sec_agent',
+            'email': 'wf_sec_agent@aite.test',
             'groups_id': [Command.set([
                 self.env.ref('base.group_user').id,
                 self.env.ref('aite_courrier_base.group_agent').id,

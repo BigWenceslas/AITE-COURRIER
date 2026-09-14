@@ -3,11 +3,14 @@
 import base64
 import logging
 import uuid
-from email.utils import format_datetime
+from datetime import timezone
+from email.utils import formatdate
 from urllib.parse import quote, unquote, urlparse
 from xml.sax.saxutils import escape
 
+import odoo
 from odoo import http
+from odoo.exceptions import AccessError
 from odoo.http import request
 from werkzeug.wrappers import Response
 
@@ -20,8 +23,14 @@ ALLOW = 'OPTIONS, GET, HEAD, PUT, DELETE, PROPFIND, PROPPATCH, MKCOL, MOVE, LOCK
 
 class AiteEcmWebdavController(http.Controller):
 
+    # ``readonly=False`` : pour une route ``auth='none'`` Odoo 18 ouvre par
+    # défaut un curseur en lecture seule. Or WebDAV écrit dès la connexion
+    # (dernière connexion de l'utilisateur) puis à chaque PUT / MOVE / LOCK :
+    # sans cette précision, chaque requête est jouée deux fois (essai en
+    # lecture seule, puis reprise en écriture).
     @http.route([ROOT_PATH, ROOT_PATH + '/<path:subpath>'], type='http',
-                auth='none', csrf=False, methods=None, save_session=False)
+                auth='none', csrf=False, methods=None, save_session=False,
+                readonly=False)
     def dispatch(self, subpath='', **kwargs):
         method = request.httprequest.method.upper()
         if method == 'OPTIONS':
@@ -36,6 +45,11 @@ class AiteEcmWebdavController(http.Controller):
         except WebdavError as exc:
             return Response(exc.message or '', status=exc.status,
                             content_type='text/plain; charset=utf-8')
+        except AccessError as exc:
+            # Utilisateur authentifié mais sans droit sur l'ECM : c'est un
+            # refus (403), pas une panne du serveur.
+            return Response(str(exc), status=403,
+                            content_type='text/plain; charset=utf-8')
         except Exception:  # noqa: BLE001
             _logger.exception("WebDAV ECM : erreur sur %s %s", method, subpath)
             return Response(status=500)
@@ -47,6 +61,24 @@ class AiteEcmWebdavController(http.Controller):
         return Response(status=401, headers=[
             ('WWW-Authenticate', 'Basic realm="AITE ECM"')])
 
+    def _resolve_db(self):
+        """Base à ouvrir pour une requête WebDAV.
+
+        Un client réel (l'Explorateur Windows, le Finder, un montage
+        ``davfs``) se présente sans cookie : ``request.db`` est vide au
+        moment du Basic. On retombe donc sur la base configurée
+        (``--database`` / ``db_name``), puis sur la base unique de
+        l'instance.
+        """
+        if request.db or request.session.db:
+            return request.db or request.session.db
+        configured = (odoo.tools.config.get('db_name') or '').split(',')
+        configured = [name.strip() for name in configured if name.strip()]
+        if configured:
+            return configured[0]
+        available = http.db_list(force=True)
+        return available[0] if len(available) == 1 else None
+
     def _authenticate(self):
         header = request.httprequest.headers.get('Authorization', '')
         if not header.startswith('Basic '):
@@ -56,7 +88,7 @@ class AiteEcmWebdavController(http.Controller):
             login, _sep, password = raw.partition(':')
         except Exception:  # noqa: BLE001
             return False
-        db = request.db or request.session.db
+        db = self._resolve_db()
         if not db:
             return False
         try:
@@ -75,6 +107,17 @@ class AiteEcmWebdavController(http.Controller):
     # ------------------------------------------------------------------ #
     # Formatage
     # ------------------------------------------------------------------ #
+    @staticmethod
+    def _http_date(value):
+        """Date HTTP (RFC 7231) à partir d'un ``datetime`` Odoo.
+
+        Odoo stocke des datetimes **naïfs exprimés en UTC** :
+        ``email.utils.format_datetime(..., usegmt=True)`` les refuse. On
+        rattache donc explicitement le fuseau UTC avant le formatage.
+        """
+        return formatdate(value.replace(tzinfo=timezone.utc).timestamp(),
+                          usegmt=True)
+
     def _href(self, path):
         if path:
             return ROOT_PATH + '/' + '/'.join(quote(p) for p in path.split('/'))
@@ -100,7 +143,7 @@ class AiteEcmWebdavController(http.Controller):
                     props.append('<D:getetag>%s</D:getetag>' % escape(res['etag']))
             if res.get('mtime'):
                 props.append('<D:getlastmodified>%s</D:getlastmodified>'
-                             % format_datetime(res['mtime'], usegmt=True))
+                             % self._http_date(res['mtime']))
             if res.get('ctime'):
                 props.append('<D:creationdate>%sZ</D:creationdate>'
                              % res['ctime'].replace(microsecond=0).isoformat())
@@ -162,8 +205,8 @@ class AiteEcmWebdavController(http.Controller):
         return Response(raw, status=200, headers=[
             ('Content-Type', mimetype), ('Content-Length', str(len(raw))),
             ('ETag', '"%s"' % (version.sha256 or version.id)),
-            ('Last-Modified', format_datetime(version.upload_date or doc.write_date,
-                                              usegmt=True))])
+            ('Last-Modified',
+             self._http_date(version.upload_date or doc.write_date))])
 
     def _handle_head(self, subpath):
         resp = self._handle_get(subpath)

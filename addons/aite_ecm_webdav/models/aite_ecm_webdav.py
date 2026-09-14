@@ -13,6 +13,16 @@ from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 
 UNFILED = "Sans classement"
+
+
+def _is_unfiled(folder):
+    """``True`` pour le repère « sans classement ».
+
+    Le plan de classement manipule indifféremment un ``aite.ecm.folder`` ou
+    la chaîne ``UNFILED`` ; comparer un enregistrement à une chaîne avec
+    ``==`` déclenche un avertissement Odoo et renvoie toujours ``False``.
+    """
+    return isinstance(folder, str) and folder == UNFILED
 _FORBIDDEN = re.compile(r'[\\/:*?"<>|\x00-\x1f]')
 
 
@@ -93,7 +103,7 @@ class AiteEcmWebdav(models.AbstractModel):
     @api.model
     def _documents_in(self, folder):
         domain = [('version_ids', '!=', False)]
-        if folder == UNFILED:
+        if _is_unfiled(folder):
             domain.append(('folder_id', '=', False))
         elif folder:
             domain.append(('folder_id', '=', folder.id))
@@ -114,7 +124,7 @@ class AiteEcmWebdav(models.AbstractModel):
 
     @api.model
     def _folder_path(self, folder):
-        if folder == UNFILED:
+        if _is_unfiled(folder):
             return UNFILED
         parts = []
         while folder:
@@ -172,7 +182,7 @@ class AiteEcmWebdav(models.AbstractModel):
                 resources.append(self._descriptor(seg, seg, True))
             resources.append(self._descriptor(UNFILED, UNFILED, True))
             return resources
-        if folder != UNFILED:
+        if not _is_unfiled(folder):
             for child in Folder.search([('parent_id', '=', folder.id)]):
                 seg = self._folder_segment(child)
                 resources.append(self._descriptor("%s/%s" % (base, seg), seg, True))
@@ -223,7 +233,7 @@ class AiteEcmWebdav(models.AbstractModel):
                 return doc, False
             title = filename.rsplit('.', 1)[0] if '.' in filename else filename
             vals = {'name': title}
-            if folder and folder != UNFILED:
+            if folder and not _is_unfiled(folder):
                 vals['folder_id'] = folder.id
             doc = self.env['aite.ecm.document'].with_context(
                 audit_source='webdav').create(vals)
@@ -276,7 +286,7 @@ class AiteEcmWebdav(models.AbstractModel):
             title = title[len(doc.reference) + 3:]
         if title and title != doc.name:
             vals['name'] = title
-        target_id = False if target in (False, UNFILED) else target.id
+        target_id = False if not target or _is_unfiled(target) else target.id
         if target_id != doc.folder_id.id:
             vals['folder_id'] = target_id
         if vals:
@@ -291,7 +301,7 @@ class AiteEcmWebdav(models.AbstractModel):
         if not segments:
             raise WebdavConflict()
         parent = self._folder_by_segments(segments[:-1])
-        if parent == UNFILED:
+        if _is_unfiled(parent):
             raise WebdavForbidden()
         try:
             return self.env['aite.ecm.folder'].create({

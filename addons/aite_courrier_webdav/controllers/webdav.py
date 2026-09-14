@@ -24,6 +24,7 @@ from xml.sax.saxutils import escape
 
 import odoo
 from odoo import http
+from odoo.exceptions import AccessError
 from odoo.http import request, Response
 
 from ..models.aite_courrier_webdav import ROOT_PATH, WebdavError, WebdavBadRequest
@@ -45,7 +46,7 @@ class AiteCourrierWebdavController(http.Controller):
     @http.route(
         ['/webdav/aite_courrier', '/webdav/aite_courrier/<path:subpath>'],
         type='http', auth='none', csrf=False, methods=WEBDAV_METHODS,
-        save_session=False, sitemap=False)
+        save_session=False, sitemap=False, readonly=False)
     def dispatch(self, subpath='', **kwargs):
         method = request.httprequest.method
         # OPTIONS doit répondre sans authentification (découverte des capacités).
@@ -60,6 +61,10 @@ class AiteCourrierWebdavController(http.Controller):
             return handler(subpath)
         except WebdavError as error:
             return Response(str(error) or error.label, status=error.status)
+        except AccessError as error:
+            # Utilisateur authentifié mais sans droit sur le courrier : refus
+            # (403) et non panne du serveur.
+            return Response(str(error), status=403)
         except Exception:  # pragma: no cover - garde-fou
             _logger.exception("WebDAV : erreur inattendue sur %s %s", method, subpath)
             return Response("Internal Server Error", status=500)

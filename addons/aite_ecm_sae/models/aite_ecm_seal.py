@@ -44,15 +44,19 @@ class AiteEcmSeal(models.Model):
     _description = "Sceau — journal de preuve"
     _order = 'id'
 
+    # Le lien vers le document est facultatif : le journal survit à
+    # l'élimination de la pièce (le sceau garde ``document_reference``, son
+    # empreinte et sa place dans la chaîne). ``set null`` détache le maillon
+    # à la destruction du document sans le supprimer.
     document_id = fields.Many2one(
-        comodel_name='aite.ecm.document', string="Document", required=True,
-        ondelete='restrict', index=True)
+        comodel_name='aite.ecm.document', string="Document",
+        ondelete='set null', index=True)
     document_reference = fields.Char(string="Référence", required=True,
                                      index=True)
     version_id = fields.Many2one(
         comodel_name='aite.ecm.document.version', string="Version",
         ondelete='set null')
-    version_label = fields.Char(string="Version")
+    version_label = fields.Char(string="Version (libellé)")
     event = fields.Selection(selection=EVENTS, string="Événement",
                              required=True, index=True)
     content_sha256 = fields.Char(string="Empreinte du fichier")
