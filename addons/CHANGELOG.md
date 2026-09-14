@@ -1,5 +1,102 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.2 — Campagne de recette complète
+
+Première campagne de recette de bout en bout sur Odoo 18 Community : les 25
+modules installables ont été installés, testés, joués dans un navigateur
+sous l'identité des rôles réels, et éprouvés par leurs interfaces
+techniques. Le détail est dans `docs/recette/` (plan de test, guide
+illustré, journal des anomalies).
+
+### Vérification
+
+- **test(suite): 295 tests** (contre 199 avant la campagne, dont 43
+  échouaient), tous verts — les 8 modules sans couverture en ont désormais
+  une : API REST, partage externe, portail, capture e-mail, OCR, réponses,
+  pont Nextcloud du courrier, module chapeau.
+- **test(ecm): parcours fonctionnel complet** — un courrier arrive, il est
+  enregistré, son circuit se déroule jusqu'à l'archivage, sa pièce devient
+  un document ECM scellé, partagé, exposé en WebDAV et retrouvé par l'API.
+- **test(recette): 17 parcours utilisateur** joués dans un vrai navigateur
+  avec les comptes du jeu de données, 45 captures d'écran, et 18 contrôles
+  d'interfaces (WebDAV, API REST, lien de partage).
+- L'installation complète de la suite ne produit plus aucun avertissement
+  Odoo imputable aux modules AITE ; la désinstallation du jeu de données
+  ne produit plus aucune erreur d'intégrité.
+
+### Corrections bloquantes
+
+- **fix(base): les 8 rôles AITE n'impliquaient pas « Utilisateur interne »** —
+  un compte à qui l'on n'attribuait qu'un rôle AITE n'avait accès ni aux
+  menus, ni aux séquences, ni au chatter.
+- **fix(ecm_webdav): toute lecture répondait 500** — les dates HTTP étaient
+  produites à partir d'un `datetime` Odoo naïf, refusé par Python. Le
+  lecteur réseau ECM était inutilisable.
+- **fix(ecm_webdav): base non résolue sans cookie de session** — cas normal
+  d'un client réseau (Explorateur Windows, Finder, `davfs`).
+- **fix(office): l'ouverture d'un document dans Google Docs échouait**
+  toujours à la première demande (consentement appelé sur un enregistrement
+  vide).
+- **fix(sae): l'élimination d'un document violait une contrainte de base** —
+  le lien du sceau vers le document devient facultatif ; le journal survit
+  au document, comme prévu.
+- **fix(portal): le formulaire de dépôt n'affichait aucune zone de saisie**
+  pour le message ; le tiers voyait l'intitulé sans le champ.
+- **fix(courrier_ecm): supprimer une pièce de courrier violait l'intégrité**
+  du fichier partagé avec sa version ECM.
+
+### Corrections majeures
+
+- **fix(core): le statut ne suivait pas le circuit** — un courrier restait
+  « Nouveau » de bout en bout ; « En traitement » n'apparaissait ni dans les
+  filtres, ni sur le tableau de bord, ni au portail.
+- **fix(records): un gel juridique posé sur un dossier ne gelait rien** — le
+  marqueur stocké n'était jamais recalculé, la protection restait
+  inopérante.
+- **fix(records): la durée de conservation glissait** à chaque modification
+  du document ; nouvelles dates `final_date` / `archived_date`, figées à la
+  transition.
+- **fix(ecm): un document finalisé restait modifiable par un manager** —
+  le verrou du cycle de vie s'applique désormais à tous, comme côté
+  courrier ; seuls les traitements système conservent leur accès.
+- **fix(ecm): la purge nocturne de la corbeille s'interrompait** dès qu'une
+  pièce sous conservation s'y trouvait.
+- **fix(sae): impossible de vérifier l'intégrité d'un document gelé** —
+  l'audit réclamé par le gel lui-même était bloqué.
+- **fix(sae): les pièces de courrier n'étaient pas scellées** — le miroir
+  ECM créait ses versions directement ; nouveau crochet
+  `_version_registered`, appelé quelle que soit l'origine de la version.
+- **fix(webdav/api/wopi/webhook): routes non authentifiées jouées deux
+  fois** — Odoo 18 les ouvre en lecture seule par défaut alors qu'elles
+  écrivent.
+- **fix(demo): les 150 courriers du jeu de données n'étaient jamais créés**
+  quand la suite s'installait en une commande — et étaient pourtant comptés
+  comme créés.
+- **fix(demo): la purge échouait sur un gel actif** et laissait derrière
+  elle les miroirs ECM des courriers supprimés.
+
+### Compléments
+
+- **feat(demo): phases v2.1** — politique de conservation appliquée,
+  documents à échéance ancienne, gels juridiques, boîtes d'archives avec
+  prêt en cours, données personnelles, bordereau d'élimination prêt à
+  valider, vérifications d'intégrité.
+- **feat(demo): crochet de désinstallation** — la purge du module passe
+  avant le nettoyage générique d'Odoo, qui déversait jusqu'ici une
+  quarantaine d'erreurs d'intégrité et laissait des données derrière lui ;
+  les miroirs ECM des courriers disparus et leurs dossiers vides sont
+  nettoyés, les comptes référencés par les journaux inaltérables sont
+  désactivés plutôt que détruits.
+- **fix(records): un marqueur de gel périmé figeait un document pour
+  toujours** — après une restauration ou la suppression directe d'un gel, le
+  marqueur stocké pouvait rester à vrai sans qu'aucun gel ne le justifie. Il
+  est désormais revérifié avant tout refus.
+- **fix(divers)**: libellés de champs dupliqués, paramètre `unaccent`
+  invalide, calculs mêlant champ stocké et non stocké, `xpath` sur `@class`,
+  icônes sans intitulé accessible, statut HTTP en position d'en-têtes,
+  erreur de droits WebDAV rendue en 500.
+
+
 ## 18.0.2.1.1 — Corrections
 
 - **fix(dashboard): clé de boucle dupliquée** — le tableau de bord du courrier

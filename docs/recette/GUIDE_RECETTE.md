@@ -12,7 +12,7 @@ le moteur de recette. Il sert à deux choses :
 | | |
 | --- | --- |
 | Version de la suite | 18.0.2.1.x (Odoo 18 Community) |
-| Campagne | 2026-09-14 15:36:07 |
+| Campagne | 2026-09-14 16:08:33 |
 | Instance | http://localhost:8169 |
 | Jeu de données | `aite_ecm_demo`, profil « léger » |
 | Mot de passe des comptes de recette | `aite2026` |
@@ -83,6 +83,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 | WebDAV | Un dossier de classement est listé | ✅ | « Achats et fournisseurs » exploré (34716 octets de réponse) |
 | WebDAV | OPTIONS annonce la classe 2 (verrous) | ✅ | DAV: 1, 2 — Allow: OPTIONS, GET, HEAD, PUT, DELETE, PROPFIND, PROPPATCH, MKCOL, |
 | WebDAV | Identifiants erronés refusés | ✅ | 401 sur mot de passe erroné |
+| WebDAV | Enregistrement depuis le lecteur réseau (PUT) | ✅ | « DOC-2026-00257 - Attestation de non-redevance fiscale (ANR) — Bureautique Plus SARL.pdf » réenregistré (1229 → 31 octe |
 | API | Refus sans clé d'API | ✅ | 401 sans clé d'API |
 | API | Authentification par clé | ✅ | authentifié comme Landry Nkolo |
 | API | Recherche de documents | ✅ | 253 document(s) au total, page de 5 |
@@ -93,7 +94,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 | API | Format exécutable refusé | ✅ | 422 — format refusé |
 | API | Spécification OpenAPI | ✅ | OpenAPI 3.0.3, 7 chemin(s) |
 | Partage | Page publique du lien | ✅ | page d'accueil servie (1584 octets), sans authentification |
-| Partage | Téléchargement du fichier partagé | ✅ | 2560 octets, application/pdf |
+| Partage | Téléchargement du fichier partagé | ✅ | 2559 octets, application/pdf |
 | Partage | Jeton inconnu refusé | ✅ | 404 sur jeton inconnu |
 
 ---
@@ -102,7 +103,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Un agent d'accueil enregistre le courrier du jour et le met en circulation.
 
-**Rôle** : Agent courrier  ·  **Compte** : `demo.agent1`  ·  **Durée** : 56.7 s
+**Rôle** : Agent courrier  ·  **Compte** : `demo.agent1`  ·  **Durée** : 62.8 s
 
 ### ✅ 1. Écran d'accueil de l'agent
 
@@ -136,7 +137,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 ### ✅ 6. Circuit lancé — la référence est attribuée
 
-*Contrôle* : référence COUR-2026-0137, courrier sorti du brouillon
+*Contrôle* : référence COUR-2026-0136, courrier sorti du brouillon
 
 ![Circuit lancé — la référence est attribuée](captures/SC01_06_circuit_lance_la_reference_est_attribuee.png)
 
@@ -146,17 +147,17 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Un responsable de service prend un courrier en cours et le fait passer à l'étape suivante, commentaire à l'appui.
 
-**Rôle** : Manager  ·  **Compte** : `demo.manager1`  ·  **Durée** : 39.0 s
+**Rôle** : Manager  ·  **Compte** : `demo.manager1`  ·  **Durée** : 39.1 s
 
 ### ✅ 1. Courriers en traitement du service
 
-*Contrôle* : 61 courrier(s) affiché(s)
+*Contrôle* : 62 courrier(s) affiché(s)
 
 ![Courriers en traitement du service](captures/SC02_01_courriers_en_traitement_du_service.png)
 
 ### ✅ 2. Fiche du courrier à traiter
 
-*Contrôle* : COUR-2026-0011 — étape « Traitement »
+*Contrôle* : COUR-2026-0123 — étape « Accusé réception »
 
 ![Fiche du courrier à traiter](captures/SC02_02_fiche_du_courrier_a_traiter.png)
 
@@ -168,7 +169,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 ### ✅ 4. Transition appliquée
 
-*Contrôle* : étape « Traitement » → « Archivage » (statut : Archivé)
+*Contrôle* : étape « Accusé réception » → « Archivage » (statut : Archivé)
 
 ![Transition appliquée](captures/SC02_04_transition_appliquee.png)
 
@@ -184,7 +185,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > L'assistante retrouve une pièce d'un courrier et vérifie ses versions.
 
-**Rôle** : Assistante  ·  **Compte** : `demo.assist1`  ·  **Durée** : 25.8 s
+**Rôle** : Assistante  ·  **Compte** : `demo.assist1`  ·  **Durée** : 26.0 s
 
 ### ✅ 1. Espace documentaire
 
@@ -204,7 +205,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > L'archiviste navigue dans le plan de classement et ouvre un document.
 
-**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 28.9 s
+**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 29.4 s
 
 ### ✅ 1. Documents ECM
 
@@ -230,7 +231,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Création d'un document typé, dépôt d'une version, finalisation.
 
-**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 31.5 s
+**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 31.4 s
 
 ### ✅ 1. Documents ECM
 
@@ -248,7 +249,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 ### ✅ 4. Document enregistré
 
-*Contrôle* : référence DOC-2026-00352 attribuée
+*Contrôle* : référence DOC-2026-00350 attribuée
 
 ![Document enregistré](captures/SC05_04_document_enregistre.png)
 
@@ -258,7 +259,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Contrôle du cycle de vie archivistique et des protections.
 
-**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 29.9 s
+**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 29.8 s
 
 ### ✅ 1. Règles de conservation
 
@@ -290,7 +291,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Le bordereau préparé par l'archiviste est validé puis exécuté.
 
-**Rôle** : Manager  ·  **Compte** : `demo.manager1`  ·  **Durée** : 26.0 s
+**Rôle** : Manager  ·  **Compte** : `demo.manager1`  ·  **Durée** : 25.9 s
 
 ### ✅ 1. Bordereaux d'élimination
 
@@ -310,7 +311,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > L'auditeur consulte la chaîne de sceaux et son horodatage.
 
-**Rôle** : Audit  ·  **Compte** : `demo.audit`  ·  **Durée** : 25.3 s
+**Rôle** : Audit  ·  **Compte** : `demo.audit`  ·  **Durée** : 25.5 s
 
 ### ✅ 1. Journal de preuve
 
@@ -330,7 +331,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Suivi des boîtes d'archives et de leurs sorties.
 
-**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 25.0 s
+**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 25.2 s
 
 ### ✅ 1. Boîtes d'archives
 
@@ -350,7 +351,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Contrôle des liens diffusés hors de l'organisation.
 
-**Rôle** : Manager  ·  **Compte** : `demo.manager2`  ·  **Durée** : 25.4 s
+**Rôle** : Manager  ·  **Compte** : `demo.manager2`  ·  **Durée** : 25.6 s
 
 ### ✅ 1. Partages externes
 
@@ -360,7 +361,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 ### ✅ 2. Détail d'un partage
 
-*Contrôle* : lien public http://localhost:8169/ecm/share/c8nPyaZXau_Cr0jsLJuXCQ3JarUeHLKg
+*Contrôle* : lien public http://localhost:8169/ecm/share/EQktKwB6kZpC3FgjUXI6UmkpGE9FOL8u
 
 ![Détail d'un partage](captures/SC10_02_detail_d_un_partage.png)
 
@@ -370,7 +371,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Un dossier fournisseur et ses pièces attendues.
 
-**Rôle** : Comptabilité  ·  **Compte** : `demo.compta`  ·  **Durée** : 26.2 s
+**Rôle** : Comptabilité  ·  **Compte** : `demo.compta`  ·  **Durée** : 26.4 s
 
 ### ✅ 1. Dossiers métier
 
@@ -390,11 +391,11 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Vue de direction : volumes, charge par étape, retards.
 
-**Rôle** : Manager  ·  **Compte** : `demo.manager2`  ·  **Durée** : 104.2 s
+**Rôle** : Manager  ·  **Compte** : `demo.manager2`  ·  **Durée** : 104.4 s
 
 ### ✅ 1. Tableau de bord
 
-*Contrôle* : 6 bloc(s) d'indicateurs, 718 caractères affichés
+*Contrôle* : 6 bloc(s) d'indicateurs, 714 caractères affichés
 
 ![Tableau de bord](captures/SC12_01_tableau_de_bord.png)
 
@@ -404,7 +405,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Traçabilité transverse des opérations.
 
-**Rôle** : Audit  ·  **Compte** : `demo.audit`  ·  **Durée** : 23.7 s
+**Rôle** : Audit  ·  **Compte** : `demo.audit`  ·  **Durée** : 23.8 s
 
 ### ✅ 1. Journal d'audit
 
@@ -418,7 +419,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Contrôle de la confidentialité entre agents.
 
-**Rôle** : Agent courrier  ·  **Compte** : `demo.agent3`  ·  **Durée** : 26.5 s
+**Rôle** : Agent courrier  ·  **Compte** : `demo.agent3`  ·  **Durée** : 25.4 s
 
 ### ✅ 1. Courriers visibles par l'agent
 
@@ -438,7 +439,7 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Parcours d'un correspondant externe, hors de l'application.
 
-**Rôle** : Tiers externe (portail)  ·  **Compte** : `portail.recette`  ·  **Durée** : 6.7 s
+**Rôle** : Tiers externe (portail)  ·  **Compte** : `portail.recette`  ·  **Durée** : 6.5 s
 
 ### ✅ 1. Espace personnel du tiers
 
@@ -470,11 +471,11 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Contrôle à la demande de la chaîne de preuve d'un document.
 
-**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 28.1 s
+**Rôle** : Archiviste  ·  **Compte** : `demo.archive`  ·  **Durée** : 28.3 s
 
 ### ✅ 1. Document scellé et son journal de preuve
 
-*Contrôle* : document DOC-2026-00352
+*Contrôle* : document DOC-2026-00350
 
 ![Document scellé et son journal de preuve](captures/SC16_01_document_scelle_et_son_journal_de_preuve.png)
 
@@ -490,11 +491,11 @@ Contrôles joués hors navigateur, comme le ferait un client réel : l'Explorate
 
 > Le versionnement conserve l'historique et l'empreinte.
 
-**Rôle** : Assistante  ·  **Compte** : `demo.assist2`  ·  **Durée** : 28.4 s
+**Rôle** : Assistante  ·  **Compte** : `demo.assist2`  ·  **Durée** : 28.5 s
 
 ### ✅ 1. Document et son historique de versions
 
-*Contrôle* : DOC-2026-00351 — 2 version(s), la plus récente : v2	recette_v2.pdf	seconde version	27	Landry Nkolo	14/09/2026 15:35:43	 · Ouvrir · Télécharger
+*Contrôle* : DOC-2026-00346 — 1 version(s), la plus récente : v1	Diplomes_et_attestations__Gisele_Ngu.pdf		1 184	Franck Onana	14/09/2026 16:08:05	 · Ouvrir · Télécharger
 
 ![Document et son historique de versions](captures/SC17_01_document_et_son_historique_de_versions.png)
 

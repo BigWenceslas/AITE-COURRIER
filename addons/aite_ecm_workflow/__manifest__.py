@@ -30,7 +30,7 @@ brique de plateforme :
 Le courrier conserve son runtime v1 (même modèle de circuits, mêmes
 habilitations) ; sa migration vers le mixin est planifiée en v2.1.
 """,
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.0.1',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

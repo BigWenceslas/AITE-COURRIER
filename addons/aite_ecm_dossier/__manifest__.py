@@ -23,7 +23,7 @@ fournisseur, dossier salarié, marché public, sinistre, demande d'autorisation�
 * Livré avec deux types de dossiers prêts à l'emploi (Agrément fournisseur,
   Dossier du personnel) et un circuit « Instruction → Validation ».
 """,
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.0.1',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

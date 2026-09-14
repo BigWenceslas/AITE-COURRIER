@@ -45,11 +45,14 @@ class AiteEcmDocument(models.Model):
     # ------------------------------------------------------------------ #
     # Scellement automatique
     # ------------------------------------------------------------------ #
-    def add_version(self, filename, datas, comment=False):
-        version = super().add_version(filename, datas, comment)
-        self.env['aite.ecm.seal'].seal(self, 'version', version,
-                                       detail=filename)
-        return version
+    def _version_registered(self, version):
+        """Toute version scelle, d'où qu'elle vienne — téléversement,
+        miroir d'une pièce de courrier, import par l'API."""
+        res = super()._version_registered(version)
+        self.env['aite.ecm.seal'].seal(
+            self, 'version', version,
+            detail=version.file_name or version.version)
+        return res
 
     def action_mark_final(self):
         res = super().action_mark_final()

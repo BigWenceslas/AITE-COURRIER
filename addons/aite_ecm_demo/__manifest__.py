@@ -32,7 +32,7 @@ renseignées, doublons, réponses liées, accès journalisés. Aléa
 externe ``aite_ecm_demo.*`` : **désinstaller le module supprime tout le jeu
 de données**. Voir ``README.md``.
 """,
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.0.1',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',
@@ -46,6 +46,7 @@ de données**. Voir ``README.md``.
         'views/aite_ecm_demo_wizard_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
+    'uninstall_hook': 'uninstall_hook',
     'installable': True,
     'application': False,
     'auto_install': False,

@@ -4,7 +4,7 @@ Trois niveaux de vérification, complémentaires et tous rejouables :
 
 | Niveau | Ce qu'il éprouve | Outil | Volume |
 | --- | --- | --- | --- |
-| **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **287 tests**, 25 modules |
+| **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **297 tests**, 25 modules |
 | **Recette applicative (UAT)** | parcours réels, dans un vrai navigateur, sous l'identité des rôles | `docs/recette/uat_runner.py` (Playwright) | **17 scénarios**, 45 captures |
 | **Recette des interfaces** | WebDAV, API REST, lien de partage — vus d'un client externe | `docs/recette/uat_interfaces.py` | **18 contrôles** |
 
@@ -77,14 +77,14 @@ installation et exécution complète.
 | `aite_ecm_share` | 11 | validité des liens, filigrane, accès public, quotas |
 | `aite_ecm_api` | 11 | clé d'API, lecture, écriture, droits du porteur, OpenAPI |
 | `aite_courrier_ecm` | 7 | miroir des pièces de courrier vers l'ECM |
-| `aite_ecm_records` | 9 | règles, échéances, gel juridique, bordereaux, boîtes |
+| `aite_ecm_records` | 10 | règles, échéances, gel juridique (marqueur périmé compris), bordereaux, boîtes |
 | `aite_ecm_sae` | 9 | scellement, chaîne de preuve, horodatage, export SEDA |
 | `aite_ecm_webdav` | 9 | serveur WebDAV ECM (PROPFIND, GET, PUT, LOCK, MOVE) |
 | `aite_ecm_office` | 6 | jetons WOPI, aller-retour Google Docs |
 | `aite_ecm_nextcloud` | 15 | envoi, import, conflits, sondage, webhook |
 | `aite_ecm_nextcloud_courrier` | 8 | miroir Nextcloud des pièces de courrier |
-| `aite_ecm_demo` | 9 | plan de génération, phases, purge, cohérence des compteurs |
-| `aite_ecm` | 8 | intégrité de l'assemblage (modules, menus, crons, référentiels) |
+| `aite_ecm_demo` | 10 | plan de génération, phases, purge (résidus des ponts compris), cohérence des compteurs |
+| `aite_ecm` | 16 | intégrité de l'assemblage + parcours fonctionnel complet (courrier → circuit → ECM → preuve → partage → WebDAV → API) |
 
 ---
 

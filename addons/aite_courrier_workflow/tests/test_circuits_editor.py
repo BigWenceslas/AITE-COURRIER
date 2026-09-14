@@ -3,7 +3,7 @@ from psycopg2 import IntegrityError
 
 from odoo import Command
 from odoo.exceptions import AccessError, ValidationError
-from odoo.tests.common import Form, TransactionCase
+from odoo.tests import Form, TransactionCase
 from odoo.tools import mute_logger
 
 

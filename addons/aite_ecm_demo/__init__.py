@@ -41,3 +41,15 @@ def post_init_hook(env):
         cron.sudo().write({'active': True})
         cron.sudo()._trigger()
         _logger.info("[aite_ecm_demo] la tâche planifiée poursuit la génération.")
+
+
+def uninstall_hook(env):
+    """Purge le jeu de données avant le nettoyage générique d'Odoo.
+
+    Odoo supprime les enregistrements par identifiant externe, sans ordre
+    métier : dossiers avant documents, tiers avant comptes. La purge du
+    module connaît, elle, les dépendances — la lancer d'abord évite la
+    cascade d'erreurs d'intégrité et garantit qu'il ne reste rien.
+    """
+    from .seed.generator import purge
+    purge(env)

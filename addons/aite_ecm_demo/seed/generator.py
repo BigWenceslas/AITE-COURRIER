@@ -1277,6 +1277,39 @@ class DemoSeeder:
         self.xmlids = []
 
 
+def _remove(env, records, log):
+    """Supprime ce qui peut l'être, désactive le reste.
+
+    Un enregistrement encore référencé par un journal inaltérable (sceaux,
+    audit) ou par un compte ne doit pas faire échouer la purge : on le
+    désactive. Sans cela, la désinstallation du module déversait des erreurs
+    d'intégrité dans le journal serveur et laissait des données derrière
+    elle.
+    """
+    if not records:
+        return 0, 0
+    removed = kept = 0
+    for record in records:
+        if not record.exists():
+            continue
+        try:
+            with env.cr.savepoint():
+                record.unlink()
+            removed += 1
+        except Exception:  # noqa: BLE001 — encore référencé
+            if 'active' in record._fields:
+                try:
+                    with env.cr.savepoint():
+                        record.active = False
+                    kept += 1
+                    continue
+                except Exception:  # noqa: BLE001
+                    pass
+            log("conservé (référencé ailleurs) : %s" % record.display_name)
+            kept += 1
+    return removed, kept
+
+
 def purge(env, log=None):
     """Supprime le jeu de données (équivalent de la désinstallation)."""
     log = log or (lambda m: _logger.info("[aite_ecm_demo] %s", m))
@@ -1299,10 +1332,15 @@ def purge(env, log=None):
         if documents:
             documents.with_context(active_test=False)._legal_hold_recompute()
         log("aite.ecm.legal.hold : %d supprimé(s)" % len(frozen))
+    # Ordre de suppression : les enfants avant les parents, les objets
+    # verrouillants avant ce qu'ils verrouillent. Les utilisateurs et les
+    # tiers qui leur sont rattachés ne sont pas détruits mais désactivés :
+    # ils restent référencés par le journal de preuve et par l'audit, qui
+    # sont inaltérables.
     order = ['aite.ecm.legal.hold', 'aite.ecm.disposition', 'aite.ecm.box',
              'aite.ecm.share', 'aite.ecm.document.link', 'aite.ecm.dossier',
              'aite.ecm.document', 'aite.courrier', 'aite.ecm.tag',
-             'aite.ecm.folder', 'res.partner', 'hr.department', 'res.users']
+             'aite.ecm.folder', 'hr.department', 'res.users', 'res.partner']
     for model in order:
         if model not in env:
             continue
@@ -1312,13 +1350,68 @@ def purge(env, log=None):
         records = env[model].with_context(
             active_test=False, force_unlink=True, disposition=True).browse(
                 entries.mapped('res_id')).exists()
-        if model == 'res.users':
-            records.write({'active': False})
+        if model in ('res.users', 'res.partner'):
+            # Ni les comptes ni les tiers qui leur sont rattachés ne sont
+            # détruits : le journal de preuve et le journal d'audit, qui
+            # sont inaltérables, y font référence. On les désactive.
+            keep = records.filtered(
+                lambda r: r._name == 'res.users'
+                or env['res.users'].with_context(
+                    active_test=False).search_count(
+                        [('partner_id', '=', r.id)]))
+            keep.write({'active': False})
+            removed, kept = _remove(env, records - keep, log)
+            kept += len(keep)
         else:
-            records.unlink()
+            removed, kept = _remove(env, records, log)
         entries.unlink()
-        log("%s : %d supprimé(s)" % (model, len(records)))
+        log("%s : %d supprimé(s)%s" % (
+            model, removed,
+            ", %d désactivé(s) (encore référencé(s))" % kept if kept else ''))
+    _purge_orphans(env, log)
     Param = env['ir.config_parameter']
     Param.set_param('aite_ecm_demo.seeded', False)
     Param.set_param(STATE_PARAM, False)
     log("Purge terminée.")
+
+
+def _purge_orphans(env, log):
+    """Nettoie ce que les ponts ont produit à partir du jeu de données.
+
+    Le miroir ECM des pièces de courrier et leurs dossiers
+    ``Courrier/<année>/<référence>`` ne portent pas d'identifiant externe du
+    module : sans ce passage, la désinstallation laisserait des documents
+    rattachés à des courriers disparus.
+    """
+    Document = env.get('aite.ecm.document')
+    if Document is None:
+        return
+    Document = Document.with_context(active_test=False, force_unlink=True,
+                                     disposition=True)
+    mirrors = Document.search([('res_model', '=', 'aite.courrier')])
+    orphans = mirrors.filtered(
+        lambda d: not env['aite.courrier'].browse(d.res_id).exists()) \
+        if 'aite.courrier' in env else mirrors
+    if orphans:
+        removed, kept = _remove(env, orphans, log)
+        log("miroirs de courriers disparus : %d supprimé(s)%s"
+            % (removed, ", %d conservé(s)" % kept if kept else ''))
+    root = env.ref('aite_courrier_ecm.folder_courrier',
+                   raise_if_not_found=False)
+    if not root:
+        return
+    Folder = env['aite.ecm.folder'].with_context(active_test=False)
+    branch = Folder.search([('id', 'child_of', root.id),
+                            ('id', '!=', root.id)])
+    # Les feuilles d'abord : un dossier ne part que s'il est vide.
+    empty = branch.sorted(key=lambda f: -len(f.parent_path or ''))
+    removed = 0
+    for folder in empty:
+        if Document.search_count([('folder_id', '=', folder.id)]):
+            continue
+        if Folder.search_count([('parent_id', '=', folder.id)]):
+            continue
+        gone, _kept = _remove(env, folder, log)
+        removed += gone
+    if removed:
+        log("dossiers de courrier vidés : %d supprimé(s)" % removed)

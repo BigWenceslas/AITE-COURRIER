@@ -1,6 +1,6 @@
 {
   "base_url": "http://localhost:8169",
-  "date": "2026-09-14 15:35:43",
+  "date": "2026-09-14 16:18:15",
   "controles": [
     {
       "famille": "WebDAV",
@@ -31,6 +31,12 @@
       "libelle": "Identifiants erronés refusés",
       "statut": "ok",
       "constat": "401 sur mot de passe erroné"
+    },
+    {
+      "famille": "WebDAV",
+      "libelle": "Enregistrement depuis le lecteur réseau (PUT)",
+      "statut": "ok",
+      "constat": "« DOC-2026-00257 - Attestation de non-redevance fiscale (ANR) — Bureautique Plus SARL.pdf » réenregistré (1229 → 31 octets)"
     },
     {
       "famille": "API",
@@ -96,7 +102,7 @@
       "famille": "Partage",
       "libelle": "Téléchargement du fichier partagé",
       "statut": "ok",
-      "constat": "2560 octets, application/pdf"
+      "constat": "2559 octets, application/pdf"
     },
     {
       "famille": "Partage",

@@ -27,7 +27,7 @@ La couche de gouvernance des archives, au-dessus du socle documentaire :
   document numérique et indicateur « original papier ».
 * **Données personnelles** : marquage, filtre et purge à échéance.
 """,
-    'version': '18.0.2.1.0',
+    'version': '18.0.2.1.1',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

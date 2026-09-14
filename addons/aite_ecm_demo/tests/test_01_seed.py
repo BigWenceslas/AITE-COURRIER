@@ -180,3 +180,39 @@ class TestDemoSeeder(TransactionCase):
             "la purge a laissé des données : %s"
             % leftovers.mapped('model'))
         self.assertFalse(self.Param.get_param('aite_ecm_demo.state'))
+
+    def test_08_purge_removes_bridge_leftovers(self):
+        """La purge nettoie aussi ce que les ponts ont produit.
+
+        Le miroir ECM d'une pièce de courrier et son dossier
+        `Courrier/<année>/<référence>` ne portent pas d'identifiant externe
+        du module : sans nettoyage, la désinstallation laisserait des
+        documents rattachés à des courriers disparus.
+        """
+        if 'aite.courrier' not in self.env \
+                or 'ecm_document_id' not in self.env[
+                    'aite.courrier.document']._fields:
+            self.skipTest("pont courrier ↔ ECM absent")
+        import base64
+        from odoo.addons.aite_ecm_demo.seed.generator import _purge_orphans
+        courrier = self.env['aite.courrier'].create({
+            'subject': "Courrier voué à disparaître",
+            'type_id': self.env['aite.courrier.type'].search(
+                [('category', '=', 'entrant')], limit=1).id})
+        piece = self.env['aite.courrier.document'].create({
+            'name': "Pièce", 'courrier_id': courrier.id})
+        piece.add_version("piece.pdf",
+                          base64.b64encode(b"%PDF-1.4\n%x\n%%EOF\n"))
+        piece.invalidate_recordset()
+        mirror = piece.ecm_document_id
+        self.assertTrue(mirror, "le pont n'a pas créé de miroir")
+        # Suppression brutale du courrier, comme à la purge du jeu de données.
+        piece.with_context(force_unlink=True).unlink()
+        courrier.with_context(force_unlink=True).unlink()
+        self.assertTrue(
+            mirror.with_context(active_test=False).exists(),
+            "prérequis du test : le miroir survit au courrier")
+        _purge_orphans(self.env(su=True), lambda _m: None)
+        self.assertFalse(
+            mirror.with_context(active_test=False).exists(),
+            "le miroir d'un courrier disparu doit être nettoyé")

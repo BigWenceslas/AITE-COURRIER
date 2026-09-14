@@ -437,6 +437,7 @@ class AiteEcmDocument(models.Model):
         self._audit(self, _("Ajout de version"), 'info',
                     _("%s — %s (%.0f Ko) — sha256 %s…") % (
                         version.version, filename, size / 1024.0, sha[:12]))
+        self._version_registered(version)
         duplicates = self.env['aite.ecm.document.version'].sudo().search([
             ('sha256', '=', sha), ('document_id', '!=', self.id)])
         if duplicates:
@@ -444,6 +445,18 @@ class AiteEcmDocument(models.Model):
             self.message_post(body=_(
                 "⚠ Contenu identique détecté dans : %s") % names)
         return version
+
+    def _version_registered(self, version):
+        """Crochet : une version vient d'être rattachée au document.
+
+        Appelé par :meth:`add_version` **et** par les modules qui versent une
+        version autrement (miroir d'une pièce de courrier, import). Les
+        modules qui doivent réagir à toute nouvelle version — scellement,
+        synchronisation — s'y branchent plutôt que sur ``add_version`` seul,
+        sans quoi les versions importées leur échappent.
+        """
+        self.ensure_one()
+        return True
 
     def action_upload_version(self):
         for doc in self:

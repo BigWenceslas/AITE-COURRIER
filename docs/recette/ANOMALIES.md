@@ -264,6 +264,43 @@ plus aucun avertissement Odoo imputable aux modules AITE.
 
 ---
 
+## Désinstallation
+
+### A-22 · La désinstallation du jeu de données déversait des erreurs — **majeure**
+`aite_ecm_demo`
+
+Odoo supprime les enregistrements par identifiant externe, sans ordre
+métier : dossiers avant documents, tiers avant comptes, comptes avant le
+journal de preuve qui les référence. Une quarantaine d'erreurs d'intégrité
+au journal serveur, et des données laissées derrière — alors que le manifeste
+promet « désinstaller le module supprime tout le jeu de données ».
+
+*Correction* : crochet de désinstallation qui lance d'abord la purge du
+module (ordre métier connu) ; les comptes et les tiers qui leur sont
+rattachés sont désactivés plutôt que détruits, puisque les journaux
+inaltérables y font référence ; les miroirs ECM des courriers disparus et
+leurs dossiers vides sont nettoyés. Vérifié : **0 erreur**, 150 courriers,
+349 documents, 40 dossiers, 30 partages et 0 identifiant externe restants.
+*Test* : `aite_ecm_demo.test_08_purge_removes_bridge_leftovers`.
+
+---
+
+## Robustesse des données
+
+### A-23 · Un marqueur de gel périmé figeait un document pour toujours — **majeure**
+`aite_ecm_records`
+
+`legal_hold_active` est stocké. Après une restauration, un import ou la
+suppression directe d'un gel, il pouvait rester à vrai sans qu'aucun gel ne
+le justifie : le document devenait immodifiable et indestructible, avec un
+message ne citant **aucun** gel (« Gel juridique actif () »).
+
+*Correction* : le marqueur est revérifié contre les gels réels avant tout
+refus, et corrigé s'il est périmé.
+*Test* : `aite_ecm_records.test_08_stale_hold_flag_is_corrected`.
+
+---
+
 ## Anomalies des tests eux-mêmes
 
 Les tests des modules ECM n'avaient jamais été exécutés avec succès. Outre

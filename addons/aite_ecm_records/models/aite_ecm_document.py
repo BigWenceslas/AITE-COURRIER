@@ -303,11 +303,30 @@ class AiteEcmDocument(models.Model):
                 'paper_original', 'personal_data', 'message_ids',
                 'activity_ids', 'message_follower_ids'}
 
+    def _held_now(self):
+        """Documents réellement sous gel, marqueur stocké revérifié.
+
+        ``legal_hold_active`` est stocké : il peut rester à vrai après une
+        restauration, un import ou la suppression directe d'un gel. Un
+        document bloqué par un marqueur périmé — sans aucun gel en face —
+        serait figé pour toujours : on revérifie avant de refuser.
+        """
+        flagged = self.filtered('legal_hold_active')
+        if not flagged:
+            return flagged
+        holds = flagged.sudo()._legal_holds()
+        stale = flagged.filtered(lambda d: not holds.get(d.id))
+        if stale:
+            stale._legal_hold_recompute()
+            _logger.info("[records] marqueur de gel périmé corrigé sur %s",
+                         ", ".join(stale.mapped('reference')))
+        return flagged - stale
+
     def write(self, vals):
         if not self.env.context.get('records_bypass'):
             protected = set(vals) - self._records_free_fields()
             if protected:
-                held = self.filtered('legal_hold_active')
+                held = self._held_now()
                 if held:
                     raise UserError(_(
                         "Gel juridique actif (%s) : le document « %s » ne peut "
@@ -316,7 +335,7 @@ class AiteEcmDocument(models.Model):
         return super().write(vals)
 
     def action_trash(self):
-        held = self.filtered('legal_hold_active')
+        held = self._held_now()
         if held:
             raise UserError(_(
                 "Gel juridique actif (%s) : impossible de mettre « %s » à la "
@@ -324,7 +343,7 @@ class AiteEcmDocument(models.Model):
         return super().action_trash()
 
     def unlink(self):
-        held = self.filtered('legal_hold_active')
+        held = self._held_now()
         if held:
             raise UserError(_(
                 "Gel juridique actif : suppression impossible (%s).",

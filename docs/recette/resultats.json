@@ -1,6 +1,6 @@
 {
   "base_url": "http://localhost:8169",
-  "date": "2026-09-14 15:36:07",
+  "date": "2026-09-14 16:08:33",
   "scenarios": [
     {
       "code": "SC01",
@@ -9,7 +9,7 @@
       "login": "demo.agent1",
       "goal": "Un agent d'accueil enregistre le courrier du jour et le met en circulation.",
       "status": "ok",
-      "duration": 56.7,
+      "duration": 62.8,
       "steps": [
         {
           "label": "Écran d'accueil de l'agent",
@@ -45,7 +45,7 @@
           "label": "Circuit lancé — la référence est attribuée",
           "status": "ok",
           "shot": "SC01_06_circuit_lance_la_reference_est_attribuee.png",
-          "check": "référence COUR-2026-0137, courrier sorti du brouillon"
+          "check": "référence COUR-2026-0136, courrier sorti du brouillon"
         }
       ],
       "shots": [
@@ -83,19 +83,19 @@
       "login": "demo.manager1",
       "goal": "Un responsable de service prend un courrier en cours et le fait passer à l'étape suivante, commentaire à l'appui.",
       "status": "ok",
-      "duration": 39.0,
+      "duration": 39.1,
       "steps": [
         {
           "label": "Courriers en traitement du service",
           "status": "ok",
           "shot": "SC02_01_courriers_en_traitement_du_service.png",
-          "check": "61 courrier(s) affiché(s)"
+          "check": "62 courrier(s) affiché(s)"
         },
         {
           "label": "Fiche du courrier à traiter",
           "status": "ok",
           "shot": "SC02_02_fiche_du_courrier_a_traiter.png",
-          "check": "COUR-2026-0011 — étape « Traitement »"
+          "check": "COUR-2026-0123 — étape « Accusé réception »"
         },
         {
           "label": "Assistant de traitement",
@@ -107,7 +107,7 @@
           "label": "Transition appliquée",
           "status": "ok",
           "shot": "SC02_04_transition_appliquee.png",
-          "check": "étape « Traitement » → « Archivage » (statut : Archivé)"
+          "check": "étape « Accusé réception » → « Archivage » (statut : Archivé)"
         },
         {
           "label": "Historique du circuit",
@@ -147,7 +147,7 @@
       "login": "demo.assist1",
       "goal": "L'assistante retrouve une pièce d'un courrier et vérifie ses versions.",
       "status": "ok",
-      "duration": 25.8,
+      "duration": 26.0,
       "steps": [
         {
           "label": "Espace documentaire",
@@ -181,7 +181,7 @@
       "login": "demo.archive",
       "goal": "L'archiviste navigue dans le plan de classement et ouvre un document.",
       "status": "ok",
-      "duration": 28.9,
+      "duration": 29.4,
       "steps": [
         {
           "label": "Documents ECM",
@@ -225,7 +225,7 @@
       "login": "demo.archive",
       "goal": "Création d'un document typé, dépôt d'une version, finalisation.",
       "status": "ok",
-      "duration": 31.5,
+      "duration": 31.4,
       "steps": [
         {
           "label": "Documents ECM",
@@ -249,7 +249,7 @@
           "label": "Document enregistré",
           "status": "ok",
           "shot": "SC05_04_document_enregistre.png",
-          "check": "référence DOC-2026-00352 attribuée"
+          "check": "référence DOC-2026-00350 attribuée"
         }
       ],
       "shots": [
@@ -279,7 +279,7 @@
       "login": "demo.archive",
       "goal": "Contrôle du cycle de vie archivistique et des protections.",
       "status": "ok",
-      "duration": 29.9,
+      "duration": 29.8,
       "steps": [
         {
           "label": "Règles de conservation",
@@ -333,7 +333,7 @@
       "login": "demo.manager1",
       "goal": "Le bordereau préparé par l'archiviste est validé puis exécuté.",
       "status": "ok",
-      "duration": 26.0,
+      "duration": 25.9,
       "steps": [
         {
           "label": "Bordereaux d'élimination",
@@ -367,7 +367,7 @@
       "login": "demo.audit",
       "goal": "L'auditeur consulte la chaîne de sceaux et son horodatage.",
       "status": "ok",
-      "duration": 25.3,
+      "duration": 25.5,
       "steps": [
         {
           "label": "Journal de preuve",
@@ -401,7 +401,7 @@
       "login": "demo.archive",
       "goal": "Suivi des boîtes d'archives et de leurs sorties.",
       "status": "ok",
-      "duration": 25.0,
+      "duration": 25.2,
       "steps": [
         {
           "label": "Boîtes d'archives",
@@ -435,7 +435,7 @@
       "login": "demo.manager2",
       "goal": "Contrôle des liens diffusés hors de l'organisation.",
       "status": "ok",
-      "duration": 25.4,
+      "duration": 25.6,
       "steps": [
         {
           "label": "Partages externes",
@@ -447,7 +447,7 @@
           "label": "Détail d'un partage",
           "status": "ok",
           "shot": "SC10_02_detail_d_un_partage.png",
-          "check": "lien public http://localhost:8169/ecm/share/c8nPyaZXau_Cr0jsLJuXCQ3JarUeHLKg"
+          "check": "lien public http://localhost:8169/ecm/share/EQktKwB6kZpC3FgjUXI6UmkpGE9FOL8u"
         }
       ],
       "shots": [
@@ -469,7 +469,7 @@
       "login": "demo.compta",
       "goal": "Un dossier fournisseur et ses pièces attendues.",
       "status": "ok",
-      "duration": 26.2,
+      "duration": 26.4,
       "steps": [
         {
           "label": "Dossiers métier",
@@ -503,13 +503,13 @@
       "login": "demo.manager2",
       "goal": "Vue de direction : volumes, charge par étape, retards.",
       "status": "ok",
-      "duration": 104.2,
+      "duration": 104.4,
       "steps": [
         {
           "label": "Tableau de bord",
           "status": "ok",
           "shot": "SC12_01_tableau_de_bord.png",
-          "check": "6 bloc(s) d'indicateurs, 718 caractères affichés"
+          "check": "6 bloc(s) d'indicateurs, 714 caractères affichés"
         }
       ],
       "shots": [
@@ -527,7 +527,7 @@
       "login": "demo.audit",
       "goal": "Traçabilité transverse des opérations.",
       "status": "ok",
-      "duration": 23.7,
+      "duration": 23.8,
       "steps": [
         {
           "label": "Journal d'audit",
@@ -551,7 +551,7 @@
       "login": "demo.agent3",
       "goal": "Contrôle de la confidentialité entre agents.",
       "status": "ok",
-      "duration": 26.5,
+      "duration": 25.4,
       "steps": [
         {
           "label": "Courriers visibles par l'agent",
@@ -585,7 +585,7 @@
       "login": "portail.recette",
       "goal": "Parcours d'un correspondant externe, hors de l'application.",
       "status": "ok",
-      "duration": 6.7,
+      "duration": 6.5,
       "steps": [
         {
           "label": "Espace personnel du tiers",
@@ -639,13 +639,13 @@
       "login": "demo.archive",
       "goal": "Contrôle à la demande de la chaîne de preuve d'un document.",
       "status": "ok",
-      "duration": 28.1,
+      "duration": 28.3,
       "steps": [
         {
           "label": "Document scellé et son journal de preuve",
           "status": "ok",
           "shot": "SC16_01_document_scelle_et_son_journal_de_preuve.png",
-          "check": "document DOC-2026-00352"
+          "check": "document DOC-2026-00350"
         },
         {
           "label": "Vérification d'intégrité",
@@ -673,13 +673,13 @@
       "login": "demo.assist2",
       "goal": "Le versionnement conserve l'historique et l'empreinte.",
       "status": "ok",
-      "duration": 28.4,
+      "duration": 28.5,
       "steps": [
         {
           "label": "Document et son historique de versions",
           "status": "ok",
           "shot": "SC17_01_document_et_son_historique_de_versions.png",
-          "check": "DOC-2026-00351 — 2 version(s), la plus récente : v2\trecette_v2.pdf\tseconde version\t27\tLandry Nkolo\t14/09/2026 15:35:43\t · Ouvrir · Télécharger"
+          "check": "DOC-2026-00346 — 1 version(s), la plus récente : v1\tDiplomes_et_attestations__Gisele_Ngu.pdf\t\t1 184\tFranck Onana\t14/09/2026 16:08:05\t · Ouvrir · Télécharger"
         }
       ],
       "shots": [

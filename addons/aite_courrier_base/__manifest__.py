@@ -26,7 +26,7 @@ Principe directeur : paramétrage > code spécifique.
 """,
 
     # Versionnage Odoo : <serie_odoo>.<major>.<minor>.<patch>.<build>
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
 
     # Catégorie de classement dans Odoo.
     'category': 'AITE/Courrier',

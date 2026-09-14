@@ -30,7 +30,7 @@ Conçu pour être **WebDAV-ready** sans code WebDAV (cf.
 docs/WEBDAV_READINESS.md) : la méthode ``_check_document_access`` et l'indicateur
 ``is_locked`` sont les points d'accroche du module ``aite_courrier_webdav``.
 """,
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.0.1',
     'category': 'AITE/Courrier',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

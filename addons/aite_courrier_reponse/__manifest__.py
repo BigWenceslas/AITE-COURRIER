@@ -31,7 +31,7 @@ Fonctionnement
 3 modèles livrés : réponse standard, demande de pièces complémentaires,
 notification de clôture.
 """,
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'AITE/Courrier',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

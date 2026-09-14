@@ -28,7 +28,7 @@ dans l'esprit de NF Z42-013 / ISO 14641 :
   (structure SEDA 2.1), fichiers, journal de preuve et mode d'emploi —
   réversibilité vers un SAE tiers ou les Archives.
 """,
-    'version': '18.0.2.1.0',
+    'version': '18.0.2.1.1',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

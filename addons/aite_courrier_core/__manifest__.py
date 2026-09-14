@@ -25,7 +25,7 @@ L'exécution des transitions est pilotée par ``aite_courrier_validation``.
 """,
 
     # Versionnage Odoo : <serie_odoo>.<major>.<minor>.<patch>.<build>
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.1.1',
 
     # Catégorie de classement dans Odoo.
     'category': 'AITE/Courrier',

@@ -32,7 +32,7 @@ ou non à un objet Odoo (partenaire, facture, employé, dossier métier…).
 * Recherche facettée (panneau dossiers / types / étiquettes / état) et
   recherche sur le contenu indexé des pièces ; analyse du fonds.
 """,
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.0.1',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

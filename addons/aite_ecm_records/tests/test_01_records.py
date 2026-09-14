@@ -171,3 +171,23 @@ class TestRecords(TransactionCase):
         self.assertEqual(box.borrower_id, self.env.user)
         box.action_store()
         self.assertEqual(box.state, 'stored')
+
+    def test_08_stale_hold_flag_is_corrected(self):
+        """Un marqueur de gel périmé ne fige pas un document pour toujours.
+
+        `legal_hold_active` est stocké : après une restauration, un import ou
+        la suppression directe d'un gel, il peut rester à vrai sans qu'aucun
+        gel ne le justifie. Le document serait alors immodifiable et
+        indestructible, avec un message ne citant aucun gel.
+        """
+        doc = self._doc('aite_ecm_document.type_contrat',
+                        'aite_ecm_document.folder_juridique')
+        doc.sudo().write({'legal_hold_active': True})
+        doc.invalidate_recordset()
+        self.assertTrue(doc.legal_hold_active)
+        self.assertFalse(doc.legal_hold_names,
+                         "prérequis : aucun gel ne couvre ce document")
+        # L'écriture doit passer, et le marqueur être remis d'aplomb.
+        doc.write({'name': "Renommé malgré le marqueur périmé"})
+        doc.invalidate_recordset()
+        self.assertFalse(doc.legal_hold_active)

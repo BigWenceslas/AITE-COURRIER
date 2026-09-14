@@ -94,7 +94,7 @@ class AiteCourrierDocument(models.Model):
             for version in piece.version_ids.sorted('id'):
                 if version.attachment_id.id in known:
                     continue
-                Version.create({
+                mirror = Version.create({
                     'document_id': ecm.id,
                     'version': version.version,
                     'attachment_id': version.attachment_id.id,
@@ -106,6 +106,11 @@ class AiteCourrierDocument(models.Model):
                     'comment': _("Pièce de courrier %s")
                     % (piece.courrier_id.reference or ''),
                 })
+                # La version est créée directement (fichier partagé, pas de
+                # copie) : on signale quand même son arrivée, sans quoi le
+                # scellement et les miroirs externes ignoreraient les pièces
+                # venues du courrier.
+                ecm._version_registered(mirror)
             # état : une pièce verrouillée l'est aussi côté ECM
             target = 'archived' if piece.courrier_id.state == 'ar' else (
                 'final' if piece.state in ('final', 'archived') else 'draft')

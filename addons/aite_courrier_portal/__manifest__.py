@@ -32,7 +32,7 @@ Fonctionnalités
 Prérequis : inviter les tiers en tant qu'utilisateurs **Portail**
 (Paramètres > Utilisateurs > Accorder l'accès au portail).
 """,
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'AITE/Courrier',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',
