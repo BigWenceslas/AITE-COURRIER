@@ -52,7 +52,14 @@ développement neuf.
 
 ## 3. Proposition
 
-### Niveau 1 — Le cachet à l'écran *(recommandé, indispensable)*
+### Niveau 1 — Le cachet à l'écran ✅ *livré*
+
+> **Arbitré en revue le 16/09/2026** : le tiers voit les **fonctions** seules,
+> l'interne voit **nom et fonction**. Implémenté et couvert par deux tests —
+> `test_tc10b_processing_stamp` (ordre des visas, fonction présente sur
+> chacun, séparation des deux lectures) et
+> `test_12_stamp_shows_functions_never_names`, qui échoue si le nom d'un
+> agent apparaît dans la page servie au tiers.
 
 Un **ruban « Traité »** sur la fiche du courrier dès que le circuit atteint
 son étape finale, et sous le ruban un **cartouche de visa** : une ligne par
@@ -128,15 +135,14 @@ de partage de `aite_ecm_share`, déjà éprouvée.
 
 ## 5. Ce qu'il faut trancher avant de coder
 
-1. **Qu'est-ce qu'un « valideur » ?** Toutes les étapes franchies, ou
-   seulement celles dont la transition était une validation ? Un courrier
-   retourné puis revalidé doit-il montrer les deux passages, ou le dernier ?
-   *Recommandation : toutes les étapes, les retours compris — un cachet qui
-   cache les allers-retours n'est plus un historique.*
-2. **Le tiers voit-il les noms ?** Le portail expose aujourd'hui l'étape
-   courante, jamais les personnes. Afficher les valideurs nominativement à
-   un administré est un choix d'organisation, pas un réglage technique.
-   *Recommandation : fonctions et dates côté portail, noms en interne.*
+1. ✅ **Qu'est-ce qu'un « valideur » ?** — *tranché : toutes les étapes
+   franchies, les retours compris. Un cachet qui cache les allers-retours
+   n'est plus un historique.*
+2. ✅ **Le tiers voit-il les noms ?** — *tranché en revue : fonctions et
+   dates côté portail, nom et fonction en interne.* La « fonction » est le
+   rôle AITE au titre duquel la personne a agi : parmi les rôles habilités
+   de l'étape, celui qu'elle porte réellement ; à défaut les rôles de
+   l'étape, puis le nom de l'étape.
 3. **Le cachet est-il rejouable ?** Si l'historique est corrigé après coup,
    le cachet du PDF déjà généré ne bouge plus. Il faut décider si l'on
    régénère (et l'on conserve les deux versions) ou si le cachet est figé
@@ -146,15 +152,21 @@ de partage de `aite_ecm_share`, déjà éprouvée.
 
 ---
 
-## 6. Recommandation
+## 6. Où l'on en est
 
-Faire le **niveau 1 tout de suite** : il répond littéralement à la demande de
-la revue, ne coûte que deux jours, et n'engage sur rien puisqu'il ne fait
-qu'afficher ce que la base contient déjà.
+Le **niveau 1 est livré et vérifié** : ruban « Traité » qui prime sur
+« Archivé », onglet *Cachet* en interne, tampon sur le portail. Rien n'est
+stocké en double — seuls `is_processed` et `processed_date` le sont, pour
+que le ruban et les filtres soient interrogeables ; le reste se lit dans
+l'historique des étapes, qui demeure la source.
 
-Enchaîner sur le **niveau 2** une fois `wkhtmltopdf` installé et les
-questions du § 5 tranchées — c'est là que les utilisateurs métier verront la
-différence.
+Le **niveau 2** attend deux choses : `wkhtmltopdf` sur le serveur, et la
+question 3 du § 5 (cachet figé à la clôture, ou régénéré). C'est là que les
+utilisateurs métier verront la différence, puisque le cachet survivra alors
+à l'impression et à l'envoi par courriel.
+
+Le **niveau 3** reste une décision produit à part : il touche au juridique
+bien plus qu'à la technique.
 
 Garder le **niveau 3** pour une décision produit à part : il touche au
 juridique bien plus qu'à la technique.
