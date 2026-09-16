@@ -47,8 +47,14 @@
                                 invisible="not sender_partner_id"
                                 string="Historique expéditeur"/>
                     </div>
+                    <!-- Le cachet prime sur « Archivé » : un courrier arrivé
+                         au bout de son circuit est d'abord traité. -->
+                    <widget name="web_ribbon" title="Traité"
+                            bg_color="text-bg-success" invisible="not is_processed"/>
                     <widget name="web_ribbon" title="Archivé"
-                            bg_color="text-bg-secondary" invisible="state != 'ar'"/>
+                            bg_color="text-bg-secondary"
+                            invisible="state != 'ar' or is_processed"/>
+                    <field name="is_processed" invisible="1"/>
                     <div class="oe_title">
                         <label for="reference"/>
                         <h1>
@@ -97,6 +103,29 @@
                                     <field name="user_id"/>
                                     <field name="transition_label"/>
                                     <field name="comment"/>
+                                </list>
+                            </field>
+                        </page>
+                        <!-- Cachet de traitement : en interne, nom ET
+                             fonction ; le portail n'expose que la fonction. -->
+                        <page string="Cachet" name="cachet"
+                              invisible="not is_processed">
+                            <div class="alert alert-success" role="status">
+                                <i class="fa fa-certificate me-1"/>
+                                Courrier traité le
+                                <field name="processed_date" readonly="1"
+                                       class="oe_inline fw-bold"/>
+                                — <field name="visa_count" readonly="1"
+                                         class="oe_inline"/> visa(s).
+                            </div>
+                            <field name="visa_ids" readonly="1">
+                                <list create="false" delete="false"
+                                      default_order="entered_date">
+                                    <field name="step_id" string="Étape"/>
+                                    <field name="user_id" string="Intervenant"/>
+                                    <field name="actor_function"/>
+                                    <field name="entered_date" string="Le"/>
+                                    <field name="transition_label" string="Action"/>
                                 </list>
                             </field>
                         </page>

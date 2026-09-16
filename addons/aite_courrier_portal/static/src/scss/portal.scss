@@ -192,6 +192,52 @@
     }
 }
 
+// ------------------------------------------------------------ cachet
+// Volontairement dessiné comme un tampon : bordure double, teinte verte,
+// légèrement incliné. Il doit se lire comme une marque apposée, pas comme
+// une ligne de tableau de plus.
+.o_aite_cachet {
+    display: inline-block;
+    max-width: 100%;
+    padding: 12px 18px;
+    border: 2px solid #1f9d57;
+    border-radius: 10px;
+    background: #f3fbf6;
+    color: #1f7a46;
+    box-shadow: inset 0 0 0 1px rgba(31, 157, 87, 0.25);
+
+    .o_aite_cachet_head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid rgba(31, 157, 87, 0.3);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.86rem;
+
+        .o_aite_cachet_date {
+            margin-left: auto;
+            font-weight: 600;
+            text-transform: none;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+    }
+    .o_aite_cachet_body {
+        width: 100%;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+
+        td { padding: 2px 0; vertical-align: top; }
+        .o_aite_cachet_step { padding-right: 18px; font-weight: 600; }
+        .o_aite_cachet_fn { padding-right: 18px; }
+        .o_aite_cachet_when { text-align: right; white-space: nowrap; opacity: 0.8; }
+    }
+}
+
 // ------------------------------------------------------------ pièces jointes
 .o_aite_files {
     list-style: none;

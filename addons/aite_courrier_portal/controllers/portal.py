@@ -125,6 +125,11 @@ class CourrierCustomerPortal(CustomerPortal):
                 'submitted': kw.get('submitted'),
                 # Affiché une seule fois, juste après le dépôt.
                 'rejected': request.session.pop('aite_portal_rejected', None),
+                # Cachet de traitement : le tiers voit les fonctions qui sont
+                # intervenues, jamais les noms des agents.
+                'visas': courrier_sudo.visa_lines(with_names=False)
+                if courrier_sudo.is_processed else [],
+                'processed_date': courrier_sudo.processed_date,
             })
 
     # ------------------------------------------------------------------ #

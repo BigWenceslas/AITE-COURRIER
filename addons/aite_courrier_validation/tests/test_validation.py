@@ -150,6 +150,43 @@ class TestValidation(TransactionCase):
         self.assertEqual(courrier.state, 'ar')
         self.assertGreaterEqual(len(self._audits(courrier)), 7)
 
+    # --- TC-10b : cachet de traitement en fin de circuit ---
+    def test_tc10b_processing_stamp(self):
+        """Le cachet se pose à l'étape finale, reprend tous les passages dans
+        l'ordre, et sépare deux lectures : nom **et** fonction en interne,
+        fonction seule pour le tiers.
+        """
+        courrier = self._launch('type_fact')
+        self.assertFalse(courrier.is_processed,
+                         "pas de cachet tant que le circuit court")
+        self.assertFalse(courrier.processed_date)
+
+        path = ['trans_fact_1_2', 'trans_fact_2_3', 'trans_fact_3_4',
+                'trans_fact_4_5', 'trans_fact_5_6', 'trans_fact_6_7']
+        for xmlid in path:
+            courrier.do_transition(self._ref('aite_courrier_workflow.%s' % xmlid))
+
+        self.assertTrue(courrier.is_processed)
+        self.assertTrue(courrier.processed_date)
+        # Une ligne par étape franchie, l'étape initiale comprise.
+        self.assertEqual(courrier.visa_count, len(path) + 1)
+        dates = courrier.visa_ids.mapped('entered_date')
+        self.assertEqual(dates, sorted(dates), "les visas ne sont pas ordonnés")
+        for visa in courrier.visa_ids:
+            self.assertTrue(
+                visa.actor_function,
+                "l'étape « %s » ne dit pas au titre de quelle fonction "
+                "l'intervenant a agi" % visa.step_id.name)
+
+        interne = courrier.visa_lines()
+        portail = courrier.visa_lines(with_names=False)
+        self.assertEqual(len(interne), len(portail))
+        self.assertTrue(all(line.get('name') for line in interne),
+                        "le cachet interne doit nommer les intervenants")
+        self.assertFalse(any('name' in line for line in portail),
+                         "le cachet du portail ne doit porter aucun nom")
+        self.assertTrue(all(line['function'] for line in portail))
+
     # --- TC-11 : devis rejeté non archivé ---
     def test_tc11_quote_rejected_not_archived(self):
         courrier = self._launch('type_devis')

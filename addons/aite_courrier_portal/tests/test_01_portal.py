@@ -199,6 +199,24 @@ class TestPortal(HttpCase):
         self.assertEqual(Document._allowed_extensions(),
                          Document.ALLOWED_EXTENSIONS)
 
+    def test_12_stamp_shows_functions_never_names(self):
+        """Cloisonnement arbitré en revue : le tiers voit les fonctions qui
+        sont intervenues sur sa demande, jamais le nom des agents."""
+        final = self.courrier.circuit_id.step_ids.filtered('is_final')[:1]
+        self.assertTrue(final, "le circuit de recette n'a pas d'étape finale")
+        self.courrier._enter_step(final)
+        self.assertTrue(self.courrier.is_processed)
+
+        self.authenticate("portal_brasserie", "portal_brasserie_pwd")
+        resp = self.url_open('/my/courriers/%d' % self.courrier.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Cachet de traitement", resp.text)
+        self.assertIn(final.name, resp.text)
+        for name in set(self.courrier.visa_ids.mapped('user_id.display_name')):
+            self.assertNotIn(
+                name, resp.text,
+                "le portail expose le nom de l'agent « %s »" % name)
+
     def _csrf_token(self):
         """Jeton CSRF lu sur le formulaire, comme le ferait un navigateur."""
         page = self.url_open('/my/courriers/new').text

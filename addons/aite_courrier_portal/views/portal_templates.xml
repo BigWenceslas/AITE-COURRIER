@@ -214,6 +214,33 @@
                             </div>
                         </t>
 
+                        <!-- Cachet de traitement. Les fonctions intervenues
+                             sont nommées, les personnes jamais : c'est le
+                             cloisonnement retenu en revue. -->
+                        <t t-if="visas">
+                            <h5>Cachet de traitement</h5>
+                            <div class="o_aite_cachet mb-4">
+                                <div class="o_aite_cachet_head">
+                                    <i class="fa fa-certificate me-2"/>
+                                    <span>Demande traitée</span>
+                                    <span class="o_aite_cachet_date"
+                                          t-out="processed_date"
+                                          t-options="{'widget': 'date'}"/>
+                                </div>
+                                <table class="o_aite_cachet_body">
+                                    <tr t-foreach="visas" t-as="visa">
+                                        <td class="o_aite_cachet_step"
+                                            t-out="visa['step']"/>
+                                        <td class="o_aite_cachet_fn"
+                                            t-out="visa['function']"/>
+                                        <td class="o_aite_cachet_when"
+                                            t-out="visa['date']"
+                                            t-options="{'widget': 'date'}"/>
+                                    </tr>
+                                </table>
+                            </div>
+                        </t>
+
                         <!-- Pièces du dossier (jetons d'accès sécurisés). -->
                         <t t-if="documents">
                             <h5>Pièces du dossier</h5>
