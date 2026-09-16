@@ -41,10 +41,36 @@ grep 'odoo.tests.stats' "$LOG" | sed -E 's/^.*stats: //'
 TOTAL=$(grep 'odoo.tests.stats' "$LOG" | grep -oE '[0-9]+ tests' \
         | grep -oE '[0-9]+' | paste -sd+ | bc)
 FAILED=$(grep -cE '(ERROR|FAIL): (setUpClass|Test)' "$LOG")
+TOTAL=${TOTAL:-0}
 echo
-echo "Total : ${TOTAL:-0} test(s) — ${FAILED} en échec"
+echo "Total : ${TOTAL} test(s) — ${FAILED} en échec"
 if [ "$FAILED" -gt 0 ]; then
     grep -E '(ERROR|FAIL): (setUpClass|Test)' "$LOG" \
         | sed -E 's/^[0-9-]+ [0-9:,]+ [0-9]+ //' | sort -u
 fi
+
+# Garde-fou : une campagne qui n'exécute RIEN affiche « 0 test, 0 échec » et
+# rend 0 — indiscernable d'un succès pour une chaîne d'intégration. Un
+# serveur PostgreSQL arrêté, une base non créée ou une étiquette de test
+# fautive passent ainsi inaperçus. On échoue explicitement.
+if [ "$TOTAL" -eq 0 ]; then
+    echo
+    echo "ÉCHEC : aucun test n'a été exécuté — la campagne n'a rien prouvé."
+    echo "Causes habituelles : PostgreSQL arrêté, base non créée, module"
+    echo "absent de l'addons_path, ou --test-tags sans correspondance."
+    echo "Dernières lignes du journal ($LOG) :"
+    tail -n 15 "$LOG" | sed 's/^/  /'
+    exit 1
+fi
+
+# Plancher optionnel : AITE_MIN_TESTS=302 échoue si la campagne s'est
+# exécutée partiellement (un module qui ne s'installe plus, par exemple).
+if [ -n "${AITE_MIN_TESTS:-}" ] && [ "$TOTAL" -lt "$AITE_MIN_TESTS" ]; then
+    echo
+    echo "ÉCHEC : ${TOTAL} test(s) exécuté(s), ${AITE_MIN_TESTS} attendu(s)"
+    echo "au minimum — la campagne est incomplète."
+    exit 1
+fi
+
+[ "$FAILED" -gt 0 ] && exit 1
 exit $STATUS
