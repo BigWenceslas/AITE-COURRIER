@@ -235,9 +235,16 @@ class AiteEcmWebdav(models.AbstractModel):
             vals = {'name': title}
             if folder and not _is_unfiled(folder):
                 vals['folder_id'] = folder.id
-            doc = self.env['aite.ecm.document'].with_context(
-                audit_source='webdav').create(vals)
-            doc.with_context(audit_source='webdav').add_version(filename, datas)
+            # Création et première version dans un même savepoint : le
+            # contrôleur convertit l'erreur en réponse HTTP (409), la
+            # transaction est donc validée. Sans ce savepoint, un format
+            # refusé laisserait derrière lui un document sans version —
+            # invisible du lecteur réseau, mais bien présent en base.
+            with self.env.cr.savepoint():
+                doc = self.env['aite.ecm.document'].with_context(
+                    audit_source='webdav').create(vals)
+                doc.with_context(audit_source='webdav').add_version(
+                    filename, datas)
             return doc, True
         except AccessError as exc:
             raise WebdavForbidden(str(exc))

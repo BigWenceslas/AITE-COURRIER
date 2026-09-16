@@ -427,14 +427,15 @@ def phase_file(dav, report, kind, collection, keep=False, strict=False):
                dav.call('UNLOCK', path,
                         headers={'Lock-Token': token} if token else None), 204)
 
-        if kind == 'ecm' and not strict:
-            report.skip(
-                'PUT d\'une extension interdite → 409',
-                'laisse un document ECM vide derrière lui (cf. --strict)')
-        else:
-            reply = dav.call('PUT', '%s/%s.exe' % (collection, BASENAME),
-                             body=b'MZ-recette')
-            expect(report, 'PUT d\'une extension interdite → 409', reply, 409)
+        reply = dav.call('PUT', '%s/%s.exe' % (collection, BASENAME),
+                         body=b'MZ-recette')
+        expect(report, 'PUT d\'une extension interdite → 409', reply, 409)
+        _reply, after = dav.listing(collection, depth='1')
+        report.check('le format refusé n\'a rien laissé dans la collection',
+                     not any((r['name'] or '').startswith(BASENAME + '.exe')
+                             for r in after[1:]),
+                     detail='noms listés : %s'
+                            % ', '.join(r['name'] or '?' for r in after[1:]))
 
         expect(report, 'COPY → 403 (non pris en charge)',
                dav.call('COPY', path, headers={
@@ -554,8 +555,8 @@ def main(argv=None):
     parser.add_argument('--keep', action='store_true',
                         help="ne pas supprimer le fichier déposé (inspection manuelle)")
     parser.add_argument('--strict', action='store_true',
-                        help="inclure les contrôles qui laissent des données "
-                             "résiduelles (MKCOL et format refusé côté ECM)")
+                        help="inclure MKCOL côté ECM, qui crée un dossier de "
+                             "classement que WebDAV ne sait pas supprimer")
     parser.add_argument('--timeout', type=int, default=30,
                         help="délai d'attente réseau en secondes (défaut : %(default)s)")
     parser.add_argument('-v', '--verbose', action='store_true',

@@ -102,7 +102,23 @@ class TestEcmWebdav(HttpCase):
         pdf.add_version("x.pdf", base64.b64encode(b"%PDF-1.4"))
         self.assertFalse(pdf.office_uri)
 
-    def test_07_security(self):
+    def test_07_format_refuse_ne_cree_rien(self):
+        """Un dépôt au format interdit renvoie 409 sans rien laisser en base.
+
+        Le contrôleur traduit l'erreur en réponse HTTP au lieu de la laisser
+        remonter : la transaction est donc validée, et sans savepoint le
+        document créé avant le contrôle de format survivrait au refus.
+        """
+        Document = self.env['aite.ecm.document']
+        before = Document.search_count([])
+        resp = self._dav('PUT', "Juridique et contrats/programme.exe",
+                         data=b"MZ faux binaire")
+        self.assertEqual(resp.status_code, 409)
+        self.assertFalse(Document.search([('name', '=', "programme")]),
+                         "un document sans version est resté après le refus")
+        self.assertEqual(Document.search_count([]), before)
+
+    def test_08_security(self):
         resp = self.opener.request('PROPFIND', self.base_url() + '/webdav/aite_ecm/',
                                    headers={'Depth': '1'}, timeout=30)
         self.assertEqual(resp.status_code, 401)

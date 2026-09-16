@@ -125,15 +125,15 @@ tout passe, `1` si un contrôle échoue, `2` si le serveur est injoignable.
 
 ## 5. Limites connues
 
-- **ECM, dépôt d'une extension refusée.** `aite_ecm_webdav` crée le document
-  avant d'y attacher la version : si le format est rejeté, le `409` est bien
-  renvoyé mais **un document ECM vide subsiste**. Le module courrier, lui,
-  supprime le document créé. C'est pourquoi ce contrôle n'est joué côté ECM
-  qu'avec `--strict`.
 - **ECM, `MKCOL`.** Créer une collection crée un vrai dossier de classement,
-  que WebDAV ne sait pas supprimer ensuite. Même raison : `--strict` seulement.
+  que WebDAV ne sait pas supprimer ensuite : ce contrôle n'est joué qu'avec
+  `--strict`.
 - **`LOCK` côté courrier** est consultatif (jeton non persisté) : la vraie
   protection en écriture reste `is_locked`, qui renvoie `423` au `PUT`.
+- **Corrigé en 18.0.2.0.2 (ECM).** Un dépôt au format refusé laissait un
+  document ECM sans version en base : création et première version sont
+  désormais encadrées par un savepoint. Le harnais vérifie l'absence de
+  résidu après le `409`.
 
 ---
 
