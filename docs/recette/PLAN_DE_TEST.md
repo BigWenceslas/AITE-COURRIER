@@ -5,7 +5,7 @@ Trois niveaux de vérification, complémentaires et tous rejouables :
 | Niveau | Ce qu'il éprouve | Outil | Volume |
 | --- | --- | --- | --- |
 | **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **302 tests**, 25 modules |
-| **Recette applicative (UAT)** | parcours réels, dans un vrai navigateur, sous l'identité des rôles | `docs/recette/uat_runner.py` (Playwright) | **17 scénarios**, 45 captures |
+| **Recette applicative (UAT)** | parcours réels, dans un vrai navigateur, sous l'identité des rôles | `docs/recette/uat_runner.py` (Playwright) | **18 scénarios**, 49 captures |
 | **Recette des interfaces** | WebDAV, API REST, lien de partage — vus d'un client externe | `docs/recette/uat_interfaces.py` | **18 contrôles** |
 
 Le détail illustré des parcours est dans
@@ -91,7 +91,7 @@ installation et exécution complète.
 ## 3. Recette applicative (UAT)
 
 ```bash
-python3 docs/recette/uat_runner.py            # les 17 scénarios
+python3 docs/recette/uat_runner.py            # les 18 scénarios
 python3 docs/recette/uat_runner.py SC01 SC07  # une sélection
 python3 docs/recette/uat_runner.py --head     # navigateur visible
 python3 docs/recette/build_guide.py           # régénère le guide illustré
@@ -121,6 +121,7 @@ trouvées les anomalies du portail et du statut de circuit.
 | SC15 | Portail : dépôt et suivi d'une demande | Tiers externe |
 | SC16 | Vérification d'intégrité d'un document scellé | Archiviste |
 | SC17 | Historique des versions d'un document | Assistant(e) |
+| SC18 | Cachet de traitement d'un courrier clos | Manager |
 
 ---
 

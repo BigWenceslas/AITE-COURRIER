@@ -364,6 +364,37 @@ et nom de fichier ; deux champs stockés et indexés `courrier_reference` et
 défaut, en critère propre, en filtre « Issus du courrier » et en
 regroupement.
 
+### A-28 · La tuile « Mes courriers » a disparu du portail — **bloquante**
+`aite_courrier_portal`
+
+Régression introduite en corrigeant A-25, et **trouvée par la recette
+navigateur (SC15), pas par les 302 tests**. `portal_docs_entry` pose `d-none`
+sur la carte sauf si `force_show` — qui exige un `placeholder_count` **et** un
+compteur de session non nul — ou si `config_card`. Retirer
+`placeholder_count` pour démasquer la tuile la rendait donc invisible en
+permanence, au lieu de la masquer seulement à compteur nul.
+
+Le test censé couvrir A-25 cherchait le mot « courrier » dans la page, présent
+même quand la carte porte `d-none` : il est resté vert sur une fonction
+totalement cassée.
+
+*Correction* : `config_card`, seul levier du portail dont l'unique effet est
+de supprimer ce `d-none` — Odoo s'en sert pour sa propre carte « Connexion et
+sécurité ». *Test* : `test_04_home_entry_is_visible_without_any_courrier`
+extrait la carte autour du lien et échoue si sa classe contient `d-none`, en
+se connectant avec le tiers qui n'a aucun courrier.
+
+### A-29 · Aucun moyen de retrouver un courrier clos — **mineure**
+`aite_courrier_core`
+
+La recherche des courriers n'offrait ni filtre ni regroupement sur la fin de
+circuit : retrouver un courrier traité supposait de feuilleter la liste.
+Relevé en écrivant le scénario SC18, qui échouait pour cette raison dès que
+la campagne créait de nouveaux courriers.
+
+*Correction* : filtre « Traités » sur `is_processed`, stocké et donc
+interrogeable.
+
 ---
 
 ## Anomalies des tests eux-mêmes
