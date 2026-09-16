@@ -25,25 +25,62 @@ class AiteCourrierDocument(models.Model):
     # accepter les images (courrier photographié / scanné en image) et les
     # e-mails archivés (EML/MSG).
     ALLOWED_EXTENSIONS = (
-        'pdf', 'docx', 'xlsx',
-        'jpg', 'jpeg', 'png', 'tif', 'tiff',
+        # bureautique, formats courants et hérités
+        'pdf', 'doc', 'docx', 'odt', 'rtf', 'txt',
+        'xls', 'xlsx', 'ods', 'csv',
+        'ppt', 'pptx', 'odp',
+        # images : courrier photographié ou numérisé, y compris depuis un
+        # téléphone (HEIC sur iPhone, WEBP sur Android)
+        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'heic', 'heif',
+        'tif', 'tiff',
+        # messages archivés
         'eml', 'msg',
     )
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 Mo
     MIME_BY_EXT = {
         'pdf': 'application/pdf',
+        'doc': 'application/msword',
         'docx': 'application/vnd.openxmlformats-officedocument.'
                 'wordprocessingml.document',
+        'odt': 'application/vnd.oasis.opendocument.text',
+        'rtf': 'application/rtf',
+        'txt': 'text/plain',
+        'xls': 'application/vnd.ms-excel',
         'xlsx': 'application/vnd.openxmlformats-officedocument.'
                 'spreadsheetml.sheet',
+        'ods': 'application/vnd.oasis.opendocument.spreadsheet',
+        'csv': 'text/csv',
+        'ppt': 'application/vnd.ms-powerpoint',
+        'pptx': 'application/vnd.openxmlformats-officedocument.'
+                'presentationml.presentation',
+        'odp': 'application/vnd.oasis.opendocument.presentation',
         'jpg': 'image/jpeg',
         'jpeg': 'image/jpeg',
         'png': 'image/png',
+        'gif': 'image/gif',
+        'bmp': 'image/bmp',
+        'webp': 'image/webp',
+        'heic': 'image/heic',
+        'heif': 'image/heif',
         'tif': 'image/tiff',
         'tiff': 'image/tiff',
         'eml': 'message/rfc822',
         'msg': 'application/vnd.ms-outlook',
     }
+
+    @api.model
+    def _allowed_extensions(self):
+        """Liste blanche effective des formats acceptés.
+
+        Le paramètre système ``aite_courrier.allowed_extensions`` (extensions
+        séparées par des virgules) la remplace : un client peut restreindre
+        ou élargir sans redéploiement. Vide, la liste par défaut s'applique.
+        """
+        param = self.env['ir.config_parameter'].sudo().get_param(
+            'aite_courrier.allowed_extensions', '') or ''
+        custom = {e.strip().lstrip('.').lower()
+                  for e in param.split(',') if e.strip()}
+        return tuple(sorted(custom)) if custom else self.ALLOWED_EXTENSIONS
 
     name = fields.Char(string="Nom", required=True)
     courrier_id = fields.Many2one(
@@ -179,12 +216,13 @@ class AiteCourrierDocument(models.Model):
         if not filename:
             raise ValidationError(_("Le nom du fichier est requis."))
         extension = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
-        if extension not in self.ALLOWED_EXTENSIONS:
+        allowed = self._allowed_extensions()
+        if extension not in allowed:
             raise ValidationError(_(
                 "Format de fichier non autorisé (« %s »). "
                 "Formats acceptés : %s.",
                 extension or filename,
-                ', '.join(ext.upper() for ext in self.ALLOWED_EXTENSIONS)))
+                ', '.join(ext.upper() for ext in allowed)))
         try:
             raw = base64.b64decode(datas or b'')
         except Exception:

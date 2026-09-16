@@ -32,7 +32,7 @@ Fonctionnalités
 Prérequis : inviter les tiers en tant qu'utilisateurs **Portail**
 (Paramètres > Utilisateurs > Accorder l'accès au portail).
 """,
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.1.0',
     'category': 'AITE/Courrier',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',
@@ -48,6 +48,12 @@ Prérequis : inviter les tiers en tant qu'utilisateurs **Portail**
         'security/aite_courrier_portal_security.xml',
         'views/portal_templates.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'aite_courrier_portal/static/src/scss/portal.scss',
+            'aite_courrier_portal/static/src/js/portal_upload.js',
+        ],
+    },
     'demo': [],
     'installable': True,
     'application': False,

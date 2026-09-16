@@ -129,6 +129,76 @@ class TestPortal(HttpCase):
         self.assertIn(resp.status_code, (302, 303))
         self.assertIn('/web/login', resp.headers.get('Location', ''))
 
+    # ------------------------------------------------------------------ #
+    # Dépôt de pièces jointes
+    # ------------------------------------------------------------------ #
+    def _deposit(self, subject, files):
+        return self.url_open('/my/courriers/new', data={
+            'subject': subject,
+            'type_id': str(self.type_entrant.id),
+            'csrf_token': self._csrf_token(),
+        }, files=files)
+
+    def _deposited(self, subject):
+        return self.env['aite.courrier'].search(
+            [('sender_partner_id', '=', self.partner.id),
+             ('subject', '=', subject)], limit=1)
+
+    def test_09_deposit_accepts_several_files(self):
+        """Plusieurs fichiers en une fois : chacun devient une pièce
+        versionnée. Le dépôt multiple était annoncé par le formulaire mais
+        n'avait jamais été éprouvé."""
+        self.authenticate("portal_brasserie", "portal_brasserie_pwd")
+        resp = self._deposit("Dépôt à trois pièces", [
+            ('attachments', ('contrat.pdf', b"%PDF-1.4\n%a\n%%EOF\n",
+                             'application/pdf')),
+            ('attachments', ('photo.png', b"\x89PNG\r\n\x1a\n" + b"0" * 40,
+                             'image/png')),
+            ('attachments', ('note.txt', b"bonjour", 'text/plain')),
+        ])
+        self.assertEqual(resp.status_code, 200)
+        courrier = self._deposited("Dépôt à trois pièces")
+        self.assertTrue(courrier, "le dépôt n'a pas créé de courrier")
+        self.assertEqual(sorted(courrier.document_ids.mapped('name')),
+                         ["contrat.pdf", "note.txt", "photo.png"])
+        for document in courrier.document_ids:
+            self.assertTrue(
+                document.latest_version_id,
+                "« %s » est annoncée sans fichier téléchargeable"
+                % document.name)
+
+    def test_10_rejected_file_is_reported(self):
+        """Un format écarté est dit au tiers, tracé en audit, et ne laisse
+        pas derrière lui une pièce vide accrochée au courrier."""
+        self.authenticate("portal_brasserie", "portal_brasserie_pwd")
+        resp = self._deposit("Dépôt avec exécutable", [
+            ('attachments', ('bon.pdf', b"%PDF-1.4\n%a\n%%EOF\n",
+                             'application/pdf')),
+            ('attachments', ('outil.exe', b"MZ\x90\x00",
+                             'application/octet-stream')),
+        ])
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("outil.exe", resp.text,
+                      "le refus n'est pas signalé au tiers")
+        self.assertIn("non accept", resp.text)
+        courrier = self._deposited("Dépôt avec exécutable")
+        self.assertEqual(courrier.document_ids.mapped('name'), ["bon.pdf"])
+        self.assertTrue(self.env['aite.courrier.audit.log'].sudo().search(
+            [('model_name', '=', 'aite.courrier'),
+             ('res_id', '=', courrier.id), ('name', 'ilike', "refus")]),
+            "le refus n'est pas tracé au journal d'audit")
+
+    def test_11_allowed_extensions_are_configurable(self):
+        Document = self.env['aite.courrier.document']
+        Param = self.env['ir.config_parameter'].sudo()
+        for extension in ('pdf', 'docx', 'doc', 'xls', 'txt', 'webp', 'heic'):
+            self.assertIn(extension, Document._allowed_extensions())
+        Param.set_param('aite_courrier.allowed_extensions', 'pdf, .PNG ,pdf')
+        self.assertEqual(Document._allowed_extensions(), ('pdf', 'png'))
+        Param.set_param('aite_courrier.allowed_extensions', '')
+        self.assertEqual(Document._allowed_extensions(),
+                         Document.ALLOWED_EXTENSIONS)
+
     def _csrf_token(self):
         """Jeton CSRF lu sur le formulaire, comme le ferait un navigateur."""
         page = self.url_open('/my/courriers/new').text

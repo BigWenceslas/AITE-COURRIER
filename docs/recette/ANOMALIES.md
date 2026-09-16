@@ -301,6 +301,71 @@ refus, et corrigé s'il est périmé.
 
 ---
 
+## Revue du 16/09/2026 (chefs de projet et équipe technique)
+
+### A-24 · Les pièces déposées par un tiers disparaissaient sans un mot — **bloquante**
+`aite_courrier_portal`, `aite_courrier_ged`
+
+Le dépôt n'acceptait que neuf extensions (`pdf, docx, xlsx`, cinq formats
+d'image, `eml, msg`). Tout le reste — un `.doc`, un `.xls`, un `.txt`, une
+photo `.webp` ou `.heic` prise au téléphone — était écarté par un `continue`
+**silencieux** : ni journal d'audit, ni message au tiers, alors que le
+formulaire annonçait « PDF, Word, Excel, images ». Le déposant repartait
+convaincu d'avoir transmis ses pièces. Second défaut du même chemin : quand
+`add_version` échouait, la pièce restait accrochée au courrier, vide de tout
+fichier — annoncée au tiers mais non téléchargeable.
+
+*Correction* : liste blanche étendue aux formats bureautiques hérités et
+ouverts (`doc, xls, ppt, pptx, odt, ods, odp, rtf, txt, csv`) et aux images
+de téléphone (`webp, heic, heif, gif, bmp`) ; liste rendue paramétrable par
+`aite_courrier.allowed_extensions` sans redéploiement ; chaque refus est
+tracé en audit, posté au fil de discussion du courrier **et** affiché
+nommément au tiers sur la page de confirmation ; une pièce dont le fichier
+échoue est retirée au lieu de rester vide. *Tests* :
+`test_09_deposit_accepts_several_files`, `test_10_rejected_file_is_reported`,
+`test_11_allowed_extensions_are_configurable`.
+
+### A-25 · L'entrée « Mes courriers » était invisible aux nouveaux tiers — **majeure**
+`aite_courrier_portal`
+
+La tuile déclarait un `placeholder_count` : Odoo masque alors
+automatiquement l'entrée quand le compteur vaut zéro. Un tiers fraîchement
+invité arrivait donc sur un portail vide, sans aucun moyen de déposer sa
+première demande — exactement la population que le portail doit servir.
+
+*Correction* : l'entrée est rendue sans compteur différé, donc toujours
+visible, et le nombre de demandes est calculé côté serveur dès le premier
+rendu. *Test* : `test_04_home_counter`.
+
+### A-26 · Le bas du tableau de bord était inatteignable — **majeure**
+`aite_courrier`
+
+`.o_aite_dashboard` combinait `min-height: 100%` et `overflow: auto`. Le
+conteneur d'action d'Odoo rogne ce qui dépasse : au lieu de faire défiler son
+propre contenu, le tableau de bord grandissait au-delà du cadre et ses
+panneaux du bas devenaient inaccessibles.
+
+*Correction* : `height: 100%` et `overflow-y: auto`, comme l'explorateur ECM
+qui, lui, fonctionnait.
+
+### A-27 · Un document ECM issu d'un courrier ne se retrouvait pas par sa référence — **majeure**
+`aite_ecm_document`, `aite_courrier_ecm`
+
+Chercher `COUR-2026-0123` dans l'ECM ne renvoyait rien : la référence du
+courrier n'existe que dans les métadonnées du document miroir, qui ne sont
+pas interrogeables depuis la barre de recherche. La recherche par défaut ne
+couvrait par ailleurs ni la description, ni le nom du fichier, et le champ
+« Enregistrement lié » cherchait dans le *nom du modèle*, pas dans
+l'enregistrement.
+
+*Correction* : la recherche par défaut couvre référence, titre, description
+et nom de fichier ; deux champs stockés et indexés `courrier_reference` et
+`courrier_sender` sont ajoutés par le pont, repris dans la recherche par
+défaut, en critère propre, en filtre « Issus du courrier » et en
+regroupement.
+
+---
+
 ## Anomalies des tests eux-mêmes
 
 Les tests des modules ECM n'avaient jamais été exécutés avec succès. Outre

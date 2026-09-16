@@ -45,13 +45,16 @@ class CourrierCustomerPortal(CustomerPortal):
         ])
 
     def _prepare_home_portal_values(self, counters):
+        """Le compteur est calculé à chaque rendu, pas seulement quand le
+        chargement différé le demande : la tuile « Mes courriers » l'affiche
+        dès la première page, sans attendre l'appel asynchrone.
+        """
         values = super()._prepare_home_portal_values(counters)
-        if 'courrier_count' in counters:
-            try:
-                values['courrier_count'] = request.env['aite.courrier'] \
-                    .search_count(self._courrier_domain())
-            except AccessError:
-                values['courrier_count'] = 0
+        try:
+            values['courrier_count'] = request.env['aite.courrier'] \
+                .search_count(self._courrier_domain())
+        except AccessError:
+            values['courrier_count'] = 0
         return values
 
     # ------------------------------------------------------------------ #
@@ -120,6 +123,8 @@ class CourrierCustomerPortal(CustomerPortal):
                 'page_name': 'courrier_detail',
                 'state_labels': PORTAL_STATE_LABELS,
                 'submitted': kw.get('submitted'),
+                # Affiché une seule fois, juste après le dépôt.
+                'rejected': request.session.pop('aite_portal_rejected', None),
             })
 
     # ------------------------------------------------------------------ #
@@ -140,7 +145,10 @@ class CourrierCustomerPortal(CustomerPortal):
             if not errors:
                 courrier = self._portal_create_courrier(
                     subject, type_id, post.get('description') or '')
-                self._portal_attach_files(courrier)
+                rejected = self._portal_attach_files(courrier)
+                # Un fichier écarté doit se voir : il était jusqu'ici ignoré
+                # en silence, et le tiers croyait sa pièce transmise.
+                request.session['aite_portal_rejected'] = rejected
                 return request.redirect(
                     '/my/courriers/%d?submitted=1' % courrier.id)
         return request.render(
@@ -149,6 +157,10 @@ class CourrierCustomerPortal(CustomerPortal):
                 'errors': errors,
                 'default': post,
                 'page_name': 'courrier_new',
+                'allowed_extensions': request.env[
+                    'aite.courrier.document'].sudo()._allowed_extensions(),
+                'max_file_mb': request.env[
+                    'aite.courrier.document'].MAX_FILE_SIZE // (1024 * 1024),
             })
 
     def _portal_create_courrier(self, subject, type_id, description):
@@ -179,27 +191,46 @@ class CourrierCustomerPortal(CustomerPortal):
         """Convertit les fichiers téléversés en documents GED versionnés.
 
         Mêmes garde-fous que la capture e-mail : formats de la GED, taille
-        contrôlée par ``add_version`` ; un fichier refusé est tracé en audit
-        sans faire échouer le dépôt.
+        contrôlée par ``add_version``. Un fichier refusé n'interrompt pas le
+        dépôt mais il est tracé en audit **et** rendu au tiers : renvoie la
+        liste des refus, sous forme de dictionnaires ``{nom, motif}``.
         """
         Document = request.env['aite.courrier.document'].sudo()
-        allowed = Document.ALLOWED_EXTENSIONS
+        allowed = Document._allowed_extensions()
+        rejected = []
         for storage in request.httprequest.files.getlist('attachments'):
-            filename = storage.filename or ''
+            filename = (storage.filename or '').strip()
+            if not filename:
+                continue
             extension = (filename.rsplit('.', 1)[-1].lower()
                          if '.' in filename else '')
-            if not filename or extension not in allowed:
+            if extension not in allowed:
+                self._portal_reject(courrier, rejected, filename, _(
+                    "format « %s » non accepté ; formats admis : %s",
+                    extension or filename,
+                    ', '.join(ext.upper() for ext in allowed)))
                 continue
+            document = Document.create({
+                'name': filename,
+                'courrier_id': courrier.id,
+            })
             try:
-                document = Document.create({
-                    'name': filename,
-                    'courrier_id': courrier.id,
-                })
                 document.with_context(audit_source='system').add_version(
                     filename, base64.b64encode(storage.read()))
             except Exception as exc:  # noqa: BLE001 — dépôt jamais bloqué
-                request.env['aite.courrier.audit.log'].sudo()._log(
-                    request.env, _("Pièce portail refusée"), 'warn',
-                    'aite.courrier', courrier.id, courrier.display_name,
-                    _("%s : %s") % (filename, exc), 'system')
-        return True
+                # Sans ce retrait, la pièce restait attachée au courrier,
+                # vide de tout fichier : le tiers la voyait annoncée mais
+                # rien n'était téléchargeable.
+                document.with_context(force_unlink=True).unlink()
+                self._portal_reject(courrier, rejected, filename, str(exc))
+        return rejected
+
+    def _portal_reject(self, courrier, rejected, filename, reason):
+        """Trace un fichier écarté, en audit et pour l'affichage au tiers."""
+        rejected.append({'name': filename, 'reason': reason})
+        request.env['aite.courrier.audit.log'].sudo()._log(
+            request.env, _("Pièce portail refusée"), 'warn',
+            'aite.courrier', courrier.id, courrier.display_name,
+            _("%s : %s") % (filename, reason), 'system')
+        courrier.sudo().message_post(body=_(
+            "Pièce refusée au dépôt : <b>%s</b> — %s", filename, reason))

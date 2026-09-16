@@ -196,6 +196,15 @@ class AiteEcmDocument(models.Model):
     courrier_piece_id = fields.Many2one(
         comodel_name='aite.courrier.document', string="Pièce de courrier",
         compute='_compute_courrier_piece', store=True)
+    # Stockés et indexés : sans eux, chercher « COUR-2026-0123 » dans l'ECM
+    # ne trouvait rien — la référence du courrier ne vit que dans les
+    # métadonnées du document, qui ne sont pas interrogeables simplement.
+    courrier_reference = fields.Char(
+        string="Référence du courrier", index=True, store=True,
+        related='courrier_piece_id.courrier_id.reference')
+    courrier_sender = fields.Char(
+        string="Expéditeur du courrier", store=True,
+        related='courrier_piece_id.courrier_id.sender')
 
     @api.depends('res_model', 'res_id')
     def _compute_courrier_piece(self):
