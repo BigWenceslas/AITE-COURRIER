@@ -1,8 +1,12 @@
 .o_aite_dashboard {
     padding: 24px;
     background: #f6f7fb;
-    min-height: 100%;
-    overflow: auto;
+    // `height` et non `min-height` : le conteneur d'action d'Odoo rogne ce
+    // qui dépasse. Avec `min-height`, le tableau de bord grandissait au-delà
+    // du cadre au lieu de faire défiler son propre contenu — le bas de la
+    // page devenait inatteignable.
+    height: 100%;
+    overflow-y: auto;
 
     .o_aite_topbar {
         display: flex;

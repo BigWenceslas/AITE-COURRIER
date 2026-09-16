@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class AiteCourrierStepHistory(models.Model):
@@ -22,3 +22,19 @@ class AiteCourrierStepHistory(models.Model):
     user_id = fields.Many2one(comodel_name='res.users', string="Intervenant")
     comment = fields.Text(string="Commentaire")
     transition_label = fields.Char(string="Transition")
+    actor_function = fields.Char(
+        string="Fonction", compute='_compute_actor_function',
+        help="Rôle au titre duquel l'intervenant a agi sur cette étape. "
+             "C'est la seule identification exposée au tiers sur le portail, "
+             "où les noms ne sont jamais affichés.")
+
+    @api.depends('step_id.role_ids', 'step_id.name', 'user_id.groups_id')
+    def _compute_actor_function(self):
+        for line in self:
+            roles = line.step_id.role_ids
+            # Le rôle réellement porté par l'intervenant, quand l'étape en
+            # autorise plusieurs ; à défaut, les rôles habilités de l'étape.
+            held = roles.filtered(lambda g: g in line.user_id.groups_id) \
+                if line.user_id else roles.browse()
+            line.actor_function = ', '.join(
+                (held or roles).mapped('name')) or line.step_id.name

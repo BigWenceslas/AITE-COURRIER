@@ -121,6 +121,22 @@ class AiteCourrier(models.Model):
         comodel_name='aite.courrier.step.history', inverse_name='courrier_id',
         string="Historique des étapes",
     )
+
+    # --- Cachet de traitement ------------------------------------------- #
+    # Rien n'est saisi ni dupliqué : le cachet se lit dans l'historique des
+    # étapes, qui reste la source. Un historique corrigé corrige le cachet.
+    is_processed = fields.Boolean(
+        string="Traité", compute='_compute_processed', store=True,
+        help="Le courrier a atteint l'étape finale de son circuit.")
+    processed_date = fields.Datetime(
+        string="Traité le", compute='_compute_processed', store=True)
+    visa_ids = fields.Many2many(
+        comodel_name='aite.courrier.step.history', string="Visas",
+        compute='_compute_visas',
+        help="Les étapes franchies, dans l'ordre, retours compris : un "
+             "cachet qui masquerait les allers-retours ne serait plus un "
+             "historique.")
+    visa_count = fields.Integer(compute='_compute_visas')
     responsible_id = fields.Many2one(
         comodel_name='res.users', string="Responsable", tracking=True,
     )
@@ -159,6 +175,50 @@ class AiteCourrier(models.Model):
             circuit = courrier._active_circuit_for_type()
             courrier.preview_circuit_id = circuit
             courrier.preview_step_ids = circuit.step_ids
+
+    @api.depends('state', 'current_step_id.is_final',
+                 'step_history_ids.entered_date')
+    def _compute_processed(self):
+        """Le cachet se pose quand le circuit atteint son étape finale."""
+        for courrier in self:
+            done = bool(courrier.current_step_id.is_final) \
+                and courrier.state == 'ar'
+            courrier.is_processed = done
+            if not done:
+                courrier.processed_date = False
+                continue
+            last = courrier.step_history_ids.filtered(
+                lambda h: h.step_id == courrier.current_step_id
+            ).sorted('entered_date')[-1:]
+            courrier.processed_date = last.entered_date or courrier.write_date
+
+    @api.depends('step_history_ids.entered_date')
+    def _compute_visas(self):
+        for courrier in self:
+            visas = courrier.step_history_ids.sorted(
+                key=lambda h: (h.entered_date or fields.Datetime.now(), h.id))
+            courrier.visa_ids = visas
+            courrier.visa_count = len(visas)
+
+    def visa_lines(self, with_names=True):
+        """Lignes du cachet, prêtes à afficher.
+
+        ``with_names=False`` est le mode portail : le tiers voit la fonction
+        au titre de laquelle chaque intervenant a agi, jamais son nom.
+        """
+        self.ensure_one()
+        lines = []
+        for visa in self.visa_ids:
+            line = {
+                'step': visa.step_id.name,
+                'function': visa.actor_function,
+                'date': visa.entered_date,
+                'transition': visa.transition_label or '',
+            }
+            if with_names:
+                line['name'] = visa.user_id.display_name
+            lines.append(line)
+        return lines
 
     # ------------------------------------------------------------------ #
     # Contraintes

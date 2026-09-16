@@ -92,10 +92,13 @@ class TestWebdav(TransactionCase):
         from odoo.addons.aite_courrier_webdav.models.aite_courrier_webdav import (
             WebdavConflict,
         )
+        # `.txt` fait désormais partie des formats admis : l'exemple d'un
+        # format refusé doit être pris ailleurs, sinon le test ne prouve rien.
         with self.assertRaises(WebdavConflict):
-            self.Service.put_file('%s/note.txt' % self.reference, b'texte')
+            self.Service.put_file('%s/outil.exe' % self.reference, b'MZ\x90\x00')
         # Le document créé à la volée est nettoyé en cas d'échec.
-        self.assertFalse(self.Service._document_by_filename(self.courrier, 'note.txt'))
+        self.assertFalse(
+            self.Service._document_by_filename(self.courrier, 'outil.exe'))
 
     # --- DELETE ---
     def test_delete_document(self):
