@@ -2,16 +2,20 @@
 <odoo>
 
     <!-- ============ Entrée du tableau de bord portail ============
-         Sans `placeholder_count`, Odoo n'applique pas le masquage
-         automatique des tuiles à compteur nul : un tiers qui vient d'être
-         invité voit l'entrée et peut déposer sa première demande. Le
-         compteur est rendu côté serveur, dans le texte. -->
+         `portal_docs_entry` pose `d-none` sur la carte sauf si `force_show`
+         (qui exige un `placeholder_count` ET un compteur de session non nul)
+         ou `config_card`. Un tiers fraîchement invité, sans aucun courrier,
+         ne voyait donc rien — et ne pouvait pas déposer sa première demande.
+         `config_card` est le seul levier prévu pour une entrée toujours
+         visible : Odoo s'en sert pour sa propre carte « Connexion et
+         sécurité ». Le compteur, lui, est rendu côté serveur dans le texte. -->
     <template id="portal_my_home_courrier" inherit_id="portal.portal_my_home"
               customize_show="True" priority="40">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
             <t t-call="portal.portal_docs_entry">
                 <t t-set="title">Mes courriers</t>
                 <t t-set="url" t-value="'/my/courriers'"/>
+                <t t-set="config_card" t-value="True"/>
                 <t t-set="text">
                     <t t-if="courrier_count">
                         <t t-out="courrier_count"/> demande(s) suivie(s) — déposez-en une nouvelle

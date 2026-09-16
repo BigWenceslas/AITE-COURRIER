@@ -79,11 +79,31 @@ class TestPortal(HttpCase):
         self.assertIn(resp.status_code, (302, 303))
         self.assertIn('/my', resp.headers.get('Location', ''))
 
-    def test_04_home_counter(self):
+    def test_04_home_entry_is_visible_without_any_courrier(self):
+        """La tuile « Mes courriers » doit rester visible à compteur nul :
+        c'est par elle qu'un tiers fraîchement invité dépose sa première
+        demande. Odoo masque par défaut (`d-none`) toute entrée dont le
+        compteur de session est vide — chercher le libellé dans la page ne
+        prouve donc rien, il faut regarder la classe de la carte.
+        """
+        # `portal_autre` n'a aucun courrier : c'est le cas qui échouait.
+        self.authenticate("portal_autre", "portal_autre_pwd")
+        resp = self.url_open('/my')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Mes courriers", resp.text)
+        link = resp.text.index('/my/courriers')
+        start = resp.text.rindex('o_portal_index_card', 0, link)
+        card = resp.text[start:resp.text.index('</div>', link)]
+        self.assertNotIn(
+            'd-none', card,
+            "la tuile « Mes courriers » est masquée : un nouveau tiers ne "
+            "peut pas déposer sa première demande")
+
+    def test_04b_home_counter(self):
         self.authenticate("portal_brasserie", "portal_brasserie_pwd")
         resp = self.url_open('/my')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("ourrier", resp.text)
+        self.assertIn("Mes courriers", resp.text)
 
     def test_05_deposit_form(self):
         self.authenticate("portal_brasserie", "portal_brasserie_pwd")
