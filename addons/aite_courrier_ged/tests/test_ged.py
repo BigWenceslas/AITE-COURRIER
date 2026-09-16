@@ -84,9 +84,17 @@ class TestGed(TransactionCase):
 
     # --- TC-04 : contrôle format / taille ---
     def test_tc04_extension_rejected(self):
+        """Un exécutable reste refusé — et les formats bureautiques courants,
+        eux, passent : c'est leur absence de la liste blanche qui faisait
+        disparaître en silence les pièces déposées au portail."""
         doc = self._new_document()
         with self.assertRaises(ValidationError):
-            doc.add_version('note.txt', self._b64())
+            doc.add_version('outil.exe', self._b64())
+        for filename in ('note.txt', 'lettre.doc', 'tableau.xls',
+                         'photo.webp', 'scan.heic'):
+            self.assertTrue(
+                self._new_document().add_version(filename, self._b64()),
+                "« %s » devrait être accepté" % filename)
 
     def test_tc04_size_rejected(self):
         doc = self._new_document()
