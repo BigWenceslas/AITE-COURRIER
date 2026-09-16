@@ -4,7 +4,7 @@ Trois niveaux de vérification, complémentaires et tous rejouables :
 
 | Niveau | Ce qu'il éprouve | Outil | Volume |
 | --- | --- | --- | --- |
-| **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **297 tests**, 25 modules |
+| **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **300 tests**, 25 modules |
 | **Recette applicative (UAT)** | parcours réels, dans un vrai navigateur, sous l'identité des rôles | `docs/recette/uat_runner.py` (Playwright) | **17 scénarios**, 45 captures |
 | **Recette des interfaces** | WebDAV, API REST, lien de partage — vus d'un client externe | `docs/recette/uat_interfaces.py` | **18 contrôles** |
 
@@ -69,7 +69,7 @@ installation et exécution complète.
 | `aite_courrier_ocr` | 10 | file d'indexation, couche texte PDF, recherche par contenu |
 | `aite_courrier_reponse` | 10 | modèles fusionnés, PDF versionné, courrier sortant, envoi |
 | `aite_courrier_webdav` | 15 | service WebDAV du courrier, contrôle d'accès |
-| `aite_courrier_portal` | 10 | cloisonnement des tiers, dépôt, suivi, pièces à jeton |
+| `aite_courrier_portal` | 13 | cloisonnement des tiers, dépôt multi-fichiers et refus tracés, suivi, pièces à jeton |
 | `aite_courrier` | 3 | tableau de bord (clés de boucle, agrégats) |
 | `aite_ecm_document` | 25 | document, versions, réservation, corbeille, droits, explorateur |
 | `aite_ecm_workflow` | 6 | circuits polymorphes sur les documents |
