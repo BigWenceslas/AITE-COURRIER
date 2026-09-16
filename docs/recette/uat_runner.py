@@ -39,6 +39,16 @@ CHROMIUM = os.environ.get(
     'AITE_CHROMIUM', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
 BASE_URL = os.environ.get('AITE_URL', 'http://localhost:8169')
 PASSWORD = os.environ.get('AITE_PASSWORD', 'aite2026')
+
+# Noms des comptes de recette produits par `aite_ecm_demo`. Ils servent de
+# repoussoir : aucun ne doit apparaître sur une page servie à un tiers
+# (cloisonnement du cachet de traitement, arbitré en revue).
+AGENT_NAMES = (
+    "Aurélie Mbarga", "Boris Tchoumi", "Clarisse Ekani",
+    "Nadège Fotso", "Franck Onana", "Patrick Essomba",
+    "Solange Ngo Bassong", "Hervé Kenfack", "Gisèle Atangana",
+    "Landry Nkolo", "Irène Djomo", "Serge Kamdem",
+)
 VIEWPORT = {'width': 1600, 'height': 1000}
 
 # Bruit console sans rapport avec la suite (ressources annexes, navigateur).
@@ -798,6 +808,35 @@ def sc15(s):
            check=lambda: s.expect_text("Réclamation sur la facture de mars"),
            full_page=True)
 
+    def cachet_portail():
+        page.goto(BASE_URL + '/my/courriers', wait_until='domcontentloaded')
+        s.settle(0.5)
+        ligne = page.locator('tr', has_text="Traitée").first
+        if not ligne.count():
+            raise Anomaly("aucune demande traitée dans la liste du tiers")
+        ligne.locator('a.o_aite_ref').first.click()
+        s.settle(0.8)
+    s.step("Cachet de traitement vu par le tiers", cachet_portail,
+           check=lambda: _check_cachet_portail(s), full_page=True)
+
+
+def _check_cachet_portail(s):
+    """Le tiers voit les fonctions intervenues, jamais les noms des agents.
+
+    C'est le cloisonnement arbitré en revue : ce contrôle échoue si un nom
+    d'agent apparaît sur la page servie au tiers.
+    """
+    s.expect_text("Cachet de traitement")
+    lignes = s.page.locator('.o_aite_cachet_body tr')
+    if not lignes.count():
+        raise Anomaly("le cachet ne porte aucune ligne")
+    texte = s.page.locator('.o_aite_cachet').inner_text()
+    for nom in AGENT_NAMES:
+        if nom in texte:
+            raise Anomaly("le cachet du portail expose le nom « %s »" % nom)
+    return "%d fonction(s) au cachet : %s" % (
+        lignes.count(), ' · '.join(texte.split('\n')[1:3]))
+
 
 @scenario('SC16', "Vérifier l'intégrité d'un document scellé",
           "Archiviste", "demo.archive",
@@ -862,6 +901,47 @@ def _check_versions(s, state):
     return "%s — %d version(s), la plus récente : %s" % (
         state.get('ref'), state.get('n'),
         ' · '.join(first.split('\n')[:3]))
+
+
+@scenario('SC18', "Cachet de traitement d'un courrier clos",
+          "Manager", "demo.manager1",
+          "Un courrier arrivé au bout de son circuit porte un cachet qui "
+          "nomme les intervenants et la fonction au titre de laquelle ils "
+          "ont agi — là où le portail ne montre que les fonctions.")
+def sc18(s):
+    state = {}
+
+    def ouvrir():
+        s.action('aite_courrier_core.action_aite_courrier')
+        s.open_first_row()
+        # Tous les courriers ne sont pas clos : on feuillette jusqu'à en
+        # trouver un qui porte le ruban, comme le ferait un utilisateur.
+        for _i in range(30):
+            if s.page.locator('.ribbon span', has_text="Traité").count():
+                state['ref'] = s.field_value('reference')
+                return
+            if not s.next_record():
+                break
+        raise Anomaly("aucun courrier traité parmi les fiches parcourues")
+    s.step("Courrier clos — le ruban « Traité »", ouvrir,
+           check=lambda: s.expect_text("Traité", '.ribbon'))
+
+    s.step("Cachet : intervenants et fonctions",
+           lambda: (_open_tab(s, "Cachet"), s.settle(0.5)),
+           check=lambda: _check_cachet_interne(s, state), full_page=True)
+
+
+def _check_cachet_interne(s, state):
+    """En interne, chaque visa nomme l'intervenant ET sa fonction."""
+    lignes = s.page.locator('[name="visa_ids"] .o_data_row')
+    if not lignes.count():
+        raise Anomaly("le cachet ne porte aucun visa")
+    s.expect_text("Intervenant", '.o_form_view')
+    s.expect_text("Fonction", '.o_form_view')
+    premiere = lignes.first.inner_text()
+    return "%s — %d visa(s), le premier : %s" % (
+        state.get('ref'), lignes.count(),
+        ' · '.join(p for p in premiere.split('\n')[:3] if p.strip()))
 
 
 # -- petits contrôles réutilisables ------------------------------------- #
