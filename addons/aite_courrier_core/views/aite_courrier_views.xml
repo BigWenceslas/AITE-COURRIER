@@ -152,6 +152,8 @@
                        filter_domain="['|', ('sender', 'ilike', self), ('sender_email', 'ilike', self)]"/>
                 <filter name="filter_draft" string="Brouillons"
                         domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_processed" string="Traités"
+                        domain="[('is_processed', '=', True)]"/>
                 <filter name="filter_overdue" string="En retard (SLA)"
                         domain="[('is_overdue', '=', True)]"/>
                 <filter name="filter_my" string="Mes courriers"

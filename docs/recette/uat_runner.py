@@ -911,24 +911,30 @@ def _check_versions(s, state):
 def sc18(s):
     state = {}
 
-    def ouvrir():
+    def filtrer():
+        # Un utilisateur ne feuillette pas 150 fiches : il filtre.
         s.action('aite_courrier_core.action_aite_courrier')
+        s.search_menu('o_filter', "Traités")
+    s.step("Filtrer les courriers traités", filtrer,
+           check=lambda: _non_empty(s, "courrier traité"))
+
+    def ouvrir():
         s.open_first_row()
-        # Tous les courriers ne sont pas clos : on feuillette jusqu'à en
-        # trouver un qui porte le ruban, comme le ferait un utilisateur.
-        for _i in range(30):
-            if s.page.locator('.ribbon span', has_text="Traité").count():
-                state['ref'] = s.field_value('reference')
-                return
-            if not s.next_record():
-                break
-        raise Anomaly("aucun courrier traité parmi les fiches parcourues")
+        s.settle(0.5)
     s.step("Courrier clos — le ruban « Traité »", ouvrir,
-           check=lambda: s.expect_text("Traité", '.ribbon'))
+           check=lambda: _check_ruban(s, state))
 
     s.step("Cachet : intervenants et fonctions",
            lambda: (_open_tab(s, "Cachet"), s.settle(0.5)),
            check=lambda: _check_cachet_interne(s, state), full_page=True)
+
+
+def _check_ruban(s, state):
+    """Le ruban est un composant OWL rendu après le formulaire : on passe
+    par `expect_text`, qui réessaie, plutôt que par un comptage immédiat."""
+    s.expect_text("Traité", '.ribbon')
+    state['ref'] = s.field_value('reference')
+    return "%s porte le ruban « Traité »" % state['ref']
 
 
 def _check_cachet_interne(s, state):
