@@ -1,6 +1,6 @@
 {
   "base_url": "http://localhost:8169",
-  "date": "2026-09-16 10:00:30",
+  "date": "2026-09-16 13:04:56",
   "controles": [
     {
       "famille": "WebDAV",
@@ -18,7 +18,7 @@
       "famille": "WebDAV",
       "libelle": "Un dossier de classement est listé",
       "statut": "ok",
-      "constat": "« Achats et fournisseurs » exploré (34716 octets de réponse)"
+      "constat": "« Achats et fournisseurs » exploré (34714 octets de réponse)"
     },
     {
       "famille": "WebDAV",
@@ -36,7 +36,43 @@
       "famille": "WebDAV",
       "libelle": "Enregistrement depuis le lecteur réseau (PUT)",
       "statut": "ok",
-      "constat": "« DOC-2026-00257 - Attestation de non-redevance fiscale (ANR) — Bureautique Plus SARL.pdf » réenregistré (1229 → 31 octets)"
+      "constat": "« DOC-2026-00257 - Attestation de non-redevance fiscale (ANR) — Bureautique Plus SARL.pdf » réenregistré (48 → 48 octets)"
+    },
+    {
+      "famille": "WebDAV courrier",
+      "libelle": "Refus sans identifiants",
+      "statut": "ok",
+      "constat": "401 + WWW-Authenticate: Basic"
+    },
+    {
+      "famille": "WebDAV courrier",
+      "libelle": "OPTIONS annonce la classe 2 (verrous)",
+      "statut": "ok",
+      "constat": "DAV: 1, 2 — Allow: OPTIONS, HEAD, GET, PUT, DELETE, PROPFIND, PROPPATCH, MKCOL,"
+    },
+    {
+      "famille": "WebDAV courrier",
+      "libelle": "PROPFIND de la racine",
+      "statut": "ok",
+      "constat": "132 courrier(s) — le premier : COUR-2026-0141"
+    },
+    {
+      "famille": "WebDAV courrier",
+      "libelle": "Les pièces d'un courrier sont listées",
+      "statut": "ok",
+      "constat": "« COUR-2026-0141 » : 1 pièce(s)  — Recette lecteur reseau.pdf"
+    },
+    {
+      "famille": "WebDAV courrier",
+      "libelle": "Enregistrement depuis le lecteur (PUT)",
+      "statut": "ok",
+      "constat": "« Recette lecteur reseau.pdf » écrit (204) puis relu, 34 octets"
+    },
+    {
+      "famille": "WebDAV courrier",
+      "libelle": "Format exécutable refusé",
+      "statut": "ok",
+      "constat": "409 au dépôt, et le fichier reste introuvable (404)"
     },
     {
       "famille": "API",
@@ -54,19 +90,19 @@
       "famille": "API",
       "libelle": "Recherche de documents",
       "statut": "ok",
-      "constat": "254 document(s) au total, page de 5"
+      "constat": "262 document(s) au total, page de 5"
     },
     {
       "famille": "API",
       "libelle": "Fiche d'un document",
       "statut": "ok",
-      "constat": "DOC-2026-00356 — Procédure de recette AITE ECM"
+      "constat": "DOC-2026-00376 — Document créé par l'API — recette"
     },
     {
       "famille": "API",
       "libelle": "Création d'un document avec fichier",
       "statut": "ok",
-      "constat": "créé DOC-2026-00357"
+      "constat": "créé DOC-2026-00378"
     },
     {
       "famille": "API",

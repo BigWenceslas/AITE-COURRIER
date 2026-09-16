@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import time
 import traceback
 from datetime import datetime
 from urllib.parse import quote
@@ -30,6 +31,9 @@ RESULTS = os.path.join(HERE, 'resultats_interfaces.json')
 BASE_URL = os.environ.get('AITE_URL', 'http://localhost:8169')
 LOGIN = os.environ.get('AITE_LOGIN', 'demo.archive')
 PASSWORD = os.environ.get('AITE_PASSWORD', 'aite2026')
+# Le lecteur réseau du courrier écrit des pièces de courrier : un archiviste
+# n'y est pas habilité, c'est le métier de l'agent courrier.
+COURRIER_LOGIN = os.environ.get('AITE_COURRIER_LOGIN', 'demo.agent1')
 DOCX = b"PK\x03\x04 fichier de recette AITE"
 
 
@@ -78,6 +82,126 @@ def run_webdav(report):
                  lambda: _dav_bad_password())
     report.check('WebDAV', "Enregistrement depuis le lecteur réseau (PUT)",
                  lambda: _dav_put(listing))
+
+
+def dav_courrier(method, path='', auth=None, data=None, headers=None):
+    url = BASE_URL + '/webdav/aite_courrier/' + '/'.join(
+        quote(p) for p in path.split('/') if p)
+    return requests.request(method, url,
+                            auth=auth or (COURRIER_LOGIN, PASSWORD),
+                            data=data, headers=headers or {}, timeout=30)
+
+
+def run_webdav_courrier(report):
+    """Le second service WebDAV — les pièces de courrier montées en lecteur.
+
+    Il partage le modèle du service ECM mais pas son code : son contrôleur
+    a son propre aiguillage, sa propre authentification et sa propre
+    sérialisation. Il n'était jusqu'ici éprouvé qu'en Python, jamais par le
+    réseau.
+    """
+    print("\n— WebDAV du courrier —")
+    etat = {}
+    report.check('WebDAV courrier', "Refus sans identifiants",
+                 lambda: _davc_unauthorized())
+    report.check('WebDAV courrier', "OPTIONS annonce la classe 2 (verrous)",
+                 lambda: _davc_options())
+    report.check('WebDAV courrier', "PROPFIND de la racine",
+                 lambda: _davc_propfind(etat))
+    report.check('WebDAV courrier', "Les pièces d'un courrier sont listées",
+                 lambda: _davc_courrier(etat))
+    report.check('WebDAV courrier', "Enregistrement depuis le lecteur (PUT)",
+                 lambda: _davc_put(etat))
+    report.check('WebDAV courrier', "Format exécutable refusé",
+                 lambda: _davc_bad_extension(etat))
+
+
+def _davc_unauthorized():
+    resp = requests.request('PROPFIND', BASE_URL + '/webdav/aite_courrier/',
+                            timeout=30)
+    if resp.status_code != 401:
+        raise Anomaly("attendu 401, obtenu %s" % resp.status_code)
+    if 'Basic' not in resp.headers.get('WWW-Authenticate', ''):
+        raise Anomaly("en-tête WWW-Authenticate absent")
+    return "401 + WWW-Authenticate: Basic"
+
+
+def _davc_options():
+    resp = requests.request('OPTIONS', BASE_URL + '/webdav/aite_courrier/',
+                            timeout=30)
+    dav_header = resp.headers.get('DAV', '')
+    if '2' not in dav_header:
+        raise Anomaly("classe DAV 2 non annoncée (%r) : les clients montent "
+                      "alors en lecture seule" % dav_header)
+    return "DAV: %s — Allow: %s" % (dav_header,
+                                    resp.headers.get('Allow', '')[:60])
+
+
+def _davc_propfind(etat):
+    resp = dav_courrier('PROPFIND', headers={'Depth': '1'})
+    if resp.status_code != 207:
+        raise Anomaly("attendu 207, obtenu %s — %s"
+                      % (resp.status_code, resp.text[:200]))
+    refs = re.findall(r'<D:displayname>(COUR-[^<]*)</D:displayname>', resp.text)
+    if not refs:
+        raise Anomaly("aucun courrier listé à la racine")
+    etat['reference'] = refs[0]
+    return "%d courrier(s) — le premier : %s" % (len(refs), refs[0])
+
+
+def _davc_courrier(etat):
+    reference = etat.get('reference')
+    if not reference:
+        raise Anomaly("racine non explorée")
+    resp = dav_courrier('PROPFIND', reference, headers={'Depth': '1'})
+    if resp.status_code != 207:
+        raise Anomaly("attendu 207, obtenu %s" % resp.status_code)
+    noms = [n for n in re.findall(
+        r'<D:displayname>([^<]*)</D:displayname>', resp.text)
+        if n != reference]
+    etat['pieces'] = noms
+    return "« %s » : %d pièce(s) %s" % (
+        reference, len(noms), (' — ' + ', '.join(noms[:2])) if noms else '')
+
+
+def _davc_put(etat):
+    reference = etat.get('reference')
+    nom = "Recette lecteur reseau.pdf"
+    resp = dav_courrier('PUT', "%s/%s" % (reference, nom),
+                        data=b"%PDF-1.4 recette interfaces\n%%EOF\n")
+    if resp.status_code not in (201, 204):
+        raise Anomaly("attendu 201/204, obtenu %s — %s"
+                      % (resp.status_code, resp.text[:200]))
+    relu = dav_courrier('GET', "%s/%s" % (reference, nom))
+    if relu.status_code != 200 or b'recette interfaces' not in relu.content:
+        raise Anomaly("le fichier enregistré n'est pas relu à l'identique")
+    return "« %s » écrit (%s) puis relu, %d octets" % (
+        nom, resp.status_code, len(relu.content))
+
+
+def _davc_bad_extension(etat):
+    """Un exécutable doit être refusé — et vraiment pas enregistré.
+
+    On ne conclut pas du seul code de statut : un 403 signifierait « pas le
+    droit d'écrire ici », ce qui ne prouve rien sur la liste blanche. La
+    preuve est la relecture : le fichier ne doit pas exister.
+    """
+    chemin = "%s/outil.exe" % etat.get('reference')
+    resp = dav_courrier('PUT', chemin, data=b"MZ\x90\x00")
+    if resp.status_code in (200, 201, 204):
+        raise Anomaly("un exécutable a été accepté (statut %s) — la liste "
+                      "blanche ne protège pas le lecteur réseau"
+                      % resp.status_code)
+    if resp.status_code == 403:
+        raise Anomaly("refus pour défaut de droits (403), pas pour le "
+                      "format : le contrôle ne prouve rien — utilisez un "
+                      "compte habilité à écrire sur ce courrier")
+    relu = dav_courrier('GET', chemin)
+    if relu.status_code == 200:
+        raise Anomaly("refusé (%s) mais le fichier est lisible : il a bien "
+                      "été enregistré" % resp.status_code)
+    return "%s au dépôt, et le fichier reste introuvable (%s)" % (
+        resp.status_code, relu.status_code)
 
 
 def _dav_unauthorized():
@@ -151,7 +275,11 @@ def _dav_put(listing):
         before = dav('GET', target)
         if before.status_code != 200:
             continue
-        put = dav('PUT', target, data=DOCX + b" v2",
+        # Contenu unique à chaque passage : avec une charge constante, un
+        # second passage réécrivait à l'identique et le contrôle « le
+        # contenu a changé » échouait sans qu'aucun défaut n'existe.
+        charge = DOCX + (" v%s" % time.time()).encode()
+        put = dav('PUT', target, data=charge,
                   headers={'Content-Type': 'application/octet-stream'})
         if put.status_code not in (200, 201, 204):
             raise Anomaly("PUT « %s » : %s — %s"
@@ -322,6 +450,7 @@ def main():
     BASE_URL = args.url
     report = Report()
     run_webdav(report)
+    run_webdav_courrier(report)
     if args.api_key:
         run_api(report, args.api_key)
     else:

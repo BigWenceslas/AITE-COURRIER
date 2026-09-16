@@ -6,7 +6,7 @@ Trois niveaux de vérification, complémentaires et tous rejouables :
 | --- | --- | --- | --- |
 | **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **302 tests**, 25 modules |
 | **Recette applicative (UAT)** | parcours réels, dans un vrai navigateur, sous l'identité des rôles | `docs/recette/uat_runner.py` (Playwright) | **18 scénarios**, 49 captures |
-| **Recette des interfaces** | WebDAV, API REST, lien de partage — vus d'un client externe | `docs/recette/uat_interfaces.py` | **18 contrôles** |
+| **Recette des interfaces** | WebDAV, API REST, lien de partage — vus d'un client externe | `docs/recette/uat_interfaces.py` | **24 contrôles** |
 
 Le détail illustré des parcours est dans
 [`GUIDE_RECETTE.md`](./GUIDE_RECETTE.md). Les anomalies relevées et corrigées
@@ -132,9 +132,16 @@ python3 docs/recette/uat_interfaces.py \
     --api-key <clé> --share-url <lien de partage>
 ```
 
-* **WebDAV** — refus sans identifiants (avec `WWW-Authenticate`), PROPFIND
-  de la racine et d'un dossier, classe DAV 2 annoncée, enregistrement d'un
-  fichier (PUT) créant une version, mot de passe erroné refusé.
+* **WebDAV ECM** (`/webdav/aite_ecm`) — refus sans identifiants (avec
+  `WWW-Authenticate`), PROPFIND de la racine et d'un dossier, classe DAV 2
+  annoncée, enregistrement d'un fichier (PUT) créant une version, mot de
+  passe erroné refusé.
+* **WebDAV courrier** (`/webdav/aite_courrier`) — service distinct, au code
+  distinct : refus sans identifiants, classe DAV 2, PROPFIND de la racine et
+  d'un courrier, écriture d'une pièce puis relecture, exécutable refusé et
+  vérifié introuvable. Écrit sous l'identité d'un **agent courrier**
+  (`AITE_COURRIER_LOGIN`) : un archiviste n'est pas habilité à déposer une
+  pièce de courrier.
 * **API REST** — refus sans clé, authentification, recherche, fiche,
   création avec fichier, dépôt de version, téléchargement, refus d'un
   exécutable, spécification OpenAPI.
@@ -150,7 +157,8 @@ python3 docs/recette/uat_interfaces.py \
 | `aite_courrier_sign`, `aite_ecm_documents`, `aite_courrier_ged_documents` | nécessitent Odoo Enterprise | rejouer la campagne sur une instance Enterprise |
 | Édition en ligne Collabora / OnlyOffice (WOPI) | nécessite un serveur Office externe | test d'intégration sur plateforme cliente ; les jetons et le protocole sont couverts unitairement |
 | Google Docs | nécessite un client OAuth Google | doublure complète en test unitaire (aller-retour, export, suppression) |
-| Nextcloud réel | nécessite une instance Nextcloud | doublure complète en test unitaire (envoi, import, conflit, webhook) |
+| Nextcloud réel | nécessite une instance Nextcloud | doublure complète en test unitaire (envoi, import, conflit, sondage, webhook, lien public) — **le connecteur n'a jamais parlé à un vrai Nextcloud** : XML, codes d'erreur, jetons OCS et reconnexions restent à éprouver |
+| Client WebDAV réel (Explorateur Windows, Finder, davfs2) | nécessite un poste client | les deux services sont éprouvés par le réseau en Python, ce qui valide le serveur mais pas l'interopérabilité. À vérifier sur la plateforme cible, **en HTTPS** : le client Windows refuse l'authentification Basic en clair et plafonne les fichiers à 50 Mo ; le Finder exige un LOCK fonctionnel pour monter en écriture |
 | OCR d'images numérisées | nécessite Tesseract sur le serveur | l'extraction de la couche texte PDF est couverte ; l'OCR reste optionnel |
 | Copie PDF/A | nécessite LibreOffice sur le serveur | vérifier après installation de `soffice` |
 | Rendu PDF des états | nécessite `wkhtmltopdf` | le rendu HTML est couvert ; installer `wkhtmltopdf` en production |

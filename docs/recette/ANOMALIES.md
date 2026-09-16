@@ -397,7 +397,60 @@ interrogeable.
 
 ---
 
+## Couverture WebDAV — ce qui manquait
+
+Le WebDAV du courrier avait un contrôleur HTTP complet — aiguillage par
+verbe, authentification Basic, sérialisation XML multistatus, codes de
+statut — et **ses 13 tests appelaient le service directement en Python**. La
+couche protocole n'avait jamais été exécutée. Un défaut y serait passé
+inaperçu exactement comme l'a fait A-28.
+
+Comblé par 17 tests `HttpCase` (`test_02_webdav_http.py`), sur le modèle de
+`aite_ecm_webdav` : découverte OPTIONS sans authentification, refus sans
+identifiants et sur mot de passe erroné, PROPFIND racine et courrier, 404 sur
+courrier inconnu, GET, HEAD sans corps, PUT créant une version puis une
+pièce, format refusé, 423 sur courrier archivé, LOCK/UNLOCK, PROPPATCH
+acquitté, MOVE, DELETE, verbe non supporté, cloisonnement de la
+confidentialité. Et par six contrôles supplémentaires dans la recette des
+interfaces, qui n'appelait jusque-là que `/webdav/aite_ecm`.
+
+Aucun défaut produit trouvé : le contrôleur était juste. Ce sont **trois
+défauts des contrôles eux-mêmes** que l'exercice a révélés, consignés
+ci-dessous.
+
+---
+
 ## Anomalies des tests eux-mêmes
+
+### La recette des interfaces n'était pas rejouable deux fois
+`uat_interfaces.py`
+
+Le contrôle « enregistrement depuis le lecteur réseau » écrivait une charge
+**constante**, puis vérifiait que le contenu avait changé. Au second passage
+sur la même base, il réécrivait à l'identique et échouait — sans qu'aucun
+défaut n'existe. Corrigé : la charge porte désormais un horodatage.
+
+### Un contrôle concluait faux à partir d'un code de statut
+`uat_interfaces.py`
+
+Le contrôle « format exécutable refusé » du WebDAV courrier tenait tout code
+différent de 409 pour une acceptation, et annonçait « la liste blanche ne
+protège pas le lecteur réseau » sur un simple 403 — c'est-à-dire un refus
+de droits. Un diagnostic faux est pire qu'un contrôle absent. Corrigé : le
+contrôle distingue le refus de format du refus de droits, et **prouve** par
+une relecture que le fichier n'existe pas.
+
+### La recette écrivait sous un compte non habilité
+`uat_interfaces.py`
+
+Toute la recette des interfaces s'authentifiait en `demo.archive`. Un
+archiviste n'est pas habilité à déposer une pièce de courrier : l'écriture
+WebDAV échouait en 403. Le service du courrier utilise désormais un compte
+d'agent (`AITE_COURRIER_LOGIN`).
+
+---
+
+## Anomalies historiques des tests
 
 Les tests des modules ECM n'avaient jamais été exécutés avec succès. Outre
 les défauts produit ci-dessus, ont été corrigés : utilisateurs de test sans
