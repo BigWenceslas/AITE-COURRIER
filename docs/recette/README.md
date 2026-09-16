@@ -11,6 +11,7 @@ Tout ce qui sert à éprouver la suite et à en rendre compte.
 | `uat_interfaces.py` | Recette des interfaces techniques : WebDAV, API REST, lien de partage |
 | [`GUIDE_TEST_WEBDAV.md`](./GUIDE_TEST_WEBDAV.md) | Éprouver le flux WebDAV seul sur une instance locale : prérequis, `curl` express, dépannage |
 | `test_webdav.py` | Scénario WebDAV complet et autonome (aucune dépendance) sur les deux racines, `courrier` et `ecm` |
+| [`SCENARIO_WEBDAV.md`](./SCENARIO_WEBDAV.md) | Parcours WebDAV manuel : lecteur réseau Windows, aller-retour Word, droits, verrous |
 | `build_guide.py` | Assemble `GUIDE_RECETTE.md` à partir des résultats d'exécution |
 | `run_tests.sh` | Base neuve + installation + tests unitaires de tous les modules |
 | `captures/` | Captures d'écran de la dernière campagne |

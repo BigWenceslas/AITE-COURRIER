@@ -1,5 +1,45 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.3 — WebDAV : recette autonome et correctif ECM
+
+Le flux WebDAV n'était éprouvé que dans le cadre d'une campagne complète
+(`uat_interfaces.py` : six contrôles sur la seule racine ECM, dépendant de
+`requests` et d'une base ensemencée). Valider une installation locale — un
+poste Windows, une instance de démonstration — demandait donc de tout monter.
+
+### Correction
+
+- **fix(ecm_webdav): un format refusé ne laisse plus de document vide.**
+  `put_file` créait le document avant d'y attacher la première version : le
+  contrôleur traduisant l'erreur en réponse `409`, la transaction était
+  validée et un document sans version subsistait en base — invisible du
+  lecteur réseau, mais bien présent. Création et première version sont
+  désormais encadrées par un savepoint. `unlink` n'était pas la réponse :
+  côté ECM il est réservé aux managers et aurait transformé le `409` en
+  `500` pour un agent.
+
+### Vérification
+
+- **test(ecm_webdav): non-régression** sur le dépôt d'un format interdit —
+  `409` renvoyé, et rien de créé en base.
+- **test(recette): scénario WebDAV autonome** (`docs/recette/test_webdav.py`),
+  34 contrôles sans aucune dépendance, sur les deux racines : découverte,
+  authentification, listage, puis cycle de vie complet d'un fichier — dépôt,
+  relecture à l'octet près, versionnage, renommage, verrous, formats refusés,
+  suppression.
+
+### Documentation
+
+- `docs/DEPLOIEMENT_WEBDAV_WINDOWS.md` — installation sur Odoo 18 Windows,
+  configuration du client WebDAV de Windows, usage, dépannage.
+- `docs/recette/SCENARIO_WEBDAV.md` — parcours manuel de bout en bout,
+  jusqu'à l'aller-retour Word.
+- `docs/recette/GUIDE_TEST_WEBDAV.md` — prérequis, `curl` express, options du
+  harnais. Y sont documentés les deux pièges d'une instance locale : module
+  installé mais Odoo non redémarré, et serveur multi-base sans `db_name` —
+  où le contrôleur ne peut deviner la base et répond `401` quels que soient
+  les identifiants.
+
 ## 18.0.2.1.2 — Campagne de recette complète
 
 Première campagne de recette de bout en bout sur Odoo 18 Community : les 25
