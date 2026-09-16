@@ -9,6 +9,8 @@ Tout ce qui sert à éprouver la suite et à en rendre compte.
 | [`ANOMALIES.md`](./ANOMALIES.md) | Les anomalies trouvées pendant la campagne, leur correction et le test qui les verrouille |
 | `uat_runner.py` | Moteur de recette navigateur (Playwright) : joue les parcours, contrôle les effets, capture les écrans |
 | `uat_interfaces.py` | Recette des interfaces techniques : WebDAV, API REST, lien de partage |
+| [`GUIDE_TEST_WEBDAV.md`](./GUIDE_TEST_WEBDAV.md) | Éprouver le flux WebDAV seul sur une instance locale : prérequis, `curl` express, dépannage |
+| `test_webdav.py` | Scénario WebDAV complet et autonome (aucune dépendance) sur les deux racines, `courrier` et `ecm` |
 | `build_guide.py` | Assemble `GUIDE_RECETTE.md` à partir des résultats d'exécution |
 | `run_tests.sh` | Base neuve + installation + tests unitaires de tous les modules |
 | `captures/` | Captures d'écran de la dernière campagne |
@@ -35,6 +37,15 @@ python3 docs/recette/build_guide.py
 
 # 4. Interfaces techniques
 python3 docs/recette/uat_interfaces.py --api-key <clé> --share-url <lien>
+```
+
+Le flux WebDAV s'éprouve aussi **hors campagne**, sur n'importe quelle instance
+et sans jeu de données de démonstration — utile pour valider une installation
+locale :
+
+```bash
+python3 docs/recette/test_webdav.py \
+    --url http://localhost:8069 --login admin --password admin
 ```
 
 ## Pré-requis du moteur de recette
