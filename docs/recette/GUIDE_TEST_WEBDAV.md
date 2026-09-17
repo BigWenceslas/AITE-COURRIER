@@ -82,7 +82,7 @@ python3 docs/recette/test_webdav.py \
 
 | Option | Effet |
 | ------ | ----- |
-| `--root courrier\|ecm` | ne tester qu'une racine (défaut : toutes celles qui répondent) |
+| `--root courrier` ou `--root ecm` | ne tester qu'une racine (défaut : toutes celles qui répondent) |
 | `--collection COUR-2026-0001` | imposer le courrier / dossier ECM utilisé pour les écritures |
 | `--keep` | laisser le fichier déposé en place, pour l'inspecter dans l'UI |
 | `--strict` | ajouter les contrôles qui laissent des données résiduelles (cf. §5) |

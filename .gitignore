@@ -18,3 +18,6 @@ filestore/
 
 # Docker (volumes locaux éventuels)
 /data/
+
+# Documents générés (cf. docs/build_pdf.py)
+/docs/pdf/
