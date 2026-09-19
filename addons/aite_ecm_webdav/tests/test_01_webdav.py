@@ -47,6 +47,13 @@ class TestEcmWebdav(HttpCase):
         self.assertEqual(resp.status_code, 207)
         self.assertIn("Sans classement", resp.text)
         self.assertIn("Juridique et contrats", resp.text)
+        # Le client WebDAV de Windows refuse d'ouvrir une collection sans
+        # date de modification : racine, dossiers et « Sans classement »
+        # doivent tous en porter une, pas seulement les fichiers.
+        self.assertEqual(resp.text.count('<D:response>'),
+                         resp.text.count('<D:getlastmodified>'),
+                         "une collection sans getlastmodified est inaccessible "
+                         "depuis l'Explorateur Windows")
         resp = self._dav('PROPFIND', "Juridique et contrats", headers={'Depth': '1'})
         self.assertIn("%s - Contrat DAV.docx" % self.doc.reference, resp.text)
 

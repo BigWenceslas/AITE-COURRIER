@@ -142,14 +142,23 @@ class AiteEcmWebdav(models.AbstractModel):
     # ------------------------------------------------------------------ #
     # Descripteurs
     # ------------------------------------------------------------------ #
-    def _descriptor(self, path, name, is_collection, doc=None):
+    def _descriptor(self, path, name, is_collection, doc=None, folder=None):
         version = doc.latest_version_id if doc else None
+        if doc:
+            mtime, ctime = version.upload_date or doc.write_date, doc.create_date
+        elif folder:
+            mtime, ctime = folder.write_date, folder.create_date
+        else:
+            # Racine et « Sans classement » : le client WebDAV de Windows
+            # refuse d'ouvrir une collection sans date de modification. On
+            # sert l'instant, comme le fait le lecteur du courrier.
+            mtime, ctime = fields.Datetime.now(), None
         return {
             'path': path, 'name': name, 'is_collection': is_collection,
             'size': version.file_size if version else 0,
             'content_type': version.mime_type if version else None,
-            'mtime': (version.upload_date or doc.write_date) if doc else None,
-            'ctime': doc.create_date if doc else None,
+            'mtime': mtime,
+            'ctime': ctime,
             'etag': ('"%s"' % (version.sha256 or version.id)) if version else None,
             'locked': bool(doc and (doc.is_checked_out or doc.is_locked)),
         }
@@ -171,7 +180,8 @@ class AiteEcmWebdav(models.AbstractModel):
         folder = self._folder_by_segments(segments)
         base = '/'.join(segments)
         name = segments[-1] if segments else 'aite_ecm'
-        resources = [self._descriptor(base, name, True)]
+        record = folder if folder and not _is_unfiled(folder) else None
+        resources = [self._descriptor(base, name, True, folder=record)]
         if depth < 1:
             return resources
         Folder = self.env['aite.ecm.folder']
@@ -179,13 +189,14 @@ class AiteEcmWebdav(models.AbstractModel):
             children = Folder.search([('parent_id', '=', False)])
             for child in children:
                 seg = self._folder_segment(child)
-                resources.append(self._descriptor(seg, seg, True))
+                resources.append(self._descriptor(seg, seg, True, folder=child))
             resources.append(self._descriptor(UNFILED, UNFILED, True))
             return resources
         if not _is_unfiled(folder):
             for child in Folder.search([('parent_id', '=', folder.id)]):
                 seg = self._folder_segment(child)
-                resources.append(self._descriptor("%s/%s" % (base, seg), seg, True))
+                resources.append(self._descriptor("%s/%s" % (base, seg), seg, True,
+                                                  folder=child))
         for doc in self._documents_in(folder):
             fname = self._document_filename(doc)
             resources.append(self._descriptor("%s/%s" % (base, fname), fname, False, doc))

@@ -1,5 +1,18 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.4 — WebDAV ECM : dossiers accessibles depuis Windows
+
+- **fix(ecm_webdav): les dossiers s'ouvrent dans l'Explorateur Windows.**
+  Le service ne servait de date de modification que sur les fichiers ; or le
+  client WebDAV de Windows refuse d'ouvrir une collection sans
+  `getlastmodified` — la racine, les dossiers de classement et « Sans
+  classement » étaient déclarés inaccessibles, alors que le lecteur du
+  courrier, qui date toutes ses collections, fonctionnait. Les dossiers
+  portent désormais leurs dates de création et de modification, la racine et
+  « Sans classement » l'instant courant, comme le courrier.
+- **test(ecm_webdav)** : chaque entrée du `multistatus` de la racine porte
+  un `getlastmodified`.
+
 ## 18.0.2.1.3 — WebDAV : recette autonome et correctif ECM
 
 Le flux WebDAV n'était éprouvé que dans le cadre d'une campagne complète
