@@ -13,6 +13,7 @@ from odoo import http
 from odoo.exceptions import AccessError
 from odoo.http import request
 from werkzeug.wrappers import Response
+from odoo.addons.aite_courrier_base.tools import webdav_auth
 
 from ..models.aite_ecm_webdav import WebdavError, WebdavNotFound
 
@@ -91,14 +92,12 @@ class AiteEcmWebdavController(http.Controller):
         db = self._resolve_db()
         if not db:
             return False
-        try:
-            request.session.authenticate(
-                db, {'login': login, 'password': password, 'type': 'password'})
-        except Exception:  # noqa: BLE001
+        # Mot de passe ou clé d'API, avec cache : un client WebDAV présente
+        # ses identifiants à chaque requête (cf. aite_courrier_base.tools).
+        uid = webdav_auth.authenticate(request, db, login, password)
+        if not uid:
             return False
-        if not request.session.uid:
-            return False
-        request.update_env(user=request.session.uid)
+        request.update_env(user=uid)
         return True
 
     def _service(self):

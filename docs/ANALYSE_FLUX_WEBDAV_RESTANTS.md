@@ -59,7 +59,7 @@ Effort indicatif : **S** ≤ 1 jour · **M** 2 à 4 jours · **L** au-delà.
 
 **À développer.** Soit porter la réservation ECM (`checkout_user_id`, `checkout_expiry`, `_check_document_access` refusant l'écriture aux autres) sur la pièce de courrier, soit une table de verrous WebDAV (jeton, ressource, propriétaire, expiration) commune aux deux racines ; valider le jeton `If:` sur les écritures ; `423` pour les autres ; `lockdiscovery` avec propriétaire pour qu'Office affiche « verrouillé par … ». Harmoniser avec l'ECM : le `Timeout` du client y est renvoyé tel quel (`aite_ecm_webdav/controllers/webdav.py:244`) alors que la réservation dure `_checkout_hours()`, et un `UNLOCK` d'un autre utilisateur répond `204` sans rien faire.
 
-#### F3 · Clé d'API et double authentification — S
+#### F3 · Clé d'API et double authentification — S — **livré en 18.0.2.1.5**
 
 **Constat.** Les deux contrôleurs authentifient par `request.session.authenticate(...)` (`aite_courrier_webdav/controllers/webdav.py:103`, `aite_ecm_webdav/controllers/webdav.py:95`), c'est-à-dire une connexion **interactive**. Dans Odoo 17/18, `res.users._check_credentials` n'accepte les clés d'API que pour les connexions non interactives ; et un compte à double authentification reste « en attente du code » — `session.uid` vide — donc `401`. Trois documents promettent pourtant la clé d'API comme mot de passe (`aite_ecm_webdav/README.md:197`, `aite_ecm_office/docs/WEBDAV.md:142`, et les miens, corrigés dans cette livraison). Vérifiable en dix secondes sur l'instance : `curl -u login:CLÉ_API -X PROPFIND …` → `401`.
 
@@ -83,11 +83,11 @@ Effort indicatif : **S** ≤ 1 jour · **M** 2 à 4 jours · **L** au-delà.
 
 **À développer.** `aite_courrier_webdav` fournit un contrôleur abstrait (verbes, formatage, authentification, erreurs) et le contrat de service ; l'ECM ne garde que son service et sa route. F1, F2, F3, F6, F7 n'atterrissent alors qu'une fois.
 
-#### F6 · Coût de l'authentification à chaque requête — S
+#### F6 · Coût de l'authentification à chaque requête — S — **livré en 18.0.2.1.5**
 
-**Constat.** `save_session=False` + Basic : **chaque** requête rejoue la vérification du mot de passe (PBKDF2, de l'ordre de 50 à 100 ms). L'Explorateur Windows émet 5 à 20 requêtes par dossier ouvert.
+**Constat.** `save_session=False` + Basic : **chaque** requête rejoue la vérification du mot de passe — 600 000 itérations de PBKDF2 sous Odoo 17/18. **Mesuré sur l'instance Windows : 2,8 s pour un `PROPFIND` de la racine.** L'Explorateur émet 5 à 20 requêtes par dossier ouvert.
 
-**Conséquence.** Lecteur perceptiblement lent ; CPU serveur consommé à hacher le même mot de passe.
+**Conséquence.** Un dossier met une demi-minute à s'ouvrir ; « l'accès aux fichiers est extrêmement lent » — c'était ce constat-là, pas le poste Windows.
 
 **À développer.** Cache court (5 min) « empreinte des identifiants → uid » en mémoire du worker, invalidé par TTL et au changement de mot de passe.
 
@@ -152,9 +152,9 @@ Le premier montage bute sur des réglages du **poste** (service WebClient, `Basi
 | F5 | Socle commun aux deux contrôleurs | les deux | M | tous les correctifs suivants, une seule fois |
 | F1 | Enregistrement Office par temporaire + `MOVE` | les deux | M | « Enregistrer » dans Word, tel que documenté |
 | F2 | Verrous réels, `If:`, `lockdiscovery` | courrier (harmoniser ECM) | M | édition concurrente sûre |
-| F3 | Clé d'API, comptes 2FA | les deux | S | montage par l'administrateur, mot de passe jamais stocké |
+| F3 | Clé d'API, comptes 2FA — **livré** | les deux | S | montage par l'administrateur, mot de passe jamais stocké |
 | F4 | Assainissement et homonymes | courrier | S | toute pièce accessible, sans écrasement croisé |
-| F6 | Cache d'authentification | les deux | S | lecteur fluide, CPU serveur |
+| F6 | Cache d'authentification — **livré** | les deux | S | lecteur fluide, CPU serveur |
 | F7 | `ETag`, `If-Match`, `Range`, `Last-Modified` | courrier surtout | S–M | caches clients, gros fichiers, anti-écrasement |
 | F8 | Racine par année, filtrage SQL | courrier (ECM « Sans classement ») | M | volumétrie de production |
 | F9 | `DELETE` → archivage | courrier | S | plus de perte par mauvaise touche |
@@ -164,7 +164,7 @@ Le premier montage bute sur des réglages du **poste** (service WebClient, `Basi
 | F13 | `COPY`, `MOVE` entre courriers | les deux | S | à arbitrer |
 | F14 | Aide au montage | les deux | S | premier montage sans support |
 
-Ordre recommandé : **F5 → F3 → F4 → F1 → F2** (le cœur de l'usage Windows/Office, ≈ 8 à 10 jours), puis F6–F9 en un lot « robustesse » (≈ 5 jours), puis F10–F12 (≈ 4 jours). F13 et F14 à la demande.
+Ordre recommandé : F3 et F6 sont livrés (aide partagée dans `aite_courrier_base/tools/webdav_auth.py`, utilisée par les deux contrôleurs — un premier pas vers F5). Reste **F5 → F4 → F1 → F2** (le cœur de l'usage Windows/Office, ≈ 7 à 9 jours), puis F7–F9 en un lot « robustesse » (≈ 4 jours), puis F10–F12 (≈ 4 jours). F13 et F14 à la demande.
 
 ---
 

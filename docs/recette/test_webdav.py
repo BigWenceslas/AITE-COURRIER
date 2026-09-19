@@ -502,12 +502,13 @@ def run_root(kind, args, report):
     if collections is None:
         report.skip('3. Cycle de vie d\'un fichier',
                     "identifiants refusés par le serveur. Vérifier le login et "
-                    "le mot de passe Odoo (le mot de passe du compte : le "
-                    "contrôleur n'accepte ni clé d'API ni compte à double "
-                    "authentification), que le compte n'est pas un utilisateur "
-                    "« portail », et — si le serveur héberge plusieurs bases — "
-                    "que db_name est renseigné dans odoo.conf : le contrôleur "
-                    "WebDAV ne sait pas deviner la base.")
+                    "le mot de passe Odoo (une clé d'API fait aussi office de "
+                    "mot de passe, et c'est la seule voie pour un compte à "
+                    "double authentification), que le compte n'est pas un "
+                    "utilisateur « portail », et — si le serveur héberge "
+                    "plusieurs bases — que db_name est renseigné dans "
+                    "odoo.conf : le contrôleur WebDAV ne sait pas deviner la "
+                    "base.")
         return True
     collection = pick_collection(kind, collections, args.collection, report)
     if not collection:
@@ -545,7 +546,7 @@ def main(argv=None):
     parser.add_argument('--url', default='http://localhost:8069',
                         help="URL de l'instance Odoo (défaut : %(default)s)")
     parser.add_argument('--login', required=True,
-                        help="login Odoo")
+                        help="login Odoo (mot de passe ou clé d'API en --password)")
     parser.add_argument('--password', required=True, help="mot de passe Odoo")
     parser.add_argument('--root', choices=['auto', 'courrier', 'ecm'],
                         default='auto',

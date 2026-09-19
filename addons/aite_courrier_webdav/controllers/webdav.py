@@ -26,6 +26,7 @@ import odoo
 from odoo import http
 from odoo.exceptions import AccessError
 from odoo.http import request, Response
+from odoo.addons.aite_courrier_base.tools import webdav_auth
 
 from ..models.aite_courrier_webdav import ROOT_PATH, WebdavError, WebdavBadRequest
 
@@ -99,12 +100,9 @@ class AiteCourrierWebdavController(http.Controller):
         db = self._resolve_db()
         if not db:
             return False
-        try:
-            request.session.authenticate(
-                db, {'login': login, 'password': password, 'type': 'password'})
-        except Exception:
-            return False
-        uid = request.session.uid
+        # Mot de passe ou clé d'API, avec cache : un client WebDAV présente
+        # ses identifiants à chaque requête (cf. aite_courrier_base.tools).
+        uid = webdav_auth.authenticate(request, db, login, password)
         if not uid:
             return False
         request.update_env(user=uid)

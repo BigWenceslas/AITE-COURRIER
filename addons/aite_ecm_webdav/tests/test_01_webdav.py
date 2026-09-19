@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import base64
+from datetime import timedelta
 from urllib.parse import quote
 
+from odoo import fields
 from odoo.tests import HttpCase, tagged
 
 DOCX = base64.b64encode(b"PK\x03\x04 fake docx v1")
@@ -136,3 +138,18 @@ class TestEcmWebdav(HttpCase):
         secret.add_version("s.docx", DOCX)
         resp = self._dav('PROPFIND', "Juridique et contrats", headers={'Depth': '1'})
         self.assertNotIn("Secret de l'autre", resp.text)
+
+    def test_09_api_key_as_password(self):
+        """Une clé d'API vaut mot de passe : c'est la voie prévue pour un
+        client sans session, et la seule pour un compte à double
+        authentification."""
+        if 'res.users.apikeys' not in self.env:
+            self.skipTest("clés d'API indisponibles")
+        key = self.env['res.users.apikeys'].with_user(self.agent)._generate(
+            'rpc', "Lecteur réseau", fields.Datetime.now() + timedelta(days=1))
+        resp = self._dav('PROPFIND', '', password=key, headers={'Depth': '1'})
+        self.assertEqual(resp.status_code, 207)
+        resp = self._dav('PROPFIND', '', user="dav_other", password=key,
+                         headers={'Depth': '1'})
+        self.assertEqual(resp.status_code, 401,
+                         "la clé d'un compte ne vaut pas pour un autre login")

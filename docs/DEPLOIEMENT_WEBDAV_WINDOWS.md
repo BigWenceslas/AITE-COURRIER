@@ -165,10 +165,11 @@ Explorateur → clic droit sur **Ce PC** → *Connecter un lecteur réseau* :
 - Lecteur : `W:`
 - Dossier : `http://localhost:8069/webdav/aite_courrier`
 - cocher **Se connecter à l'aide d'informations d'identification différentes**
-- login et mot de passe **Odoo** — le mot de passe du compte, pas une clé
-  d'API : le contrôleur ne les accepte pas encore (cf.
-  `ANALYSE_FLUX_WEBDAV_RESTANTS.md`, F3). Un compte à double
-  authentification ne peut donc pas monter le lecteur pour l'instant.
+- login Odoo et, **de préférence, une clé d'API** (Préférences → Sécurité
+  du compte → Nouvelle clé d'API) à la place du mot de passe : elle se
+  vérifie cent fois plus vite, se révoque seule, et c'est la seule voie pour
+  un compte à double authentification. Le mot de passe du compte fonctionne
+  aussi ; les vérifications réussies sont gardées cinq minutes en cache.
 
 En ligne de commande : `net use W: http://localhost:8069/webdav/aite_courrier /user:<login> <motdepasse>`
 

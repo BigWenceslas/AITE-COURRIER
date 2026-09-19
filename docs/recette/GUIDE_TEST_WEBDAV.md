@@ -36,10 +36,10 @@ Deux racines peuvent être servies, selon les modules installés :
    db_name = aite_courrier
    ```
 
-3. **Un compte interne, sans double authentification.** Les utilisateurs
-   *portail* n'ont pas accès, et le contrôleur n'accepte pour l'instant que le
-   mot de passe du compte — ni clé d'API, ni compte 2FA (cf.
-   `../ANALYSE_FLUX_WEBDAV_RESTANTS.md`, F3).
+3. **Un compte interne.** Les utilisateurs *portail* n'ont pas accès. Le mot
+   de passe du compte convient ; une **clé d'API** (Préférences › Sécurité du
+   compte) est préférable — vérification légère, révocable, et seule voie pour
+   un compte à double authentification.
 
 4. **Des données à lister.** La racine `/webdav/aite_courrier` ne liste que les
    courriers **déjà enregistrés**, c'est-à-dire porteurs d'une référence
@@ -115,7 +115,7 @@ tout passe, `1` si un contrôle échoue, `2` si le serveur est injoignable.
 | `Serveur injoignable` | instance arrêtée, mauvais port | `curl -I http://localhost:8069/web/login` |
 | Racine « absente (OPTIONS → 404) » | module non installé | installer `aite_courrier_webdav` / `aite_ecm_webdav`, puis **redémarrer** Odoo |
 | `401` avec des identifiants corrects | serveur multi-base | renseigner `db_name` dans `odoo.conf` |
-| `401` persistant | compte *portail*, double authentification activée, ou clé d'API utilisée comme mot de passe | compte interne sans 2FA, avec son mot de passe |
+| `401` persistant | compte *portail*, ou compte 2FA avec son mot de passe | compte interne ; pour un compte 2FA, une clé d'API |
 | Racine `207` mais vide | aucun courrier enregistré | créer un courrier et **Lancer le circuit** |
 | `PUT` → `409` | extension hors liste ou fichier > 50 Mo (100 Mo en ECM) | formats courrier : PDF, DOCX, XLSX, JPG, PNG, TIF, EML, MSG |
 | `PUT` → `423` | document finalisé, archivé, ou réservé par un autre | libérer la réservation dans l'UI |

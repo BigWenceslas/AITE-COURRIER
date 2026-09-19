@@ -1,5 +1,25 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.5 — WebDAV : clés d'API et cache d'authentification
+
+Mesuré sur une instance Windows : un simple `PROPFIND` de la racine du
+courrier répondait en **2,8 s**. Un client WebDAV présente ses identifiants à
+chaque requête, et Odoo 17/18 hache les mots de passe avec 600 000 itérations
+de PBKDF2 : chaque listage, chaque lecture payait une seconde de calcul —
+l'Explorateur en envoie des dizaines par dossier.
+
+- **feat(base): aide d'authentification partagée** `tools/webdav_auth.py`,
+  utilisée par les deux contrôleurs WebDAV. Les **clés d'API** Odoo sont
+  acceptées comme mot de passe — hachage léger, révocables, seule voie pour un
+  compte à double authentification, qu'une connexion Basic ne peut pas mener
+  au bout. Les vérifications réussies sont mises en **cache** cinq minutes
+  (empreinte salée par le secret de la base, compte revérifié actif à chaque
+  coup). Ce que les README promettaient déjà devient vrai.
+- **test(base)** : mot de passe vérifié une seule fois, mauvais mot de passe
+  jamais mis en cache, expiration, compte désactivé évincé, clé d'API liée à
+  son login. **test(ecm_webdav)** : `PROPFIND` avec une clé d'API → `207`,
+  avec la clé d'un autre compte → `401`.
+
 ## 18.0.2.1.4 — WebDAV ECM : dossiers accessibles depuis Windows
 
 - **fix(ecm_webdav): les dossiers s'ouvrent dans l'Explorateur Windows.**
