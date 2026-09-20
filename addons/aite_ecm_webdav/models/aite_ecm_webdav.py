@@ -120,7 +120,15 @@ class AiteEcmWebdav(models.AbstractModel):
         # repli : la référence en tête du nom (fichier réenregistré sous un
         # autre nom par Office)
         ref = filename.split(' - ', 1)[0].strip()
-        return docs.filtered(lambda d: d.reference == ref)[:1]
+        by_reference = docs.filtered(lambda d: d.reference == ref)[:1]
+        if by_reference:
+            return by_reference
+        # repli : le titre seul. L'ECM republie « RÉFÉRENCE - Titre.ext », mais
+        # un client qui vient de déposer « Titre.ext » le redemande sous ce
+        # nom-là — sans quoi l'Explorateur Windows ne retrouve pas le fichier
+        # qu'il vient de créer.
+        title = filename.rsplit('.', 1)[0] if '.' in filename else filename
+        return docs.filtered(lambda d: d.name == title)[:1]
 
     @api.model
     def _folder_path(self, folder):
@@ -263,8 +271,21 @@ class AiteEcmWebdav(models.AbstractModel):
             raise WebdavConflict(str(exc))
 
     def lock(self, path):
-        """LOCK Office/WebDAV → réservation ECM."""
-        _folder, doc = self._resolve_file(path)
+        """LOCK Office/WebDAV → réservation ECM.
+
+        Un verrou posé sur un nom **encore libre** (ressource « lock-null » de
+        la RFC 4918) n'est pas une anomalie : c'est ainsi que l'Explorateur
+        Windows crée un fichier — il verrouille le nom, dépose le contenu,
+        puis libère. Refuser ce verrou, c'est refuser toute création depuis le
+        lecteur réseau. On vérifie donc seulement que le dossier existe et
+        qu'on a le droit d'y écrire ; rien n'est créé ici, c'est le PUT qui
+        créera le document. Retourne un enregistrement vide dans ce cas, ce
+        qui vaut au contrôleur un 201 plutôt qu'un 200.
+        """
+        try:
+            _folder, doc = self._resolve_file(path)
+        except WebdavNotFound:
+            return self._lock_free_name(path)
         if doc.is_locked:
             raise WebdavLocked(_("Document finalisé ou archivé"))
         if doc.is_checked_out and not doc.checked_out_by_me:
@@ -276,8 +297,27 @@ class AiteEcmWebdav(models.AbstractModel):
                 raise WebdavForbidden(str(exc))
         return doc
 
+    @api.model
+    def _lock_free_name(self, path):
+        """Verrou sur un nom libre : contrôle le dossier d'accueil."""
+        segments = self._split(path)
+        if len(segments) < 2:
+            raise WebdavForbidden()
+        folder = self._folder_by_segments(segments[:-1])   # 404 si inconnu
+        if folder and not _is_unfiled(folder) \
+                and not folder.user_can(self.env.user, 'write') \
+                and not self.env['aite.ecm.document']._is_manager():
+            raise WebdavForbidden(
+                _("Écriture refusée dans le dossier « %s ».", folder.name))
+        return self.env['aite.ecm.document']
+
     def unlock(self, path):
-        _folder, doc = self._resolve_file(path)
+        try:
+            _folder, doc = self._resolve_file(path)
+        except WebdavNotFound:
+            # Libération d'un nom resté libre (création abandonnée) : rien à
+            # faire, et surtout pas une erreur.
+            return self.env['aite.ecm.document']
         if doc.is_checked_out and doc.checked_out_by_me:
             doc.with_context(audit_source='webdav').action_checkin()
         return doc

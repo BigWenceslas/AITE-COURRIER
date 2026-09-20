@@ -1,5 +1,27 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.6 — WebDAV ECM : créer un fichier depuis l'Explorateur
+
+Les dossiers ECM s'ouvraient enfin, mais y créer un document Word échouait :
+« Élément introuvable ». Deux refus du service, là où le lecteur du courrier
+laissait passer — ce qui explique que seul l'ECM soit touché.
+
+- **fix(ecm_webdav): un verrou sur un nom encore libre est accepté.** C'est
+  ainsi que l'Explorateur Windows crée un fichier : il verrouille le nom,
+  dépose le contenu, puis libère (ressource « lock-null » de la RFC 4918).
+  `lock()` exigeait un document existant et répondait 404 : plus rien ne
+  pouvait être créé depuis le lecteur. Le dossier d'accueil et le droit d'y
+  écrire sont contrôlés, rien n'est créé — c'est le `PUT` qui crée. Le
+  contrôleur répond alors 201, comme le veut la RFC. `UNLOCK` d'un nom resté
+  libre (création abandonnée) n'est plus une erreur.
+- **fix(ecm_webdav): un document se retrouve aussi par son titre.** L'ECM
+  republie ses fichiers sous « RÉFÉRENCE - Titre.ext » ; le client, lui,
+  redemande le fichier sous le nom qu'il vient de déposer. Ce nom résout
+  désormais, après la correspondance exacte et la référence en tête.
+- **test(ecm_webdav)** : la séquence complète de création par l'Explorateur
+  (LOCK d'un nom libre, PUT, PROPFIND sous ce nom, UNLOCK), et le verrou
+  refusé sans droit d'écriture sur le dossier.
+
 ## 18.0.2.1.5 — WebDAV : clés d'API et cache d'authentification
 
 Mesuré sur une instance Windows : un simple `PROPFIND` de la racine du

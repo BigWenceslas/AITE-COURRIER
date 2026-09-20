@@ -51,11 +51,13 @@ Effort indicatif : **S** ≤ 1 jour · **M** 2 à 4 jours · **L** au-delà.
 
 **À développer.** Un espace transitoire pour les temporaires (enregistrement `ir.attachment` sans `res_model`, purgé par cron après 24 h), servi par `PROPFIND`/`GET` le temps de la session ; au `MOVE` temporaire → nom existant, créer la **version** sur le document cible et jeter le temporaire ; reconnaître aussi la variante `PUT tmp` → `DELETE original` → `MOVE tmp→original` en différant la suppression quand un temporaire porte le même nom de base. Un test « séquence Office » commun aux deux racines (cf. F11).
 
-#### F2 · Verrous réels côté courrier — M
+#### F2 · Verrous réels côté courrier — M — *partiel : lock-null ECM livré en 18.0.2.1.6*
 
 **Constat.** Le contrôleur courrier annonce la classe 2 (`DAV: 1, 2`) mais son `LOCK` « émet un jeton sans le persister » (`aite_courrier_webdav/controllers/webdav.py:257`). `aite.courrier.document` n'a **aucune notion de réservation** : pas de champ, pas de contrôle. L'en-tête `If:` des `PUT`/`MOVE`/`DELETE` n'est jamais lu, ni ici ni côté ECM.
 
 **Conséquence.** Deux agents ouvrent la même pièce dans Word ; chacun croit détenir un verrou exclusif ; les deux enregistrements passent (v2, puis v3) — **le dernier écrit gagne, sans conflit signalé**. C'est précisément ce que le verrou doit empêcher.
+
+**Livré en 18.0.2.1.6, côté ECM seulement** : un verrou sur un nom encore libre est accepté (ressource « lock-null » de la RFC 4918), sans quoi l'Explorateur Windows ne peut créer aucun fichier. Le reste tient.
 
 **À développer.** Soit porter la réservation ECM (`checkout_user_id`, `checkout_expiry`, `_check_document_access` refusant l'écriture aux autres) sur la pièce de courrier, soit une table de verrous WebDAV (jeton, ressource, propriétaire, expiration) commune aux deux racines ; valider le jeton `If:` sur les écritures ; `423` pour les autres ; `lockdiscovery` avec propriétaire pour qu'Office affiche « verrouillé par … ». Harmoniser avec l'ECM : le `Timeout` du client y est renvoyé tel quel (`aite_ecm_webdav/controllers/webdav.py:244`) alors que la réservation dure `_checkout_hours()`, et un `UNLOCK` d'un autre utilisateur répond `204` sans rien faire.
 

@@ -238,7 +238,9 @@ class AiteEcmWebdavController(http.Controller):
         return Response(status=403)
 
     def _handle_lock(self, subpath):
-        self._service().lock(subpath)
+        # Un enregistrement vide = verrou sur un nom encore libre : la RFC
+        # 4918 veut alors 201 Created.
+        doc = self._service().lock(subpath)
         token = 'opaquelocktoken:%s' % uuid.uuid4()
         timeout = request.httprequest.headers.get('Timeout', 'Second-3600')
         body = ('<?xml version="1.0" encoding="utf-8"?>'
@@ -248,7 +250,8 @@ class AiteEcmWebdavController(http.Controller):
                 '<D:depth>0</D:depth><D:timeout>%s</D:timeout>'
                 '<D:locktoken><D:href>%s</D:href></D:locktoken>'
                 '</D:activelock></D:lockdiscovery></D:prop>') % (escape(timeout), token)
-        return Response(body, status=200, content_type='application/xml; charset=utf-8',
+        return Response(body, status=200 if doc else 201,
+                        content_type='application/xml; charset=utf-8',
                         headers=[('Lock-Token', '<%s>' % token)])
 
     def _handle_unlock(self, subpath):

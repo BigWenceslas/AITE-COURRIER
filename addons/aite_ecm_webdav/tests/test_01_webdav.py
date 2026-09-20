@@ -153,3 +153,42 @@ class TestEcmWebdav(HttpCase):
                          headers={'Depth': '1'})
         self.assertEqual(resp.status_code, 401,
                          "la clé d'un compte ne vaut pas pour un autre login")
+
+    def test_10_creation_depuis_l_explorateur(self):
+        """La séquence par laquelle l'Explorateur Windows crée un fichier.
+
+        Il verrouille d'abord le nom — encore libre —, dépose le contenu,
+        puis redemande le fichier **sous ce même nom**. Un 404 à l'une ou
+        l'autre de ces étapes et la création échoue : « Élément introuvable ».
+        """
+        nom = "Nouveau Document Microsoft Word.docx"
+        chemin = "Juridique et contrats/%s" % nom
+
+        resp = self._dav('LOCK', chemin, headers={'Timeout': 'Second-3600'})
+        self.assertEqual(resp.status_code, 201,
+                         "verrou refusé sur un nom libre : l'Explorateur ne "
+                         "peut alors rien créer")
+        self.assertIn('opaquelocktoken', resp.headers.get('Lock-Token', ''))
+
+        resp = self._dav('PUT', chemin, data=base64.b64decode(DOCX))
+        self.assertEqual(resp.status_code, 201)
+
+        resp = self._dav('PROPFIND', chemin, headers={'Depth': '0'})
+        self.assertEqual(resp.status_code, 207,
+                         "le fichier déposé reste introuvable sous le nom que "
+                         "le client lui a donné")
+
+        self.assertEqual(self._dav('UNLOCK', chemin).status_code, 204)
+
+        doc = self.env['aite.ecm.document'].search(
+            [('name', '=', "Nouveau Document Microsoft Word")])
+        self.assertEqual(len(doc), 1)
+        self.assertEqual(doc.folder_id, self.folder)
+        self.assertEqual(doc.version_count, 1)
+
+    def test_11_lock_sans_droit_ecriture(self):
+        """Un verrou sur un nom libre reste soumis aux droits du dossier."""
+        self.folder.write({'write_user_ids': [(6, 0, [self.other.id])]})
+        resp = self._dav('LOCK', "Juridique et contrats/Essai interdit.docx")
+        self.assertEqual(resp.status_code, 403)
+
