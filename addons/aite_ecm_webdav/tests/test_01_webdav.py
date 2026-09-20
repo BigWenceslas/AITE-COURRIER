@@ -192,3 +192,19 @@ class TestEcmWebdav(HttpCase):
         resp = self._dav('LOCK', "Juridique et contrats/Essai interdit.docx")
         self.assertEqual(resp.status_code, 403)
 
+    def test_12_bouton_office_confie_l_uri_au_navigateur(self):
+        """Le bouton « Ouvrir dans Office » ne passe pas par ``act_url``.
+
+        Le client web normalise les adresses de ce type d'action : les barres
+        verticales du protocole Office deviennent ``%7C`` et le ``//`` du
+        schéma imbriqué se réduit. Le navigateur résout alors l'adresse en
+        chemin relatif d'Odoo et répond 404, sans lancer Word.
+        """
+        action = self.doc.with_user(self.agent).action_open_in_office()
+        self.assertEqual(action['type'], 'ir.actions.client')
+        self.assertEqual(action['tag'], 'aite_ecm_open_uri')
+        uri = action['params']['uri']
+        self.assertTrue(uri.startswith('ms-word:ofe|u|'), uri)
+        self.assertIn('http://', uri,
+                      "le schéma imbriqué doit rester intact")
+

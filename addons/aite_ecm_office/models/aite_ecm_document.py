@@ -59,8 +59,7 @@ class AiteEcmDocument(models.Model):
         self._office_check()
         self._audit(self, _("Ouverture dans LibreOffice"), 'info',
                     self.webdav_url or '')
-        return {'type': 'ir.actions.act_url', 'url': self.libreoffice_uri,
-                'target': 'self'}
+        return self._open_protocol_uri(self.libreoffice_uri)
 
     # ------------------------------------------------------------------ #
     # Édition dans le navigateur (WOPI : Collabora Online / OnlyOffice)

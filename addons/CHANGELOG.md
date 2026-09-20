@@ -1,5 +1,23 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.7 — ECM : « Ouvrir dans Office » lance vraiment Word
+
+Le bouton de la fiche document menait à une page 404 d'Odoo, l'adresse
+`ms-word:ofe|u|http://…` s'affichant dans la barre du navigateur sous la forme
+`localhost:8069/ms-word:ofe%7Cu%7Chttp:/…`.
+
+- **fix(ecm_webdav, office): une URI de protocole ne passe plus par
+  `ir.actions.act_url`.** Le client web normalise l'adresse de ce type
+  d'action : les barres verticales deviennent `%7C` et le `//` du schéma
+  imbriqué se réduit à `/`. Le navigateur ne reconnaît alors plus le
+  protocole, résout l'adresse comme un chemin relatif d'Odoo et répond 404
+  sans jamais lancer l'application. Une action cliente confie désormais l'URI
+  au navigateur telle quelle — exactement ce que faisait déjà l'explorateur
+  ECM, d'où la différence de comportement entre les deux. Même correction pour
+  *Ouvrir dans LibreOffice*.
+- **test(ecm_webdav)** : le bouton retourne une action cliente, l'URI conserve
+  ses barres verticales et son schéma imbriqué.
+
 ## 18.0.2.1.6 — WebDAV ECM : créer un fichier depuis l'Explorateur
 
 Les dossiers ECM s'ouvraient enfin, mais y créer un document Word échouait :

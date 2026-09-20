@@ -50,7 +50,20 @@ class AiteEcmDocument(models.Model):
             uri = self.office_uri.replace(':ofe|', ':ofv|')     # lecture seule
         else:
             uri = self.office_uri
-        return {'type': 'ir.actions.act_url', 'url': uri, 'target': 'self'}
+        return self._open_protocol_uri(uri)
+
+    @api.model
+    def _open_protocol_uri(self, uri):
+        """Action ouvrant une URI de protocole applicatif.
+
+        Volontairement pas un ``ir.actions.act_url`` : le client web normalise
+        l'adresse, et une URI de protocole y perd ses barres verticales et son
+        schéma imbriqué. Le navigateur la résout alors en chemin relatif
+        d'Odoo — 404, sans jamais lancer Word. L'URI part donc telle quelle
+        vers le navigateur (cf. ``static/src/open_uri.js``).
+        """
+        return {'type': 'ir.actions.client', 'tag': 'aite_ecm_open_uri',
+                'params': {'uri': uri}}
 
     def _explorer_record(self):
         data = super()._explorer_record()

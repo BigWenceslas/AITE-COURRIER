@@ -154,9 +154,25 @@ net start WebClient
 poste de test**. `FileSizeLimitInBytes` lève la limite de 50 Mo du client
 Windows (elle est indépendante de celle du module).
 
+### Autoriser Word, Excel et PowerPoint
+
+Les applications Office ont **leur propre** interdiction de l'authentification
+Basic sur HTTP, distincte de celle du service WebClient. Sans ce réglage, le
+bouton *Ouvrir dans Office* lance Word, qui échoue aussitôt. En PowerShell
+**utilisateur** (la clé est propre à chaque compte Windows), applications
+Office fermées :
+
+```powershell
+reg add HKCU\Software\Microsoft\Office\16.0\Common\Internet `
+  /v BasicAuthLevel /t REG_DWORD /d 2 /f
+```
+
+`16.0` couvre Office 2016, 2019, 2021 et Microsoft 365.
+
 > **En production, exposer Odoo en HTTPS** derrière un reverse proxy : le
-> montage fonctionne alors sans toucher au registre. Prévoir
-> `client_max_body_size 100m;` et le passage des verbes WebDAV.
+> montage fonctionne alors sans toucher au registre, et cette clé Office
+> devient elle aussi inutile. Prévoir `client_max_body_size 100m;` et le
+> passage des verbes WebDAV.
 
 ### Monter le lecteur
 
@@ -199,6 +215,8 @@ Scénario manuel pas à pas : [`recette/SCENARIO_WEBDAV.md`](./recette/SCENARIO_
 | `409` au dépôt | format hors liste, ou fichier trop gros | §1, tableau des limites |
 | `423` au dépôt | document finalisé, archivé, ou réservé | libérer la réservation dans l'UI |
 | Word ouvre en lecture seule | droits insuffisants, ou document verrouillé | consulter le bandeau de la fiche |
+| *Ouvrir dans Office* affiche une page 404 d'Odoo | module antérieur à 18.0.2.3.0 | mettre à jour `aite_ecm_webdav` |
+| Word se lance puis échoue | clé Basic d'Office absente | §3, `HKCU\…\Office\16.0\Common\Internet` |
 | Fichier > 50 Mo refusé par Windows | limite du client WebDAV | `FileSizeLimitInBytes`, §3 |
 | Lecteur lent à l'ouverture | arborescence volumineuse | monter directement un sous-dossier |
 
