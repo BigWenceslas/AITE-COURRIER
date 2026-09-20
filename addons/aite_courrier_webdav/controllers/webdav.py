@@ -208,8 +208,20 @@ class AiteCourrierWebdavController(http.Controller):
         return Response(data['content'], status=200, headers=headers)
 
     def _handle_head(self, subpath):
+        """Mêmes en-têtes que GET, sans le corps.
+
+        ``set_data`` recalcule ``Content-Length`` : lui passer un corps vide
+        annonçait donc **0 octet**. Un client qui interroge la taille avant de
+        charger — Word le fait systématiquement — en conclut que le fichier
+        est vide, et ouvre une fenêtre sans document.
+        """
         response = self._handle_get(subpath)
+        length = response.headers.get('Content-Length')
+        if length is None:
+            length = str(len(response.get_data()))
+        response.automatically_set_content_length = False
         response.set_data(b'')
+        response.headers['Content-Length'] = length
         return response
 
     def _collection_index(self, subpath):

@@ -1,5 +1,21 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.8 — WebDAV : HEAD annonçait un fichier vide
+
+Word s'ouvrait sur une fenêtre sans document, sans message d'erreur. Il
+interroge la taille du fichier avant de le charger, et le serveur lui
+répondait **0 octet**.
+
+- **fix(webdav, ecm_webdav): HEAD annonce la vraie taille.** Les deux
+  contrôleurs répondaient à `HEAD` en reprenant les en-têtes du `GET` puis en
+  vidant le corps par `set_data(b'')`. Or Werkzeug recalcule
+  `Content-Length` à cette occasion : l'en-tête retombait à `0`. Un client
+  qui interroge la taille avant de charger — Word systématiquement — en
+  déduisait un document vide. La taille est désormais préservée.
+- **test(ecm_webdav)** : `HEAD` annonce la taille du `GET` correspondant,
+  corps vide. Le scénario autonome `docs/recette/test_webdav.py` couvrait
+  déjà ce contrôle sur les deux racines.
+
 ## 18.0.2.1.7 — ECM : « Ouvrir dans Office » lance vraiment Word
 
 Le bouton de la fiche document menait à une page 404 d'Odoo, l'adresse

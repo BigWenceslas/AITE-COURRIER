@@ -208,3 +208,20 @@ class TestEcmWebdav(HttpCase):
         self.assertIn('http://', uri,
                       "le schéma imbriqué doit rester intact")
 
+    def test_13_head_annonce_la_vraie_taille(self):
+        """HEAD doit annoncer la taille du fichier, avec un corps vide.
+
+        ``Response.set_data(b'')`` recalcule ``Content-Length`` : la réponse
+        annonçait 0 octet. Word interroge la taille avant de charger et en
+        concluait que le document était vide — il s'ouvrait alors sans rien.
+        """
+        chemin = "Juridique et contrats/%s - Contrat DAV.docx" % self.doc.reference
+        attendu = len(base64.b64decode(DOCX))
+        resp = self._dav('HEAD', chemin)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.headers.get('Content-Length'), str(attendu),
+                         "un client en déduirait un fichier vide")
+        self.assertEqual(resp.content, b'')
+        # Le GET correspondant sert bien ce nombre d'octets.
+        self.assertEqual(len(self._dav('GET', chemin).content), attendu)
+

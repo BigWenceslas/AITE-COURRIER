@@ -31,7 +31,7 @@ La logique (résolution de chemin, lecture/écriture/suppression) vit dans le
 service ``aite.courrier.webdav`` (testable), le contrôleur HTTP n'étant qu'un
 adaptateur des verbes WebDAV.
 """,
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.1.1',
     'category': 'AITE/Courrier',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',
