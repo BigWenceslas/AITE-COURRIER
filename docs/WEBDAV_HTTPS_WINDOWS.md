@@ -120,6 +120,22 @@ C'est cette valeur qui construit les adresses envoyées à Word : tant qu'elle
 reste en `http://`, le bouton *Ouvrir dans Office* continuera d'être bloqué,
 même si l'instance répond en HTTPS.
 
+> **Odoo réécrit `web.base.url` tout seul.** À chaque connexion d'un
+> administrateur, Odoo y recopie l'adresse par laquelle il a été atteint. Une
+> seule visite sur `http://localhost:8069/web` suffit donc à annuler le
+> réglage — silencieusement. Pour le figer, ajouter un second paramètre
+> système :
+>
+> | Clé | Valeur |
+> | --- | --- |
+> | `web.base.url.freeze` | `True` |
+>
+> Et n'accéder à Odoo que par `https://localhost/web`.
+
+**Vérification immédiate**, sans même lancer Word : ouvrir une fiche document
+et regarder le champ **Adresse WebDAV**. Il doit commencer par `https://`. S'il
+est encore en `http://`, le paramètre n'a pas pris — inutile d'aller plus loin.
+
 Redémarrer Odoo.
 
 ---
