@@ -24,6 +24,7 @@ serveur est injoignable ou si aucune racine WebDAV ne répond.
 import argparse
 import base64
 import hashlib
+import ssl
 import sys
 import urllib.error
 import urllib.request
@@ -96,7 +97,8 @@ class Reply:
 class Dav:
     """Dialogue WebDAV sur une instance Odoo, en HTTP Basic."""
 
-    def __init__(self, url, login, password, root, timeout=30, verbose=False):
+    def __init__(self, url, login, password, root, timeout=30, verbose=False,
+                 verify=True):
         self.base = url.rstrip('/')
         self.root = root
         self.timeout = timeout
@@ -104,7 +106,14 @@ class Dav:
         token = base64.b64encode(
             ('%s:%s' % (login, password)).encode('utf-8')).decode('ascii')
         self.authorization = 'Basic ' + token
-        self.opener = urllib.request.build_opener(NoRedirect)
+        handlers = [NoRedirect()]
+        if not verify:
+            # Une autorité interne (Caddy, certificat auto-signé) n'a ni CRL
+            # ni OCSP : la vérification de révocation échoue alors même que la
+            # chaîne est approuvée. Sur une instance locale, on la désactive.
+            handlers.append(urllib.request.HTTPSHandler(
+                context=ssl._create_unverified_context()))
+        self.opener = urllib.request.build_opener(*handlers)
 
     # -- construction d'URL ------------------------------------------------ #
     def url_for(self, path='', collection=False):
@@ -494,7 +503,8 @@ PREREQUIS = {
 def run_root(kind, args, report):
     """Déroule les trois phases sur une racine. Retourne False si injoignable."""
     dav = Dav(args.url, args.login, args.password, ROOTS[kind],
-              timeout=args.timeout, verbose=args.verbose)
+              timeout=args.timeout, verbose=args.verbose,
+              verify=not args.no_verify)
     report.section('Racine %s (module aite_%s_webdav)'
                    % (ROOTS[kind], 'courrier' if kind == 'courrier' else 'ecm'))
     phase_service(dav, report)
@@ -523,7 +533,8 @@ def detect_roots(args):
     available, absent = [], []
     for kind, root in ROOTS.items():
         dav = Dav(args.url, args.login, args.password, root,
-                  timeout=args.timeout, verbose=args.verbose)
+                  timeout=args.timeout, verbose=args.verbose,
+                  verify=not args.no_verify)
         reply = dav.call('OPTIONS', auth=False, collection=True)
         if reply.status != 200 or not reply.header('DAV'):
             absent.append((kind, root, reply.status))
@@ -559,6 +570,9 @@ def main(argv=None):
     parser.add_argument('--strict', action='store_true',
                         help="inclure MKCOL côté ECM, qui crée un dossier de "
                              "classement que WebDAV ne sait pas supprimer")
+    parser.add_argument('--no-verify', action='store_true',
+                        help="ne pas vérifier le certificat TLS — instance "
+                             "locale servie par une autorité interne")
     parser.add_argument('--timeout', type=int, default=30,
                         help="délai d'attente réseau en secondes (défaut : %(default)s)")
     parser.add_argument('-v', '--verbose', action='store_true',

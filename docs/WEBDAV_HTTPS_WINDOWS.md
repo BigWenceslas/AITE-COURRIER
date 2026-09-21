@@ -148,13 +148,25 @@ Dans l'Explorateur, le champ *Dossier* accepte directement
 ## 6. Vérifier
 
 ```powershell
-curl.exe -s -i -X OPTIONS https://localhost/webdav/aite_ecm | Select-Object -First 6
-python docs\recette\test_webdav.py --url https://localhost --login <login> --password <clé d'API>
+curl.exe -i -X OPTIONS --ssl-no-revoke https://localhost/webdav/aite_ecm
+python docs\recette\test_webdav.py --url https://localhost --login <login> --password <clé d'API> --no-verify
 ```
 
-Attendu : `200` avec `DAV: 1, 2`, puis 34 contrôles verts. Si `curl` se plaint
-du certificat, c'est que `caddy trust` n'a pas été joué, ou que l'autorité de
-l'organisation n'est pas déployée sur le poste.
+Attendu : `200` avec `DAV: 1, 2`, puis 34 contrôles verts.
+
+> **`--ssl-no-revoke` et `--no-verify` ne sont pas des aveux d'échec.** Une
+> autorité interne — celle de Caddy, ou un certificat auto-signé — n'a ni
+> liste de révocation ni répondeur OCSP. `curl.exe` sous Windows exige cette
+> vérification et refuse la connexion avec
+> `CRYPT_E_NO_REVOCATION_CHECK (0x80092012)`, *alors même que la chaîne est
+> approuvée* : un certificat non reconnu donnerait `CERT_E_UNTRUSTEDROOT`. Le
+> navigateur, l'Explorateur et Word ne sont pas si stricts. Avec un
+> certificat d'une autorité publique ou d'une PKI d'entreprise, les deux
+> options deviennent inutiles.
+
+Vérification complémentaire, plus parlante : ouvrir `https://localhost/web`
+dans le navigateur. Le cadenas et l'écran de connexion Odoo suffisent à
+confirmer que le proxy et le certificat tiennent.
 
 Puis, dans Odoo, le bouton **Ouvrir dans Office** sur une fiche document : Word
 doit s'ouvrir sur le fichier, en écriture.
