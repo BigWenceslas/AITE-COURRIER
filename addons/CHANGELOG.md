@@ -1,5 +1,22 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.10 — Mode UNC : racine personnalisable
+
+Le mode `unc` levait bien le blocage de l'authentification, mais Office
+refusait ensuite le fichier « car celui-ci provient d'un site de la zone Sites
+sensibles » : en convertissant `\\hôte@8069\…` en URL pour déterminer la zone,
+Windows y lit un `utilisateur@hôte` et relègue le chemin en zone restreinte.
+
+- **feat(ecm_webdav): `aite_ecm.office_unc_root`** impose la racine servie en
+  mode `unc`, au lieu de la déduire de `web.base.url`. Y mettre la lettre du
+  lecteur monté (`Z:`) donne un chemin de lecteur ordinaire, que Windows ne
+  convertit pas en URL — donc pas de zone restreinte. Utile aussi quand le
+  partage porte un autre nom que l'URL publique.
+- **docs** : le remède par les zones de sécurité (classer `http://localhost` en
+  intranet local) est documenté à côté, pour les parcs où la lettre du lecteur
+  n'est pas homogène.
+- **test(ecm_webdav)** : racine imposée en mode `unc`, et ignorée en mode `url`.
+
 ## 18.0.2.1.9 — Office sur une instance en http : deux issues
 
 Les versions récentes de Microsoft 365 refusent d'ouvrir un document servi en

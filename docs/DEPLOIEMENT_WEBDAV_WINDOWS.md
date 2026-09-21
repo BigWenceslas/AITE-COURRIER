@@ -258,6 +258,33 @@ fonctionne déjà.
 Le bouton sert alors `\\localhost@8069\DavWWWRoot\webdav\aite_ecm\…`
 au lieu de l'URL. L'adresse WebDAV affichée sur la fiche, elle, reste l'URL.
 
+**Si Office répond « ce fichier provient d'un site de la zone Sites
+sensibles »** : Windows lit `localhost@8069` comme un `utilisateur@hôte` et
+relègue le chemin en zone restreinte. Deux remèdes, au choix.
+
+*Désigner le lecteur monté* — ajouter un second paramètre système :
+
+| Clé | Valeur |
+| --- | --- |
+| `aite_ecm.office_unc_root` | `Z:` |
+
+Le bouton sert alors `Z:\Juridique et contrats\DOC-… .docx`. C'est un chemin
+de lecteur ordinaire : plus de conversion en URL, donc plus de zone
+restreinte. Le lecteur doit évidemment porter cette lettre sur le poste — ce
+qui limite ce réglage aux parcs où le montage est homogène.
+
+*Ou classer le site en intranet local* — Options Internet → Sécurité →
+**Intranet local** → *Sites* → *Avancé*, ajouter `http://localhost`. En
+PowerShell utilisateur :
+
+```powershell
+$r = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\localhost"
+New-Item -Path $r -Force | Out-Null
+New-ItemProperty -Path $r -Name http -Value 1 -PropertyType DWord -Force | Out-Null
+```
+
+`1` désigne la zone *Intranet local*. Fermer puis rouvrir Word.
+
 > **À réserver aux parcs Windows.** Un chemin UNC ne veut rien dire sur macOS
 > ou Linux, et LibreOffice n'a pas le blocage d'Office : pour eux, l'URL est la
 > bonne réponse. C'est pourquoi ce mode se demande explicitement au lieu d'être
