@@ -1,28 +1,33 @@
 # AITE ECM / AITE Courrier — HTTPS devant Odoo 18, par Caddy.
 #
 # Caddy émet et renouvelle seul un certificat ; pour « localhost » et les noms
-# internes, il se sert de son autorité interne. Deux commandes suffisent :
+# internes, il se sert de son autorité interne, qu'il installe au premier
+# démarrage dans le magasin de la machine — d'où le PowerShell administrateur :
 #
-#     caddy trust                        (une fois, en administrateur :
-#                                         installe l'autorité dans le magasin
-#                                         de certificats de la machine)
-#     caddy run --config Caddyfile
+#     .\caddy.exe run --config .\Caddyfile
 #
 # Remplacer « localhost » par le nom du serveur pour une instance partagée.
 
-localhost {
+{
+	# Sous Windows, le port 80 est souvent déjà retenu (IIS, http.sys, un autre
+	# service), et Caddy échoue alors au démarrage : « listening on :80 …
+	# interdit par ses autorisations d’accès ». Il ne le voulait que pour
+	# rediriger HTTP vers HTTPS ; nous n’en avons pas besoin.
+	auto_https disable_redirects
+}
 
-	# Les dépôts WebDAV vont jusqu'à 100 Mo côté ECM, 50 Mo côté courrier.
+localhost {
+	# Les dépôts WebDAV vont jusqu’à 100 Mo côté ECM, 50 Mo côté courrier.
 	request_body {
 		max_size 100MB
 	}
 
-	# Longpolling et websockets d'Odoo, sur leur port dédié.
+	# Longpolling et websockets d’Odoo, sur leur port dédié.
 	@websocket path /websocket
 	reverse_proxy @websocket 127.0.0.1:8072
 
+	# X-Forwarded-Proto est transmis par défaut : ne pas le redéclarer.
 	reverse_proxy 127.0.0.1:8069 {
-		header_up X-Forwarded-Proto {scheme}
 		# Pas de tampon : un GET WebDAV peut peser des dizaines de méga-octets.
 		flush_interval -1
 	}

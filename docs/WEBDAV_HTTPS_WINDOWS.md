@@ -67,6 +67,18 @@ tant qu'elle vit.
 Odoo est alors servi sur `https://localhost`. Pour un service permanent,
 `caddy.exe start` ou l'installation en service Windows.
 
+> **« listening on :80 … interdit par ses autorisations d'accès »** : le port
+> 80 est déjà retenu — sous Windows, `http.sys`, IIS ou un autre service le
+> réservent souvent. Caddy ne le voulait que pour rediriger HTTP vers HTTPS ;
+> le `Caddyfile` fourni désactive cette redirection (`auto_https
+> disable_redirects`), et seul le port 443 est alors utilisé. Pour savoir qui
+> occupe le port : `Get-NetTCPConnection -LocalPort 80 | Select-Object OwningProcess`
+> puis `Get-Process -Id <numéro>`.
+
+Les deux avertissements au démarrage — `Unnecessary header_up
+X-Forwarded-Proto` et `Caddyfile input is not formatted` — visaient la
+première version de cet exemple ; ils ont disparu.
+
 ---
 
 ## 3. Production : nginx
