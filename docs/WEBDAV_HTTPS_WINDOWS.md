@@ -3,6 +3,12 @@
 > Pourquoi le chiffrement n'est pas un luxe pour l'espace documentaire, et
 > comment le mettre en place devant Odoo 18 sur Windows, en quelques minutes
 > pour un poste de test, proprement pour une mise en production.
+>
+> **Pour une installation de bout en bout**, du premier module au lecteur
+> monté, suivre plutôt [`TUTORIEL_WEBDAV_HTTPS.md`](./TUTORIEL_WEBDAV_HTTPS.md) :
+> chaque étape y porte sa vérification, et les onze obstacles rencontrés en
+> conditions réelles y sont annotés là où ils surviennent. Le présent document
+> reste la référence sur le reverse proxy lui-même.
 
 ---
 

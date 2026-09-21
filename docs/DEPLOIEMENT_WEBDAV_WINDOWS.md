@@ -2,6 +2,11 @@
 
 > Installer, configurer, utiliser et vérifier l'accès WebDAV sur un poste
 > Windows 10 exécutant Odoo 18 **Community** en local.
+>
+> **Nouvelle installation ?** Suivre [`TUTORIEL_WEBDAV_HTTPS.md`](./TUTORIEL_WEBDAV_HTTPS.md),
+> qui déroule le parcours complet en HTTPS — la seule configuration où Windows
+> et Office ne s'opposent pas. Le présent document décrit le cas `http`, ses
+> réglages de registre et leurs limites.
 
 ---
 
