@@ -257,3 +257,24 @@ class TestEcmWebdav(HttpCase):
         self.assertTrue(self.doc.office_target.startswith(
             "\\\\ecm.exemple.fr@SSL\\DavWWWRoot\\webdav\\aite_ecm\\"))
 
+    def test_17_racine_unc_imposee(self):
+        """Une racine imposée l'emporte sur la déduction depuis web.base.url.
+
+        Windows range « \\\\hôte@8069\\… » en zone « Sites sensibles » : il y
+        lit un « utilisateur@hôte ». Désigner la lettre du lecteur monté
+        contourne ce classement.
+        """
+        self._parametre('web.base.url', 'http://srv-ecm:8069')
+        self._parametre('aite_ecm.office_uri_mode', 'unc')
+        self._parametre('aite_ecm.office_unc_root', 'Z:')
+        self.assertEqual(
+            self.doc.office_target,
+            "Z:\\Juridique et contrats\\%s - Contrat DAV.docx" % self.doc.reference)
+        self.assertTrue(self.doc.office_uri.startswith("ms-word:ofe|u|Z:\\"))
+
+    def test_18_racine_imposee_ignoree_en_mode_url(self):
+        """La racine imposée ne s'applique qu'au mode « unc »."""
+        self._parametre('web.base.url', 'http://srv-ecm:8069')
+        self._parametre('aite_ecm.office_unc_root', 'Z:')
+        self.assertEqual(self.doc.office_target, self.doc.webdav_url)
+

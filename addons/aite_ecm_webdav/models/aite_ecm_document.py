@@ -20,8 +20,9 @@ class AiteEcmDocument(models.Model):
         string="Adresse pour les applications de bureau",
         compute='_compute_webdav_url',
         help="Adresse confiée à Word, Excel, PowerPoint ou LibreOffice : "
-             "l'URL WebDAV, ou le chemin UNC du lecteur réseau Windows selon "
-             "le paramètre système « aite_ecm.office_uri_mode ».")
+             "l'URL WebDAV, ou le chemin du lecteur réseau Windows selon les "
+             "paramètres système « aite_ecm.office_uri_mode » et "
+             "« aite_ecm.office_unc_root ».")
     office_app = fields.Char(string="Application Office", compute='_compute_webdav_url')
     office_uri = fields.Char(string="Ouvrir dans Office", compute='_compute_webdav_url')
 
@@ -59,8 +60,20 @@ class AiteEcmDocument(models.Model):
 
         ``http://hote:8069``  →  ``\\hote@8069\DavWWWRoot\webdav\aite_ecm``
         ``https://hote``      →  ``\\hote@SSL\DavWWWRoot\webdav\aite_ecm``
+
+        Le paramètre système ``aite_ecm.office_unc_root`` prend le pas sur
+        cette déduction : y mettre ``Z:`` désigne le lecteur monté, ce qui
+        évite la zone de sécurité que Windows attribue à ``hote@port``.
         """
-        base = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        settings = self.env['ir.config_parameter'].sudo()
+        # Racine imposée par l'administrateur : lettre du lecteur monté
+        # (« Z: »), ou partage nommé autrement que l'URL publique. Windows
+        # range « \\hote@8069\… » en zone « Sites sensibles » — il y lit un
+        # « utilisateur@hôte » —, ce qu'un chemin de lecteur évite.
+        override = (settings.get_param('aite_ecm.office_unc_root') or '').strip()
+        if override:
+            return override.rstrip('\\/')
+        base = settings.get_param('web.base.url', '')
         parts = urlsplit(base)
         host = parts.hostname or 'localhost'
         port = parts.port
