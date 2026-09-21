@@ -225,3 +225,35 @@ class TestEcmWebdav(HttpCase):
         # Le GET correspondant sert bien ce nombre d'octets.
         self.assertEqual(len(self._dav('GET', chemin).content), attendu)
 
+    def _parametre(self, cle, valeur):
+        self.env['ir.config_parameter'].sudo().set_param(cle, valeur)
+        self.doc.invalidate_recordset()
+
+    def test_14_mode_url_par_defaut(self):
+        """Sans réglage, le bouton sert l'URL WebDAV — inchangé."""
+        self._parametre('web.base.url', 'http://srv-ecm:8069')
+        self.assertEqual(self.doc.office_target, self.doc.webdav_url)
+        self.assertTrue(self.doc.office_uri.startswith(
+            "ms-word:ofe|u|http://srv-ecm:8069/webdav/aite_ecm/"))
+
+    def test_15_mode_unc_pour_une_instance_en_http(self):
+        """Office refuse Basic sur http ; le mode « unc » passe par le lecteur
+        réseau, où c'est Windows qui s'authentifie."""
+        self._parametre('web.base.url', 'http://srv-ecm:8069')
+        self._parametre('aite_ecm.office_uri_mode', 'unc')
+        self.assertEqual(
+            self.doc.office_target,
+            "\\\\srv-ecm@8069\\DavWWWRoot\\webdav\\aite_ecm"
+            "\\Juridique et contrats\\%s - Contrat DAV.docx" % self.doc.reference)
+        self.assertTrue(self.doc.office_uri.startswith(
+            "ms-word:ofe|u|\\\\srv-ecm@8069\\"))
+        # L'adresse affichée sur la fiche reste l'URL : c'est elle qu'on copie.
+        self.assertTrue(self.doc.webdav_url.startswith("http://srv-ecm:8069/"))
+
+    def test_16_mode_unc_en_https(self):
+        """Derrière HTTPS, le partage Windows prend la forme « hôte@SSL »."""
+        self._parametre('web.base.url', 'https://ecm.exemple.fr')
+        self._parametre('aite_ecm.office_uri_mode', 'unc')
+        self.assertTrue(self.doc.office_target.startswith(
+            "\\\\ecm.exemple.fr@SSL\\DavWWWRoot\\webdav\\aite_ecm\\"))
+

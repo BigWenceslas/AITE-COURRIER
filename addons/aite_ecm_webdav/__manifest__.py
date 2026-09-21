@@ -22,7 +22,7 @@ AITE ECM - Lecteur réseau et ouverture dans Office
 
 Compatible Odoo Community.
 """,
-    'version': '18.0.2.3.1',
+    'version': '18.0.2.4.0',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

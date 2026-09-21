@@ -156,6 +156,13 @@ Windows (elle est indépendante de celle du module).
 
 ### Autoriser Word, Excel et PowerPoint
 
+> **Office bloque l'ouverture depuis une instance en `http`.** Le réglage
+> ci-dessous ne suffit pas toujours : les versions récentes de Microsoft 365
+> refusent l'authentification Basic en clair quoi qu'il arrive — « la source
+> utilise une méthode de connexion qui peut être non sécurisée ». Deux issues,
+> décrites au §7 : passer l'instance en **HTTPS** (la bonne), ou faire pointer
+> le bouton vers le **lecteur réseau** plutôt que vers l'URL.
+
 Les applications Office ont **leur propre** interdiction de l'authentification
 Basic sur HTTP, distincte de celle du service WebClient. Sans ce réglage, le
 bouton *Ouvrir dans Office* lance Word, qui échoue aussitôt. En PowerShell
@@ -222,8 +229,46 @@ Scénario manuel pas à pas : [`recette/SCENARIO_WEBDAV.md`](./recette/SCENARIO_
 
 ---
 
+## 7. Quand Office bloque l'ouverture en `http`
+
+Sur une instance en clair, Word peut refuser d'ouvrir le fichier alors que le
+lecteur réseau, lui, fonctionne : c'est Word qui parle HTTP dans le premier
+cas, et Windows dans le second. Deux réponses.
+
+### 7.1 HTTPS — la bonne
+
+Elle lève d'un coup ce blocage, celui du client Windows et la limite de
+taille, et cesse de promener le mot de passe en clair à chaque requête. Un
+reverse proxy suffit ; comptez quelques minutes sur un poste de test :
+[`WEBDAV_HTTPS_WINDOWS.md`](./WEBDAV_HTTPS_WINDOWS.md).
+
+### 7.2 Passer par le lecteur réseau — le dépannage
+
+Si l'instance doit rester en `http`, le bouton peut désigner le **chemin UNC**
+du lecteur au lieu de l'URL. Word ne fait alors plus de requête HTTP : il ouvre
+un fichier sur un lecteur, et c'est Windows qui s'authentifie — ce qui
+fonctionne déjà.
+
+**Paramètres → Technique → Paramètres système**, créer ou modifier :
+
+| Clé | Valeur |
+| --- | --- |
+| `aite_ecm.office_uri_mode` | `unc` |
+
+Le bouton sert alors `\\localhost@8069\DavWWWRoot\webdav\aite_ecm\…`
+au lieu de l'URL. L'adresse WebDAV affichée sur la fiche, elle, reste l'URL.
+
+> **À réserver aux parcs Windows.** Un chemin UNC ne veut rien dire sur macOS
+> ou Linux, et LibreOffice n'a pas le blocage d'Office : pour eux, l'URL est la
+> bonne réponse. C'est pourquoi ce mode se demande explicitement au lieu d'être
+> déduit. Repasser à `url` dès que l'instance est en HTTPS.
+
+---
+
 ## 6. Pour aller plus loin
 
+- [`WEBDAV_HTTPS_WINDOWS.md`](./WEBDAV_HTTPS_WINDOWS.md) — mettre l'espace
+  documentaire en HTTPS : Caddy pour un poste, nginx pour la production.
 - [`addons/aite_ecm_webdav/README.md`](../addons/aite_ecm_webdav/README.md) —
   tutoriel utilisateur ECM : lecteur réseau, *Ouvrir dans Office*, réservations.
 - [`addons/aite_courrier_webdav/docs/WEBDAV.md`](../addons/aite_courrier_webdav/docs/WEBDAV.md) —

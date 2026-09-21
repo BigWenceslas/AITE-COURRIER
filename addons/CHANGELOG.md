@@ -1,5 +1,28 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.9 — Office sur une instance en http : deux issues
+
+Les versions récentes de Microsoft 365 refusent d'ouvrir un document servi en
+`http` avec une authentification Basic — « la source utilise une méthode de
+connexion qui peut être non sécurisée » — et la clé de registre `BasicAuthLevel`
+ne lève plus ce refus. Le même fichier s'ouvre pourtant sans difficulté depuis
+le lecteur réseau, où c'est Windows qui s'authentifie, et non Word.
+
+- **feat(ecm_webdav): mode d'adresse pour les applications de bureau.** Le
+  paramètre système `aite_ecm.office_uri_mode` accepte `url` (défaut,
+  inchangé) ou `unc`. En `unc`, *Ouvrir dans Office* et *Ouvrir dans
+  LibreOffice* désignent le chemin UNC du lecteur réseau
+  (`\\hôte@8069\DavWWWRoot\webdav\aite_ecm\…`, `hôte@SSL` derrière HTTPS)
+  au lieu de l'URL. L'adresse WebDAV affichée sur la fiche reste l'URL. Le
+  mode se demande explicitement plutôt que de se déduire du protocole : un
+  chemin UNC ne veut rien dire sur macOS ou Linux, et LibreOffice n'a pas ce
+  blocage.
+- **docs**: `WEBDAV_HTTPS_WINDOWS.md` — mettre l'instance en HTTPS, qui lève
+  ce blocage et celui du client Windows, avec deux configurations prêtes
+  (`docs/exemples/Caddyfile`, `docs/exemples/nginx-aite-webdav.conf`), le
+  remontage du lecteur en `@SSL` et le retrait des contournements de registre.
+- **test(ecm_webdav)** : mode `url` par défaut, rendu UNC en http et en https.
+
 ## 18.0.2.1.8 — WebDAV : HEAD annonçait un fichier vide
 
 Word s'ouvrait sur une fenêtre sans document, sans message d'erreur. Il

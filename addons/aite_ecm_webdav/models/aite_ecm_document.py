@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -16,6 +16,12 @@ class AiteEcmDocument(models.Model):
     _inherit = 'aite.ecm.document'
 
     webdav_url = fields.Char(string="Adresse WebDAV", compute='_compute_webdav_url')
+    office_target = fields.Char(
+        string="Adresse pour les applications de bureau",
+        compute='_compute_webdav_url',
+        help="Adresse confiée à Word, Excel, PowerPoint ou LibreOffice : "
+             "l'URL WebDAV, ou le chemin UNC du lecteur réseau Windows selon "
+             "le paramètre système « aite_ecm.office_uri_mode ».")
     office_app = fields.Char(string="Application Office", compute='_compute_webdav_url')
     office_uri = fields.Char(string="Ouvrir dans Office", compute='_compute_webdav_url')
 
@@ -24,21 +30,69 @@ class AiteEcmDocument(models.Model):
         base = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
         return "%s/webdav/aite_ecm" % base.rstrip('/')
 
+    @api.model
+    def _office_uri_mode(self):
+        """Forme d'adresse remise aux applications de bureau.
+
+        ``url`` (défaut) sert l'URL WebDAV ; ``unc`` sert le chemin UNC du
+        lecteur réseau Windows.
+
+        Le mode ``unc`` existe pour les instances servies en **http** : Office
+        refuse l'authentification Basic sur une connexion en clair — « Microsoft
+        Office a bloqué l'accès… car la source utilise une méthode de connexion
+        qui peut être non sécurisée » — alors que le même fichier s'ouvre sans
+        difficulté depuis le lecteur réseau, où c'est Windows qui
+        s'authentifie. Il suppose donc un poste **Windows** dont le lecteur est
+        monté : sur un poste macOS ou Linux, et pour LibreOffice qui n'a pas ce
+        blocage, l'URL reste la bonne réponse. D'où un choix explicite plutôt
+        qu'une détection automatique.
+
+        La réponse durable reste **HTTPS**, qui rend ce mode inutile.
+        """
+        mode = self.env['ir.config_parameter'].sudo().get_param(
+            'aite_ecm.office_uri_mode', 'url')
+        return 'unc' if mode == 'unc' else 'url'
+
+    @api.model
+    def _webdav_unc_root(self):
+        r"""Racine WebDAV vue comme un partage réseau Windows.
+
+        ``http://hote:8069``  →  ``\\hote@8069\DavWWWRoot\webdav\aite_ecm``
+        ``https://hote``      →  ``\\hote@SSL\DavWWWRoot\webdav\aite_ecm``
+        """
+        base = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        parts = urlsplit(base)
+        host = parts.hostname or 'localhost'
+        port = parts.port
+        if parts.scheme == 'https':
+            server = host + '@SSL' + ('@%d' % port if port and port != 443 else '')
+        else:
+            server = host + ('@%d' % port if port and port != 80 else '')
+        return '\\\\%s\\DavWWWRoot\\webdav\\aite_ecm' % server
+
     @api.depends('folder_id', 'name', 'reference', 'version_ids')
     def _compute_webdav_url(self):
         service = self.env['aite.ecm.webdav']
         base = self._webdav_base()
+        unc = self._office_uri_mode() == 'unc'
+        unc_root = self._webdav_unc_root() if unc else ''
         for doc in self:
             if not doc.latest_version_id:
                 doc.webdav_url = doc.office_uri = doc.office_app = False
+                doc.office_target = False
                 continue
             path = service.document_path(doc)
             url = "%s/%s" % (base, '/'.join(quote(p) for p in path.split('/')))
             doc.webdav_url = url
+            # L'adresse affichée reste toujours l'URL ; seule celle remise aux
+            # applications de bureau peut prendre la forme UNC.
+            doc.office_target = ('%s\\%s' % (unc_root, path.replace('/', '\\'))
+                                 if unc else url)
             ext = doc.latest_version_id.file_extension
             scheme = next((s for s, exts in OFFICE_SCHEMES.items() if ext in exts), False)
             doc.office_app = OFFICE_LABELS.get(scheme) if scheme else False
-            doc.office_uri = "%s:ofe|u|%s" % (scheme, url) if scheme else False
+            doc.office_uri = ("%s:ofe|u|%s" % (scheme, doc.office_target)
+                              if scheme else False)
 
     def action_open_in_office(self):
         """Ouvre le fichier dans Word / Excel / PowerPoint (édition sur le

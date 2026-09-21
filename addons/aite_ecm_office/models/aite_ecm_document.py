@@ -31,13 +31,13 @@ class AiteEcmDocument(models.Model):
     libreoffice_uri = fields.Char(string="Ouvrir dans LibreOffice",
                                   compute='_compute_libreoffice_uri')
 
-    @api.depends('webdav_url', 'latest_version_id')
+    @api.depends('office_target', 'latest_version_id')
     def _compute_libreoffice_uri(self):
         for doc in self:
             ext = (doc.latest_version_id.file_extension or '').lower()
             doc.libreoffice_uri = (
-                "vnd.libreoffice.command:ofe|u|%s" % doc.webdav_url
-                if doc.webdav_url and ext in OFFICE_EXTENSIONS else False)
+                "vnd.libreoffice.command:ofe|u|%s" % doc.office_target
+                if doc.office_target and ext in OFFICE_EXTENSIONS else False)
 
     def _office_check(self):
         self.ensure_one()

@@ -141,7 +141,9 @@ Promesses non tenues par le code : clé d'API (×3), fichiers temporaires (×2),
 
 Refusés partout (`aite_courrier_webdav/controllers/webdav.py:253`, service `:277`). `COPY` permettrait de créer un document à partir d'un modèle ; le déplacement d'une pièce vers un autre courrier est un reclassement rare. À arbitrer avec le métier.
 
-#### F14 · Aide au montage — S
+#### F14 · Aide au montage — S — *partiellement traité*
+
+**Livré en 18.0.2.1.9** : le mode `unc` et le guide HTTPS lèvent le blocage d'Office sur une instance en clair. Reste la préparation du poste elle-même.
 
 Le premier montage bute sur des réglages du **poste** (service WebClient, `BasicAuthLevel`, `DavWWWRoot`, syntaxe `\\hôte@port\…`) que l'utilisateur ne peut pas deviner — c'est exactement le parcours de cette semaine. Générer depuis Odoo un script `net use` prêt à l'emploi et une page d'instructions par système réduirait ce coût à zéro. En production, HTTPS supprime le réglage de registre.
 

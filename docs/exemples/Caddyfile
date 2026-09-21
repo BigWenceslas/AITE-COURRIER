@@ -1,0 +1,29 @@
+# AITE ECM / AITE Courrier — HTTPS devant Odoo 18, par Caddy.
+#
+# Caddy émet et renouvelle seul un certificat ; pour « localhost » et les noms
+# internes, il se sert de son autorité interne. Deux commandes suffisent :
+#
+#     caddy trust                        (une fois, en administrateur :
+#                                         installe l'autorité dans le magasin
+#                                         de certificats de la machine)
+#     caddy run --config Caddyfile
+#
+# Remplacer « localhost » par le nom du serveur pour une instance partagée.
+
+localhost {
+
+	# Les dépôts WebDAV vont jusqu'à 100 Mo côté ECM, 50 Mo côté courrier.
+	request_body {
+		max_size 100MB
+	}
+
+	# Longpolling et websockets d'Odoo, sur leur port dédié.
+	@websocket path /websocket
+	reverse_proxy @websocket 127.0.0.1:8072
+
+	reverse_proxy 127.0.0.1:8069 {
+		header_up X-Forwarded-Proto {scheme}
+		# Pas de tampon : un GET WebDAV peut peser des dizaines de méga-octets.
+		flush_interval -1
+	}
+}
