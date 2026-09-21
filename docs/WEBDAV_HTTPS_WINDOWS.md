@@ -33,18 +33,39 @@ dans le magasin de la machine — ce qui est exactement ce qui manque avec un
 certificat auto-signé posé à la main : sans autorité de confiance, Word le
 refuse comme il refusait le `http`.
 
-1. Télécharger `caddy_windows_amd64.exe` depuis <https://caddyserver.com/download>,
-   le renommer `caddy.exe`.
-2. Copier [`exemples/Caddyfile`](./exemples/Caddyfile) à côté.
-3. En PowerShell **administrateur**, dans ce dossier :
+1. Télécharger l'exécutable depuis <https://caddyserver.com/download> et le
+   renommer, car il arrive sous le nom de sa plateforme :
 
 ```powershell
-.\caddy.exe trust      # installe l'autorité interne (une seule fois)
-.\caddy.exe run --config Caddyfile
+Rename-Item .\caddy_windows_amd64.exe caddy.exe
 ```
 
-Odoo est alors servi sur `https://localhost`. Laisser la fenêtre ouverte ; pour
-un service permanent, `caddy.exe start` ou l'installation en service Windows.
+2. Copier [`exemples/Caddyfile`](./exemples/Caddyfile) à côté.
+3. **Démarrer Caddy**, en PowerShell **administrateur**, dans ce dossier :
+
+```powershell
+.\caddy.exe run --config .\Caddyfile
+```
+
+Au premier démarrage sur `localhost`, Caddy crée son autorité interne et
+l'installe dans le magasin de certificats de la machine — c'est pour cela
+qu'il faut être administrateur. Laisser cette fenêtre ouverte : Caddy tourne
+tant qu'elle vit.
+
+4. Si le journal n'annonce pas l'installation de l'autorité, la forcer depuis
+   une **seconde** fenêtre administrateur, dans le même dossier :
+
+```powershell
+.\caddy.exe trust
+```
+
+> **`caddy trust` s'adresse à une instance qui tourne déjà**, par son API
+> d'administration (port 2019). Lancé en premier, il échoue sur
+> `dial tcp [::1]:2019 … connexion refusée`. Toujours démarrer avant de faire
+> confiance.
+
+Odoo est alors servi sur `https://localhost`. Pour un service permanent,
+`caddy.exe start` ou l'installation en service Windows.
 
 ---
 
