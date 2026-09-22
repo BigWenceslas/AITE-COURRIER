@@ -4,8 +4,8 @@ Trois niveaux de vérification, complémentaires et tous rejouables :
 
 | Niveau | Ce qu'il éprouve | Outil | Volume |
 | --- | --- | --- | --- |
-| **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **297 tests**, 25 modules |
-| **Recette applicative (UAT)** | parcours réels, dans un vrai navigateur, sous l'identité des rôles | `docs/recette/uat_runner.py` (Playwright) | **17 scénarios**, 45 captures |
+| **Tests unitaires et d'intégration** | règles métier, droits, calculs, contrôleurs HTTP | tests Odoo (`--test-enable`) | **302 tests**, 25 modules |
+| **Recette applicative (UAT)** | parcours réels, dans un vrai navigateur, sous l'identité des rôles | `docs/recette/uat_runner.py` (Playwright) | **18 scénarios**, 49 captures |
 | **Recette des interfaces** | WebDAV, API REST, lien de partage — vus d'un client externe | `docs/recette/uat_interfaces.py` | **18 contrôles** |
 
 Le détail illustré des parcours est dans
@@ -63,13 +63,13 @@ installation et exécution complète.
 | `aite_courrier_base` | 23 | 8 rôles et leurs implications, référentiels, journal d'audit immuable |
 | `aite_courrier_workflow` | 22 | circuits, étapes, transitions, habilitations, éditeur de circuits |
 | `aite_courrier_core` | 13 | cycle de vie, référence `COUR-AAAA-NNNN`, SLA, confidentialité |
-| `aite_courrier_validation` | 16 | valider, retourner, rejeter, commenter, statut suivant le circuit |
+| `aite_courrier_validation` | 17 | valider, retourner, rejeter, commenter, statut suivant le circuit, cachet de traitement |
 | `aite_courrier_ged` | 16 | pièces, versions, verrouillage, contrat d'accès |
 | `aite_courrier_capture` | 9 | passerelle e-mail, pièces jointes filtrées, audit |
 | `aite_courrier_ocr` | 10 | file d'indexation, couche texte PDF, recherche par contenu |
 | `aite_courrier_reponse` | 10 | modèles fusionnés, PDF versionné, courrier sortant, envoi |
 | `aite_courrier_webdav` | 15 | service WebDAV du courrier, contrôle d'accès |
-| `aite_courrier_portal` | 10 | cloisonnement des tiers, dépôt, suivi, pièces à jeton |
+| `aite_courrier_portal` | 14 | cloisonnement des tiers, dépôt multi-fichiers et refus tracés, suivi, pièces à jeton |
 | `aite_courrier` | 3 | tableau de bord (clés de boucle, agrégats) |
 | `aite_ecm_document` | 25 | document, versions, réservation, corbeille, droits, explorateur |
 | `aite_ecm_workflow` | 6 | circuits polymorphes sur les documents |
@@ -91,7 +91,7 @@ installation et exécution complète.
 ## 3. Recette applicative (UAT)
 
 ```bash
-python3 docs/recette/uat_runner.py            # les 17 scénarios
+python3 docs/recette/uat_runner.py            # les 18 scénarios
 python3 docs/recette/uat_runner.py SC01 SC07  # une sélection
 python3 docs/recette/uat_runner.py --head     # navigateur visible
 python3 docs/recette/build_guide.py           # régénère le guide illustré
@@ -121,6 +121,7 @@ trouvées les anomalies du portail et du statut de circuit.
 | SC15 | Portail : dépôt et suivi d'une demande | Tiers externe |
 | SC16 | Vérification d'intégrité d'un document scellé | Archiviste |
 | SC17 | Historique des versions d'un document | Assistant(e) |
+| SC18 | Cachet de traitement d'un courrier clos | Manager |
 
 ---
 

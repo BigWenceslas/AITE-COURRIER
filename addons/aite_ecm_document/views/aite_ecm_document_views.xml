@@ -218,13 +218,21 @@
         <field name="model">aite.ecm.document</field>
         <field name="arch" type="xml">
             <search string="Rechercher un document">
-                <field name="name" string="Référence / Titre"
-                       filter_domain="['|', ('reference', 'ilike', self), ('name', 'ilike', self)]"/>
+                <!-- Recherche par défaut : ce que l'on tape est cherché à la
+                     fois dans la référence, le titre, la description et le
+                     nom du fichier. Un utilisateur qui saisit « COUR-2026 »
+                     ou « contrat.pdf » trouve sans choisir de critère. -->
+                <field name="name" string="Référence, titre, fichier"
+                       filter_domain="['|', '|', '|', ('reference', 'ilike', self), ('name', 'ilike', self), ('description', 'ilike', self), ('file_name', 'ilike', self)]"/>
                 <field name="content_fulltext" string="Contenu des pièces (plein texte)"/>
+                <field name="reference" string="Référence seule"/>
+                <field name="file_name" string="Nom du fichier"/>
+                <field name="description" string="Description"/>
                 <field name="type_id"/>
                 <field name="folder_id"/>
                 <field name="tag_ids"/>
                 <field name="owner_id"/>
+                <field name="confidentiality_id"/>
                 <field name="res_display" string="Enregistrement lié"
                        filter_domain="[('res_model', 'ilike', self)]"/>
                 <filter name="filter_mine" string="Mes documents"
@@ -239,11 +247,17 @@
                 <filter name="filter_no_type" string="Sans type" domain="[('type_id', '=', False)]"/>
                 <filter name="filter_no_version" string="Sans fichier" domain="[('version_ids', '=', False)]"/>
                 <filter name="filter_trashed" string="Corbeille" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_recent" string="Déposés ces 30 jours"
+                        domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_updated" string="Modifiés ces 7 jours"
+                        domain="[('write_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
                 <group expand="0" string="Regrouper par">
                     <filter name="group_type" string="Type" context="{'group_by': 'type_id'}"/>
                     <filter name="group_folder" string="Dossier" context="{'group_by': 'folder_id'}"/>
                     <filter name="group_state" string="Statut" context="{'group_by': 'state'}"/>
                     <filter name="group_owner" string="Propriétaire" context="{'group_by': 'owner_id'}"/>
+                    <filter name="group_confidentiality" string="Confidentialité" context="{'group_by': 'confidentiality_id'}"/>
                     <filter name="group_month" string="Mois de création" context="{'group_by': 'create_date:month'}"/>
                 </group>
                 <searchpanel>

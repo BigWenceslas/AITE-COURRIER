@@ -33,6 +33,32 @@
         </field>
     </record>
 
+    <!-- Recherche ECM : retrouver un document par le courrier dont il vient -->
+    <record id="view_aite_ecm_document_search_courrier" model="ir.ui.view">
+        <field name="name">aite.ecm.document.search.courrier</field>
+        <field name="model">aite.ecm.document</field>
+        <field name="inherit_id" ref="aite_ecm_document.view_aite_ecm_document_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="string">Référence, titre, fichier, courrier</attribute>
+                <attribute name="filter_domain">['|', '|', '|', '|', '|', ('reference', 'ilike', self), ('name', 'ilike', self), ('description', 'ilike', self), ('file_name', 'ilike', self), ('courrier_reference', 'ilike', self), ('courrier_sender', 'ilike', self)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='res_display']" position="after">
+                <field name="courrier_reference" string="Référence du courrier"/>
+                <field name="courrier_sender" string="Expéditeur du courrier"/>
+            </xpath>
+            <xpath expr="//filter[@name='filter_no_type']" position="before">
+                <filter name="filter_from_courrier" string="Issus du courrier"
+                        domain="[('courrier_piece_id', '!=', False)]"/>
+                <separator/>
+            </xpath>
+            <xpath expr="//filter[@name='group_owner']" position="after">
+                <filter name="group_courrier_sender" string="Expéditeur du courrier"
+                        context="{'group_by': 'courrier_sender'}"/>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Pièce de courrier : lien vers son jumeau ECM -->
     <record id="view_document_form_ecm_bridge" model="ir.ui.view">
         <field name="name">aite.courrier.document.form.ecm.bridge</field>

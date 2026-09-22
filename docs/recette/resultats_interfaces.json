@@ -1,6 +1,6 @@
 {
   "base_url": "http://localhost:8169",
-  "date": "2026-09-14 16:18:15",
+  "date": "2026-09-16 10:00:30",
   "controles": [
     {
       "famille": "WebDAV",
@@ -54,19 +54,19 @@
       "famille": "API",
       "libelle": "Recherche de documents",
       "statut": "ok",
-      "constat": "253 document(s) au total, page de 5"
+      "constat": "254 document(s) au total, page de 5"
     },
     {
       "famille": "API",
       "libelle": "Fiche d'un document",
       "statut": "ok",
-      "constat": "DOC-2026-00350 — Procédure de recette AITE ECM"
+      "constat": "DOC-2026-00356 — Procédure de recette AITE ECM"
     },
     {
       "famille": "API",
       "libelle": "Création d'un document avec fichier",
       "statut": "ok",
-      "constat": "créé DOC-2026-00351"
+      "constat": "créé DOC-2026-00357"
     },
     {
       "famille": "API",
@@ -96,13 +96,13 @@
       "famille": "Partage",
       "libelle": "Page publique du lien",
       "statut": "ok",
-      "constat": "page d'accueil servie (1584 octets), sans authentification"
+      "constat": "page d'accueil servie (1583 octets), sans authentification"
     },
     {
       "famille": "Partage",
       "libelle": "Téléchargement du fichier partagé",
       "statut": "ok",
-      "constat": "2559 octets, application/pdf"
+      "constat": "2146 octets, application/pdf"
     },
     {
       "famille": "Partage",

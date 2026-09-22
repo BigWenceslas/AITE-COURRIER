@@ -35,6 +35,7 @@ aite_courrier_portal,aite_ecm_demo --load-language=fr_FR --stop-after-init
 # 3. Parcours utilisateur + guide illustré
 python3 docs/recette/uat_runner.py
 python3 docs/recette/build_guide.py
+python3 docs/recette/build_pdf.py       # guide illustré au format PDF
 
 # 4. Interfaces techniques
 python3 docs/recette/uat_interfaces.py --api-key <clé> --share-url <lien>
