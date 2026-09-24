@@ -39,6 +39,8 @@ pas dans le lecteur réseau.
 | Déplacer vers un autre dossier | document **reclassé** (ECM uniquement) |
 | Supprimer un fichier | **corbeille** côté ECM, suppression côté courrier |
 | Créer un dossier | dossier de classement ECM ; **refusé** côté courrier (`403`) |
+| Renommer ou déplacer un dossier | dossier de classement **renommé** ou **reclassé**, avec toute sa branche (ECM) |
+| Supprimer un dossier | dossier **archivé** s'il est vide (ECM) ; **refusé** (`409`) s'il contient encore des documents |
 
 ### Nommage et limites
 
@@ -260,7 +262,7 @@ fonctionne déjà.
 | --- | --- |
 | `aite_ecm.office_uri_mode` | `unc` |
 
-Le bouton sert alors `\\localhost@8069\DavWWWRoot\webdav\aite_ecm\…`
+Le bouton sert alors `\\localhost@8069\webdav\aite_ecm\…`
 au lieu de l'URL. L'adresse WebDAV affichée sur la fiche, elle, reste l'URL.
 
 **Si Office répond « ce fichier provient d'un site de la zone Sites

@@ -236,7 +236,8 @@ donne un **numéro d'erreur** au lieu de boucler en silence.
 | --- | --- | --- |
 | 1244 | identifiants non envoyés | service WebClient arrêté |
 | 1326 | refusés par Odoo | mauvais identifiant, ou `db_name` absent (§2) |
-| 67 | serveur non reconnu comme WebDAV | essayer `\\localhost@SSL\DavWWWRoot\webdav\aite_ecm` |
+| 5 | accès refusé | chemin avec `DavWWWRoot` : l'ôter (`\\localhost@SSL\webdav\aite_ecm`) ; sinon mot de passe refusé par Odoo (tester avec `curl`, §7) |
+| 67 | serveur non reconnu comme WebDAV | service WebClient arrêté, ou faute dans le chemin |
 | 1219 | connexion déjà en mémoire | `net use X: /delete` puis recommencer |
 
 ✅ **Vérification** — `X:` et `W:` apparaissent dans *Ce PC*. Ouvrir `X:` :
@@ -286,6 +287,8 @@ Ce qu'il faut savoir en manipulant le lecteur :
 | Déplacer vers un autre dossier | document reclassé (ECM) |
 | Supprimer | corbeille (ECM), suppression (courrier) |
 | Créer un dossier | dossier de classement (ECM) ; refusé côté courrier |
+| Renommer ou déplacer un dossier | dossier renommé ou reclassé, avec sa branche (ECM) |
+| Supprimer un dossier | archivé s'il est vide (ECM) ; refusé s'il contient des documents |
 
 L'ECM republie chaque fichier sous `RÉFÉRENCE - Titre.ext`. Un fichier que vous
 venez de déposer sous `contrat.docx` réapparaît donc en

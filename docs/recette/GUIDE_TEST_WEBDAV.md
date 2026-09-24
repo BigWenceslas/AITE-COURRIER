@@ -126,9 +126,11 @@ tout passe, `1` si un contrôle échoue, `2` si le serveur est injoignable.
 
 ## 5. Limites connues
 
-- **ECM, `MKCOL`.** Créer une collection crée un vrai dossier de classement,
-  que WebDAV ne sait pas supprimer ensuite : ce contrôle n'est joué qu'avec
-  `--strict`.
+- **ECM, dossiers.** Créer une collection crée un vrai dossier de classement :
+  ce contrôle n'est joué qu'avec `--strict`, qui crée le dossier, le renomme
+  (`MOVE`) puis le supprime (`DELETE`). Un dossier supprimé au lecteur réseau
+  est **archivé**, pas détruit : il reste visible dans le plan de classement
+  avec le filtre *Archivés*.
 - **`LOCK` côté courrier** est consultatif (jeton non persisté) : la vraie
   protection en écriture reste `is_locked`, qui renvoie `423` au `PUT`.
 - **Corrigé en 18.0.2.0.2 (ECM).** Un dépôt au format refusé laissait un

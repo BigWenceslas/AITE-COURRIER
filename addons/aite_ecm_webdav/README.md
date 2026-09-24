@@ -169,7 +169,9 @@ Le volume apparaît dans la barre latérale.
 | Renommer un fichier | le **titre** du document change (la référence, jamais) |
 | Déplacer vers un autre dossier | le document est **reclassé** |
 | Supprimer un fichier | le document part à la **corbeille** (restaurable) |
-| Créer un dossier | un **dossier de classement** est créé |
+| Créer un dossier | un **dossier de classement** est créé (managers, archivistes, administrateurs) |
+| Renommer ou déplacer un dossier | le dossier est **renommé** ou **reclassé**, avec toute sa branche |
+| Supprimer un dossier | le dossier est **archivé** s'il est vide ; refusé s'il contient encore des documents |
 | Fichiers `~$…`, `.~lock…`, `.tmp` | ignorés : ce sont les verrous temporaires des suites bureautiques |
 
 Deux comportements méritent une explication :

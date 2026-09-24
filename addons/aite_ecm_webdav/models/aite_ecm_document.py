@@ -58,8 +58,14 @@ class AiteEcmDocument(models.Model):
     def _webdav_unc_root(self):
         r"""Racine WebDAV vue comme un partage réseau Windows.
 
-        ``http://hote:8069``  →  ``\\hote@8069\DavWWWRoot\webdav\aite_ecm``
-        ``https://hote``      →  ``\\hote@SSL\DavWWWRoot\webdav\aite_ecm``
+        ``http://hote:8069``  →  ``\\hote@8069\webdav\aite_ecm``
+        ``https://hote``      →  ``\\hote@SSL\webdav\aite_ecm``
+
+        Sans ``DavWWWRoot`` : avec ce mot-clé, le client WebDAV de Windows
+        interroge d'abord la racine du site — chez Odoo, la page de
+        connexion, pas un dossier WebDAV — et renonce (« Erreur système 5 »,
+        constaté au montage sur une instance Windows) ; le même chemin sans
+        lui se monte et s'ouvre.
 
         Le paramètre système ``aite_ecm.office_unc_root`` prend le pas sur
         cette déduction : y mettre ``Z:`` désigne le lecteur monté, ce qui
@@ -81,7 +87,7 @@ class AiteEcmDocument(models.Model):
             server = host + '@SSL' + ('@%d' % port if port and port != 443 else '')
         else:
             server = host + ('@%d' % port if port and port != 80 else '')
-        return '\\\\%s\\DavWWWRoot\\webdav\\aite_ecm' % server
+        return '\\\\%s\\webdav\\aite_ecm' % server
 
     @api.depends('folder_id', 'name', 'reference', 'version_ids')
     def _compute_webdav_url(self):

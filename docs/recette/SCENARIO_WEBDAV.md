@@ -76,6 +76,9 @@ internes, `$REF` = la référence du courrier créé en 1.2.
 | 4.6 | Modifier et **Enregistrer** dans Word (alice) | une **nouvelle version** apparaît dans l'ECM, au nom d'alice | ☐ |
 | 4.7 | Fermer Word | la **réservation est libérée** | ☐ |
 | 4.8 | Depuis la fiche ECM, bouton **Ouvrir dans Office** | Word s'ouvre sur le même document, sans passer par le lecteur | ☐ |
+| 4.9 | Avec un compte **Manager**, dans `X:\Juridique et contrats\` : *Nouveau dossier*, le nommer `Essai` | le dossier s'appelle `Essai` dans l'Explorateur **et** dans le plan de classement d'Odoo | ☐ |
+| 4.10 | Supprimer ce dossier vide dans l'Explorateur | il disparaît du lecteur ; dans Odoo, il est **archivé** (filtre *Archivés*) | ☐ |
+| 4.11 | Tenter de supprimer `X:\Juridique et contrats\` | refus : le dossier contient des documents | ☐ |
 
 > Les fichiers temporaires de Word (`~$…`, `.~lock…`, `.tmp`) sont ignorés :
 > ils ne doivent **jamais** produire de document fantôme dans l'ECM.
@@ -137,7 +140,7 @@ internes, `$REF` = la référence du courrier créé en 1.2.
 | Montage du lecteur réseau Windows | 2.1 – 2.4 | ☐ |
 | Dépôt → création de document | 3.1, 4.1 | ☐ |
 | Versionnage par simple enregistrement | 3.4, 4.6 | ☐ |
-| Renommage, suppression, création de dossier | 3.5 – 3.7 | ☐ |
+| Renommage, suppression, création de dossier | 3.5 – 3.7, 4.9 – 4.11 | ☐ |
 | Réservation Office ↔ verrou ECM | 4.4 – 4.7 | ☐ |
 | Confidentialité héritée | 5.1 – 5.5 | ☐ |
 | Verrouillage des documents finalisés | 6.1 – 6.4 | ☐ |

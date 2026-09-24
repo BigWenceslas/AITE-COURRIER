@@ -42,7 +42,13 @@ class AiteEcmWebdavController(http.Controller):
         if not handler:
             return Response(status=405, headers=[('Allow', ALLOW)])
         try:
-            return handler(unquote(subpath).strip('/'))
+            # Un refus ne doit rien laisser derrière lui. Les erreurs sont
+            # converties en réponses HTTP, si bien qu'Odoo valide ensuite la
+            # transaction : sans ce point de sauvegarde, une écriture refusée
+            # par une contrainte (un dossier déplacé dans sa propre
+            # descendance) restait en base malgré le 403.
+            with request.env.cr.savepoint():
+                return handler(unquote(subpath).strip('/'))
         except WebdavError as exc:
             return Response(exc.message or '', status=exc.status,
                             content_type='text/plain; charset=utf-8')
@@ -98,6 +104,13 @@ class AiteEcmWebdavController(http.Controller):
         if not uid:
             return False
         request.update_env(user=uid)
+        # Toujours la langue du compte. Odoo la pose quand il vérifie le mot
+        # de passe, mais pas quand l'identité vient du cache : les requêtes
+        # suivantes tombaient en anglais. Or les noms de dossiers sont
+        # traduisibles — un dossier renommé depuis l'Explorateur s'écrivait
+        # dans une langue et se relisait dans l'autre, et l'application en
+        # français gardait l'ancien nom.
+        request.update_context(lang=request.env.user.lang or 'en_US')
         return True
 
     def _service(self):

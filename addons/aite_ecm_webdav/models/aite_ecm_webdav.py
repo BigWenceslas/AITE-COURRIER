@@ -54,6 +54,16 @@ class WebdavBadRequest(WebdavError):
     status = 400
 
 
+class WebdavNotAllowed(WebdavError):
+    """``MKCOL`` sur un nom déjà pris (RFC 4918, § 9.3.1)."""
+    status = 405
+
+
+class WebdavPreconditionFailed(WebdavError):
+    """``MOVE`` vers un nom de dossier déjà pris : on ne fusionne jamais."""
+    status = 412
+
+
 def sanitize(name):
     return _FORBIDDEN.sub('_', (name or '').strip()).strip('. ') or 'sans_nom'
 
@@ -99,6 +109,33 @@ class AiteEcmWebdav(models.AbstractModel):
                 raise WebdavNotFound()
             current = match
         return current
+
+    @api.model
+    def _folder_target(self, path):
+        """Dossier de classement désigné par ``path``, ou ``None``.
+
+        ``MOVE`` et ``DELETE`` visent un document **ou** un dossier : on
+        cherche d'abord un dossier, puisqu'un nom de fichier servi porte
+        toujours la référence du document (« RÉF - Titre.ext »). La racine et
+        « Sans classement » sont des repères, pas des dossiers : 403.
+        """
+        segments = self._split(path)
+        if not segments or segments == [UNFILED]:
+            raise WebdavForbidden(
+                _("La racine et « Sans classement » ne se modifient pas."))
+        try:
+            folder = self._folder_by_segments(segments)
+        except WebdavNotFound:
+            return None
+        return folder or None
+
+    @api.model
+    def _sibling(self, parent, name, exclude=None):
+        """Dossier actif nommé ``name`` sous ``parent`` (``False`` = racine)."""
+        siblings = self.env['aite.ecm.folder'].search(
+            [('parent_id', '=', parent.id if parent else False)])
+        return siblings.filtered(
+            lambda f: f != exclude and self._folder_segment(f) == name)[:1]
 
     @api.model
     def _documents_in(self, folder):
@@ -323,6 +360,9 @@ class AiteEcmWebdav(models.AbstractModel):
         return doc
 
     def delete(self, path):
+        folder = self._folder_target(path)
+        if folder:
+            return self._delete_folder(folder)
         _folder, doc = self._resolve_file(path)
         try:
             doc.with_context(audit_source='webdav').action_trash()
@@ -330,6 +370,9 @@ class AiteEcmWebdav(models.AbstractModel):
             raise WebdavForbidden(str(exc))
 
     def move(self, source, destination):
+        folder = self._folder_target(source)
+        if folder:
+            return self._move_folder(folder, destination)
         _folder, doc = self._resolve_file(source)
         dest = self._split(destination)
         if len(dest) < 2:
@@ -361,8 +404,81 @@ class AiteEcmWebdav(models.AbstractModel):
         parent = self._folder_by_segments(segments[:-1])
         if _is_unfiled(parent):
             raise WebdavForbidden()
+        if self._sibling(parent, segments[-1]) \
+                or (not parent and segments[-1] == UNFILED):
+            raise WebdavNotAllowed(
+                _("Un dossier « %s » existe déjà ici.", segments[-1]))
         try:
             return self.env['aite.ecm.folder'].create({
                 'name': segments[-1], 'parent_id': parent.id if parent else False})
         except AccessError as exc:
             raise WebdavForbidden(str(exc))
+
+    # ------------------------------------------------------------------ #
+    # Dossiers : renommer, déplacer, supprimer
+    # ------------------------------------------------------------------ #
+    def _move_folder(self, folder, destination):
+        """Renomme et/ou déplace un dossier de classement.
+
+        C'est le second temps de toute création de dossier depuis
+        l'Explorateur Windows : il crée « Nouveau dossier » (``MKCOL``), puis le
+        renomme aussitôt (``MOVE``). Sans ce geste, un dossier créé au lecteur
+        réseau garde son nom provisoire — « Impossible de lire à partir du
+        fichier ou de la disquette source ».
+
+        Un nom déjà pris à la destination est refusé (412) : deux dossiers
+        homonymes ne seraient plus adressables, et fusionner deux branches du
+        plan de classement n'est pas un geste de lecteur réseau.
+        """
+        dest = self._split(destination)
+        if not dest or dest == [UNFILED]:
+            raise WebdavForbidden()
+        try:
+            parent = self._folder_by_segments(dest[:-1])
+        except WebdavNotFound:
+            # RFC 4918 : collection parente de la destination absente → 409.
+            raise WebdavConflict()
+        if _is_unfiled(parent):
+            raise WebdavForbidden(
+                _("« Sans classement » ne contient pas de dossiers."))
+        name = dest[-1]
+        if self._sibling(parent, name, exclude=folder) \
+                or (not parent and name == UNFILED):
+            raise WebdavPreconditionFailed(
+                _("Un dossier « %s » existe déjà ici.", name))
+        vals = {}
+        if name != self._folder_segment(folder):
+            vals['name'] = name
+        parent_id = parent.id if parent else False
+        if parent_id != folder.parent_id.id:
+            vals['parent_id'] = parent_id
+        if vals:
+            try:
+                folder.write(vals)
+            except (AccessError, UserError) as exc:
+                # UserError couvre la ValidationError d'un dossier déplacé
+                # dans sa propre descendance.
+                raise WebdavForbidden(str(exc))
+        return folder
+
+    def _delete_folder(self, folder):
+        """``DELETE`` d'un dossier : archivé s'il est vide, refusé sinon.
+
+        Rien ne disparaît au lecteur réseau : un document part à la corbeille,
+        un dossier est archivé — restaurable depuis l'application. Un dossier
+        qui contient encore des documents actifs ou des sous-dossiers est
+        refusé (409), y compris ceux que l'utilisateur ne voit pas : le
+        comptage se fait en ``sudo``. L'Explorateur supprime une arborescence
+        de bas en haut — fichiers, puis dossiers vidés —, ce qui passe.
+        """
+        Document = self.env['aite.ecm.document'].sudo()
+        Folder = self.env['aite.ecm.folder'].sudo()
+        if Document.search_count([('folder_id', '=', folder.id)]) \
+                or Folder.search_count([('parent_id', '=', folder.id)]):
+            raise WebdavConflict(
+                _("Le dossier « %s » n'est pas vide.", folder.name))
+        try:
+            folder.write({'active': False})
+        except (AccessError, UserError) as exc:
+            raise WebdavForbidden(str(exc))
+        return folder

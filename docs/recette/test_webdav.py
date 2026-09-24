@@ -15,7 +15,9 @@ Racines testées (détectées automatiquement, cf. ``--root``) :
     /webdav/aite_ecm        module aite_ecm_webdav (plan de classement ECM)
 
 Le script ne crée ni courrier ni dossier de classement : il travaille dans une
-collection existante et supprime ce qu'il y dépose (sauf ``--keep``).
+collection existante et supprime ce qu'il y dépose (sauf ``--keep``). Avec
+``--strict``, il crée aussi un dossier ECM, le renomme puis le supprime : le
+dossier reste archivé dans l'ECM.
 Bibliothèque standard uniquement, Python 3.8+.
 
 Code de sortie : 0 si tout passe, 1 si au moins un contrôle échoue, 2 si le
@@ -419,8 +421,20 @@ def phase_file(dav, report, kind, collection, keep=False, strict=False):
             new_name = resolve_name(dav, collection, renamed) or renamed
             old_path, path = path, '%s/%s' % (collection, new_name)
             created.append(path)
-            expect(report, 'l\'ancien nom ne répond plus → 404',
-                   dav.call('GET', old_path), 404)
+            if kind == 'ecm':
+                # L'ECM retrouve un document par la référence en tête du nom
+                # (Office réenregistre parfois sous un autre nom) : l'ancien
+                # chemin, qui la porte, désigne donc toujours le document. Ce
+                # qui compte pour l'utilisateur, c'est le listage.
+                _reply, after = dav.listing(collection, depth='1')
+                old_name = old_path.rsplit('/', 1)[-1]
+                report.check('l\'ancien nom a disparu du listage',
+                             not any(r['name'] == old_name for r in after[1:]),
+                             detail='noms listés : %s'
+                                    % ', '.join(r['name'] or '?' for r in after[1:]))
+            else:
+                expect(report, 'l\'ancien nom ne répond plus → 404',
+                       dav.call('GET', old_path), 404)
             expect(report, 'le nouveau nom répond → 200',
                    dav.call('GET', path), 200)
 
@@ -460,11 +474,21 @@ def phase_file(dav, report, kind, collection, keep=False, strict=False):
             expect(report, 'MKCOL → %d' % wanted,
                    dav.call('MKCOL', mkcol_path), wanted)
             if wanted == 201:
-                report.note('dossier de classement « %s-dossier » créé : '
-                            'à supprimer depuis l\'ECM' % BASENAME)
+                # Ce que fait l'Explorateur pour tout nouveau dossier : il le
+                # crée sous un nom provisoire, puis le renomme aussitôt.
+                renamed = '%s/%s-dossier-renomme' % (collection, BASENAME)
+                expect(report, 'MOVE du dossier (renommage) → 201',
+                       dav.call('MOVE', mkcol_path, headers={
+                           'Destination': dav.url_for(renamed),
+                           'Overwrite': 'F'}), 201)
+                expect(report, 'DELETE du dossier vide → 204',
+                       dav.call('DELETE', renamed), 204)
+                report.note('dossier « %s-dossier-renomme » archivé dans '
+                            'l\'ECM (plan de classement, filtre Archivés)'
+                            % BASENAME)
         else:
-            report.skip('MKCOL', 'créerait un dossier de classement '
-                                 'non supprimable en WebDAV (cf. --strict)')
+            report.skip('MKCOL', 'créerait puis archiverait un dossier de '
+                                 'classement (cf. --strict)')
     finally:
         if keep:
             report.note('--keep : %s laissé(s) en place'
@@ -568,8 +592,9 @@ def main(argv=None):
     parser.add_argument('--keep', action='store_true',
                         help="ne pas supprimer le fichier déposé (inspection manuelle)")
     parser.add_argument('--strict', action='store_true',
-                        help="inclure MKCOL côté ECM, qui crée un dossier de "
-                             "classement que WebDAV ne sait pas supprimer")
+                        help="inclure les dossiers côté ECM : MKCOL, renommage "
+                             "(MOVE) puis suppression — le dossier de test "
+                             "reste archivé dans l'ECM")
     parser.add_argument('--no-verify', action='store_true',
                         help="ne pas vérifier le certificat TLS — instance "
                              "locale servie par une autorité interne")

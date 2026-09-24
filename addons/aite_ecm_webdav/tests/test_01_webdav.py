@@ -4,6 +4,7 @@ from datetime import timedelta
 from urllib.parse import quote
 
 from odoo import fields
+from odoo.addons.aite_courrier_base.tools import webdav_auth
 from odoo.tests import HttpCase, tagged
 
 DOCX = base64.b64encode(b"PK\x03\x04 fake docx v1")
@@ -243,7 +244,7 @@ class TestEcmWebdav(HttpCase):
         self._parametre('aite_ecm.office_uri_mode', 'unc')
         self.assertEqual(
             self.doc.office_target,
-            "\\\\srv-ecm@8069\\DavWWWRoot\\webdav\\aite_ecm"
+            "\\\\srv-ecm@8069\\webdav\\aite_ecm"
             "\\Juridique et contrats\\%s - Contrat DAV.docx" % self.doc.reference)
         self.assertTrue(self.doc.office_uri.startswith(
             "ms-word:ofe|u|\\\\srv-ecm@8069\\"))
@@ -255,7 +256,7 @@ class TestEcmWebdav(HttpCase):
         self._parametre('web.base.url', 'https://ecm.exemple.fr')
         self._parametre('aite_ecm.office_uri_mode', 'unc')
         self.assertTrue(self.doc.office_target.startswith(
-            "\\\\ecm.exemple.fr@SSL\\DavWWWRoot\\webdav\\aite_ecm\\"))
+            "\\\\ecm.exemple.fr@SSL\\webdav\\aite_ecm\\"))
 
     def test_17_racine_unc_imposee(self):
         """Une racine imposée l'emporte sur la déduction depuis web.base.url.
@@ -278,3 +279,141 @@ class TestEcmWebdav(HttpCase):
         self._parametre('aite_ecm.office_unc_root', 'Z:')
         self.assertEqual(self.doc.office_target, self.doc.webdav_url)
 
+
+    # ------------------------------------------------------------------ #
+    # Dossiers depuis l'Explorateur : créer, renommer, déplacer, supprimer
+    # ------------------------------------------------------------------ #
+    def _manager(self, lang=None):
+        """Compte habilité à gérer le plan de classement (création,
+        renommage, archivage des dossiers)."""
+        if lang:
+            self.env['res.lang']._activate_lang(lang)
+        return self.env['res.users'].with_context(no_reset_password=True).create({
+            'name': "Manager DAV", 'login': "dav_manager",
+            'email': "dav_manager@aite.test", 'password': "dav_manager_pwd",
+            'lang': lang or 'en_US',
+            'groups_id': [(6, 0, [self.env.ref(
+                'aite_courrier_base.group_manager').id])]})
+
+    def _mgr(self, method, path, **kwargs):
+        return self._dav(method, path, user="dav_manager",
+                         password="dav_manager_pwd", **kwargs)
+
+    def _destination(self, path):
+        return self.base_url() + '/webdav/aite_ecm/' + '/'.join(
+            quote(p) for p in path.split('/'))
+
+    def test_19_nouveau_dossier_depuis_l_explorateur(self):
+        """L'Explorateur crée « Nouveau dossier », puis le renomme aussitôt.
+
+        Un MOVE refusé sur le dossier laissait « Impossible de lire à partir
+        du fichier ou de la disquette source » : aucun dossier ne pouvait
+        prendre d'autre nom que le nom provisoire. Joué avec un compte en
+        français, la langue de l'instance où l'anomalie a été relevée.
+        """
+        self._manager(lang='fr_FR')
+        provisoire = "Juridique et contrats/Nouveau dossier"
+        self.assertEqual(self._mgr('MKCOL', provisoire).status_code, 201)
+        resp = self._mgr('MOVE', provisoire, headers={
+            'Destination': self._destination("Juridique et contrats/FOLDER"),
+            'Overwrite': 'F'})
+        self.assertEqual(resp.status_code, 201,
+                         "le renommage d'un dossier est refusé")
+
+        resp = self._mgr('PROPFIND', "Juridique et contrats", headers={'Depth': '1'})
+        self.assertIn("<D:displayname>FOLDER</D:displayname>", resp.text)
+        self.assertNotIn("Nouveau dossier", resp.text)
+        resp = self._mgr('PROPFIND', "Juridique et contrats/FOLDER",
+                         headers={'Depth': '0'})
+        self.assertEqual(resp.status_code, 207)
+        # Même réponse quand l'identité ne vient plus du cache : chaque
+        # requête s'exécute dans la langue du compte, sans quoi le dossier
+        # reprenait son ancien nom une fois sur deux.
+        webdav_auth.forget_all()
+        resp = self._mgr('PROPFIND', "Juridique et contrats", headers={'Depth': '1'})
+        self.assertIn("<D:displayname>FOLDER</D:displayname>", resp.text)
+        self.assertNotIn("Nouveau dossier", resp.text)
+
+        # et l'application, en français, affiche le nouveau nom
+        folder = self.env['aite.ecm.folder'].search(
+            [('parent_id', '=', self.folder.id)]).filtered(
+            lambda f: f.with_context(lang='fr_FR').name == "FOLDER")
+        self.assertEqual(len(folder), 1)
+
+    def test_20_deplacer_un_dossier(self):
+        """MOVE d'un dossier : reclassement, et trois refus explicites."""
+        self._manager()
+        self.assertEqual(self._mgr('MKCOL', "Juridique et contrats/Baux").status_code, 201)
+        self.assertEqual(
+            self._mgr('MKCOL', "Juridique et contrats/Baux/Commerciaux").status_code, 201)
+
+        resp = self._mgr('MOVE', "Juridique et contrats/Baux", headers={
+            'Destination': self._destination("Direction générale/Baux")})
+        self.assertEqual(resp.status_code, 201)
+        baux = self.env['aite.ecm.folder'].search([('name', '=', "Baux")])
+        self.assertEqual(baux.parent_id, self.env.ref('aite_ecm_document.folder_direction'))
+        resp = self._mgr('PROPFIND', "Direction générale/Baux/Commerciaux",
+                         headers={'Depth': '0'})
+        self.assertEqual(resp.status_code, 207, "la branche suit son dossier")
+
+        # dans sa propre descendance : refus, rien ne bouge
+        resp = self._mgr('MOVE', "Direction générale/Baux", headers={
+            'Destination': self._destination("Direction générale/Baux/Commerciaux/Baux")})
+        self.assertEqual(resp.status_code, 403)
+        # sur un nom déjà pris : jamais de fusion
+        resp = self._mgr('MOVE', "Direction générale/Baux", headers={
+            'Destination': self._destination("Juridique et contrats")})
+        self.assertEqual(resp.status_code, 412)
+        # vers un dossier qui n'existe pas
+        resp = self._mgr('MOVE', "Direction générale/Baux", headers={
+            'Destination': self._destination("Inconnu/Baux")})
+        self.assertEqual(resp.status_code, 409)
+        # « Sans classement » ne contient que des documents
+        resp = self._mgr('MOVE', "Direction générale/Baux", headers={
+            'Destination': self._destination("Sans classement/Baux")})
+        self.assertEqual(resp.status_code, 403)
+        baux.invalidate_recordset()
+        self.assertEqual(baux.parent_id, self.env.ref('aite_ecm_document.folder_direction'))
+
+    def test_21_supprimer_un_dossier(self):
+        """DELETE d'un dossier : archivé s'il est vide, refusé sinon.
+
+        L'Explorateur supprime une arborescence de bas en haut : les fichiers
+        (corbeille), puis le dossier vidé — qui doit alors passer.
+        """
+        self._manager()
+        chemin = "Juridique et contrats/Temporaire"
+        self.assertEqual(self._mgr('MKCOL', chemin).status_code, 201)
+        resp = self._mgr('PUT', chemin + "/Brouillon.docx", data=base64.b64decode(DOCX))
+        self.assertEqual(resp.status_code, 201)
+
+        self.assertEqual(self._mgr('DELETE', chemin).status_code, 409,
+                         "un dossier non vide ne se supprime pas")
+        doc = self.env['aite.ecm.document'].search([('name', '=', "Brouillon")])
+        resp = self._mgr('DELETE', "%s/%s - Brouillon.docx" % (chemin, doc.reference))
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(self._mgr('DELETE', chemin).status_code, 204)
+
+        folder = self.env['aite.ecm.folder'].with_context(active_test=False).search(
+            [('name', '=', "Temporaire")])
+        self.assertTrue(folder.exists(), "rien ne disparaît : le dossier est archivé")
+        self.assertFalse(folder.active)
+        resp = self._mgr('PROPFIND', "Juridique et contrats", headers={'Depth': '1'})
+        self.assertNotIn("Temporaire", resp.text)
+
+        # un dossier qui contient encore des documents reste refusé
+        self.assertEqual(self._mgr('DELETE', "Juridique et contrats").status_code, 409)
+        # la racine et « Sans classement » ne sont pas des dossiers
+        self.assertEqual(self._mgr('DELETE', "Sans classement").status_code, 403)
+
+    def test_22_dossiers_et_droits(self):
+        """Nom déjà pris et compte sans droit sur le plan de classement."""
+        self._manager()
+        resp = self._mgr('MKCOL', "Juridique et contrats")
+        self.assertEqual(resp.status_code, 405, "MKCOL sur un nom déjà pris")
+        self.assertEqual(self._mgr('MKCOL', "Juridique et contrats/Agents").status_code, 201)
+        # un agent lit le plan de classement mais ne le modifie pas
+        resp = self._dav('MOVE', "Juridique et contrats/Agents", headers={
+            'Destination': self._destination("Juridique et contrats/Renommé")})
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(self._dav('DELETE', "Juridique et contrats/Agents").status_code, 403)

@@ -69,7 +69,7 @@ L'ECM apporte en outre son propre **explorateur de fichiers**, disponible en Com
 | Arborescence | un dossier par courrier référencé, dernière version de chaque pièce | le plan de classement, plus « Sans classement » ; fichiers `RÉFÉRENCE - Titre.ext` |
 | Lecture / dépôt | lecture ; `PUT` = nouvelle version, ou nouveau document sur un nom libre | idem ; création depuis l'Explorateur Windows prise en charge (verrou posé sur un nom encore inexistant, conformément à la RFC 4918) |
 | Renommage / déplacement | renommage au sein du courrier | renommage = titre, déplacement = reclassement |
-| Dossiers (`MKCOL`) | refusé (`403`) | crée un dossier de classement (Manager, Archiviste, Administrateur) |
+| Dossiers (`MKCOL`, `MOVE`, `DELETE`) | création refusée (`403`) | création, renommage et déplacement (Manager, Archiviste, Administrateur) ; suppression = archivage d'un dossier vide |
 | Suppression (`DELETE`) | définitive (voir *Limites connues*) | corbeille |
 | Verrou (`LOCK`) | consultatif | devient une **réservation** ECM, libérée à l'`UNLOCK` ou à l'expiration |
 | Métadonnées | `getlastmodified` sur fichiers et dossiers ; `HEAD` annonce la taille réelle | idem, plus `ETag` |

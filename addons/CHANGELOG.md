@@ -1,5 +1,54 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.11 — WebDAV ECM : les dossiers depuis l'Explorateur
+
+Sur l'instance Windows, créer un dossier dans le lecteur ECM échouait au
+moment de le nommer : « Impossible de lire à partir du fichier ou de la
+disquette source ». L'Explorateur crée toujours un dossier sous le nom
+« Nouveau dossier » (`MKCOL`), puis le renomme (`MOVE`) — et le service ne
+savait renommer, déplacer ou supprimer que des documents. Les tests ont été
+joués pour la première fois sur un Odoo 18 réel, ce qui a mis au jour deux
+défauts de plus.
+
+- **fix(ecm_webdav): renommer, déplacer, supprimer un dossier.** `MOVE`
+  renomme ou reclasse un dossier avec toute sa branche ; un nom déjà pris est
+  refusé (`412`, jamais de fusion), un déplacement dans sa propre descendance
+  aussi (`403`). `DELETE` **archive** un dossier vide — rien ne disparaît au
+  lecteur réseau, comme un document part à la corbeille — et refuse (`409`)
+  un dossier qui contient encore des documents, y compris ceux que
+  l'utilisateur ne voit pas. `MKCOL` sur un nom déjà pris répond `405` au lieu
+  de créer un homonyme inaccessible.
+- **fix(ecm_webdav): chaque requête dans la langue du compte.** Odoo pose la
+  langue de l'utilisateur quand il vérifie le mot de passe, pas quand
+  l'identité vient du cache d'authentification (18.0.2.1.5) : les requêtes
+  suivantes s'exécutaient en anglais. Les noms de dossiers étant
+  traduisibles, un dossier renommé s'écrivait dans une langue et se relisait
+  dans l'autre : l'application en français gardait « Nouveau dossier », et le
+  lecteur réseau affichait tantôt l'un, tantôt l'autre nom.
+- **fix(ecm_webdav): un refus ne laisse plus rien en base.** Les erreurs sont
+  converties en réponses HTTP, si bien qu'Odoo validait la transaction : une
+  écriture refusée par une contrainte restait enregistrée malgré le `403`.
+  Chaque verbe s'exécute désormais dans un point de sauvegarde.
+- **fix(ecm_webdav): chemin UNC sans `DavWWWRoot`.** Avec ce mot-clé, Windows
+  interroge d'abord la racine du site — la page de connexion d'Odoo — et
+  refuse le montage (« Erreur système 5 »), alors que
+  `\\hôte@8069\webdav\aite_ecm` se monte. Le mode `unc` du bouton *Ouvrir
+  dans Office* sert désormais cette forme.
+- **test(ecm_webdav)** : création puis renommage d'un dossier comme le fait
+  l'Explorateur, avec un compte en français et après expiration du cache ;
+  déplacement et ses refus ; suppression d'une arborescence de bas en haut ;
+  droits.
+- **Première exécution réelle** (Odoo 18.0 Community, PostgreSQL 16) : les 57
+  tests de `aite_courrier_base`, `aite_courrier_webdav` et `aite_ecm_webdav`
+  passent — dont ceux des versions 18.0.2.1.4 à 18.0.2.1.10, jusqu'ici
+  jamais joués. Le harnais `test_webdav.py` passe sur la racine ECM : 34
+  contrôles, 36 avec `--strict`.
+- **docs, recette** : gestes sur les dossiers, erreur 5 au montage, scénario
+  manuel (4.9 – 4.11) ; `test_webdav.py --strict` renomme puis supprime le
+  dossier qu'il crée. Après un renommage côté ECM, le harnais vérifie que
+  l'ancien nom a disparu du listage, et non qu'il répond 404 : l'ECM retrouve
+  un document par la référence en tête du nom, que l'ancien chemin porte.
+
 ## 18.0.2.1.10 — Mode UNC : racine personnalisable
 
 Le mode `unc` levait bien le blocage de l'authentification, mais Office
