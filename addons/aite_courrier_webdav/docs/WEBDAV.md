@@ -10,7 +10,9 @@ Le WebDAV permet de **monter l'espace documentaire des courriers comme un lecteu
 réseau** : dossiers et fichiers apparaissent dans l'**Explorateur Windows** (ou le
 Finder macOS), exactement comme un partage réseau. On peut **ouvrir, modifier et
 enregistrer** une pièce directement depuis Word/Excel — l'enregistrement crée
-automatiquement une **nouvelle version** côté GED. C'est l'accès « bureautique »
+automatiquement une **nouvelle version** côté GED. Sous Windows, Word, Excel et
+PowerPoint exigent pour cela que le poste autorise le serveur (voir *Ouvrir une
+pièce dans Word, Excel, PowerPoint*). C'est l'accès « bureautique »
 complémentaire à l'app Documents (navigateur).
 
 Les droits sont identiques à ceux de l'interface : confidentialité héritée et
@@ -53,6 +55,9 @@ verrouillé — finalisé/archivé ou courrier archivé).
 opérations s'exécutent ensuite avec les droits de cet utilisateur (la
 confidentialité et le verrouillage sont donc respectés sans configuration
 supplémentaire). Le serveur est supposé **mono-base** (`--database` / `db_name`).
+Le serveur n'offre que Basic : Word, Excel et PowerPoint sous Windows bloquent
+cette méthode par défaut, en HTTPS comme en HTTP (voir *Ouvrir une pièce dans
+Word, Excel, PowerPoint*).
 
 ## Traçabilité
 
@@ -87,22 +92,87 @@ l'authentification Basic sur une connexion HTTP non chiffrée** (cas de
    le mettre en *Automatique*).
 2. Autoriser l'auth Basic sur HTTP (PowerShell **administrateur**) :
    ```powershell
-   reg add HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters ^
+   reg add HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters `
      /v BasicAuthLevel /t REG_DWORD /d 2 /f
    # Optionnel : lever la limite de taille de fichier (ex. 1 Go)
-   reg add HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters ^
+   reg add HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters `
      /v FileSizeLimitInBytes /t REG_DWORD /d 1073741824 /f
-   net stop WebClient && net start WebClient
+   Restart-Service WebClient
    ```
+   (En PowerShell, la ligne se continue par l'accent grave `` ` ``, en dernier
+   caractère de la ligne ; le `^` et le `&&` de `cmd` n'y fonctionnent pas,
+   `&&` n'existant qu'à partir de PowerShell 7.)
 3. Reconnecter le lecteur réseau.
 
 > **En production**, exposer Odoo en **HTTPS** (reverse proxy) : le montage Windows
-> fonctionne alors sans le réglage `BasicAuthLevel`. C'est la configuration
-> recommandée. macOS Finder : *Aller → Se connecter au serveur →*
-> `https://host/webdav/aite_courrier`.
+> fonctionne alors sans le réglage `BasicAuthLevel`, et le mot de passe ne
+> circule plus en clair. C'est la configuration recommandée. Elle ne lève pas,
+> en revanche, le blocage d'Office (section suivante). macOS Finder : *Aller →
+> Se connecter au serveur →* `https://host/webdav/aite_courrier`.
 >
 > Astuce de test rapide sans montage : `curl` (voir scénarios) valide que le
 > service répond, indépendamment des restrictions du client Windows.
+
+## Ouvrir une pièce dans Word, Excel, PowerPoint
+
+Word ne s'appuie pas sur la connexion du lecteur réseau : il convertit le
+chemin de la pièce en adresse `http(s)://…/webdav/aite_courrier/…` et
+télécharge lui-même le fichier, avec sa propre authentification. Or, depuis la
+version 2311 (Current Channel, décembre 2023 ; Monthly Enterprise Channel,
+janvier 2024 ; Semi-Annual Enterprise Channel 2402, juillet 2024 ; Office
+2016, 2019 et 2021 vendus au détail, au rythme du Current Channel), Word,
+Excel et PowerPoint sous Windows bloquent par défaut les demandes
+d'identifiants en authentification **Basic** — la seule que propose ce
+serveur. Ils affichent « Microsoft Office a bloqué l'accès aux … car la source
+utilise une méthode de connexion qui peut être non sécurisée ». Le blocage
+porte sur la **méthode**, pas sur le transport : il s'applique en `https`
+comme en `http`. Les versions d'Office en licence en volume (LTSC) ne sont pas
+concernées. L'Explorateur, lui, n'est pas concerné : le lecteur se parcourt,
+et l'on y copie ou renomme des fichiers, même quand Word refuse d'ouvrir.
+
+Le remède est la stratégie *Allow specified hosts to show Basic
+Authentication prompts to Office apps*. Sur un poste, son équivalent
+registre :
+
+1. Enregistrer puis **fermer toutes les applications Office** (Word, Excel,
+   PowerPoint, Outlook).
+2. Ouvrir PowerShell **dans la session du compte Windows qui utilise Word** —
+   *en tant qu'administrateur* si ce compte est administrateur du poste (les
+   sources Microsoft indiquent que des droits d'administration sont requis),
+   mais jamais avec un autre compte : `HKCU` désignerait alors le profil de
+   cet autre compte. Puis :
+   ```powershell
+   # Indispensable, en http comme en https : autoriser l'hôte à demander des identifiants
+   reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+
+   # En http seulement : ancienne clé d'Office, qui autorise Basic hors SSL
+   reg add HKCU\Software\Microsoft\Office\16.0\Common\Internet `
+     /v BasicAuthLevel /t REG_DWORD /d 2 /f
+   ```
+3. Rouvrir Word, puis la pièce : Word **demande des identifiants** au lieu de
+   bloquer ; saisir le login Odoo et son mot de passe.
+
+- **Hôtes.** `/d` liste des noms d'hôtes séparés par `;`, sans `http://` ni
+  `https://`. La forme `hôte:port` s'ajoute par prudence, aucune source ne
+  disant si le port compte. La commande reprend le port par défaut d'Odoo
+  (`8069`) : pour l'instance de test de ce document (port `8169`), écrire
+  `localhost;localhost:8169` ; en production, le nom du serveur (par exemple
+  `ecm.client.fr`). Garder les **guillemets** : en PowerShell, `;` sépare deux
+  instructions et la liste serait tronquée. `/f` remplace une valeur
+  existante : en reprendre d'abord les hôtes (`reg query` sur la même clé).
+- **Ancienne clé `BasicAuthLevel` d'Office** (`…\Common\Internet`, distincte
+  de celle du service WebClient) : elle reste utile sur une instance en
+  `http`, mais **ne suffit plus** depuis la version 2311 ; en `https`, elle
+  est inutile.
+- **Sur un parc**, poser la même liste par stratégie de groupe (*User
+  Configuration › Policies › Administrative Templates › Microsoft Office 2016
+  › Security Settings*, modèles d'administration Office 5359.1000 ou plus
+  récents) ou par Cloud Policy.
+- **Limites.** Selon son libellé, la stratégie ne s'applique qu'aux versions
+  d'Office sur abonnement. Une Cloud Policy du tenant Microsoft 365
+  (`HKCU\Software\Policies\Microsoft\Cloud\Office\16.0`) ou le Baseline
+  Security Mode peuvent primer sur la valeur locale. Microsoft ne recommande
+  cette autorisation qu'à titre transitoire.
 
 ## Architecture
 

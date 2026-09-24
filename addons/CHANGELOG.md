@@ -1,5 +1,38 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.12 — Office bloque Basic en HTTPS aussi (documentation)
+
+Sur l'instance Windows, un document Word créé dans le lecteur `X:` refusait
+de s'ouvrir : « Microsoft Office a bloqué l'accès aux "http://localhost:8069/…"
+car la source utilise une méthode de connexion qui peut être non sécurisée ».
+Depuis la version 2311, Microsoft 365 bloque **par défaut** toute invite
+d'authentification Basic — la seule que propose le serveur WebDAV —, en HTTP
+comme en HTTPS, et Word convertit un chemin de lecteur réseau en adresse
+`http(s)` avant de télécharger le fichier lui-même
+([Microsoft Learn](https://learn.microsoft.com/microsoft-365-apps/security/basic-authentication-prompts-blocked)).
+
+Les versions 18.0.2.1.9 et 18.0.2.1.10 affirmaient le contraire : que HTTPS
+levait ce blocage, que le même fichier s'ouvrait depuis le lecteur réseau
+« où c'est Windows qui s'authentifie », et que le mode `unc` le contournait.
+Ces trois affirmations sont fausses ; les entrées ci-dessous restent en l'état
+pour l'historique.
+
+- **docs** : le remède est côté poste — la stratégie *Allow specified hosts to
+  show Basic Authentication prompts to Office apps*, ou sa valeur de registre,
+  posée dans la session du compte qui utilise Word, Office fermé :
+  `reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f`.
+  Décrit dans le guide de déploiement Windows, le tutoriel et le guide HTTPS,
+  les README et la documentation des modules `aite_ecm_webdav`,
+  `aite_ecm_office` et `aite_courrier_webdav`, le scénario de recette (étape
+  0.5) et la fiche avant-vente technique. HTTPS reste recommandé — il protège
+  le mot de passe et dispense le client WebDAV de Windows de `BasicAuthLevel`
+  — mais ne dispense pas de cette valeur. L'ancienne clé Office
+  `Common\Internet\BasicAuthLevel = 2` reste utile en HTTP, sans suffire.
+- **ecm_webdav** : le mode `unc` (`aite_ecm.office_uri_mode`) est déclaré non
+  recommandé — Word repasse par l'URL, et `ms-word:ofe|u|` n'admet que des
+  adresses `http(s)`. Le comportement du code est inchangé ; docstrings,
+  description du module et nom d'un test corrigés.
+
 ## 18.0.2.1.11 — WebDAV ECM : les dossiers depuis l'Explorateur
 
 Sur l'instance Windows, créer un dossier dans le lecteur ECM échouait au

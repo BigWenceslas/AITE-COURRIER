@@ -7,7 +7,7 @@
 ## 0. En deux mots
 
 - **Ce qui marche** : deux serveurs WebDAV (`/webdav/aite_courrier`, `/webdav/aite_ecm`) servent lecture, dépôt, versionnage, renommage et listage sous les droits de l'utilisateur. Le `207` obtenu avec `curl` sur l'instance Windows le confirme : route, base, identifiants, droits — tout répond.
-- **Ce qui manque pour l'usage visé** : quatre flux bloquent encore l'aller-retour « ouvrir dans Word, enregistrer, fermer » et le montage par des comptes réels — l'enregistrement Office par fichier temporaire, les verrous réels côté courrier, l'authentification par clé d'API (donc les comptes à double authentification), et l'assainissement des noms de fichiers côté courrier.
+- **Ce qui manque pour l'usage visé** : quatre flux bloquent encore l'aller-retour « ouvrir dans Word, enregistrer, fermer » et le montage par des comptes réels — l'enregistrement Office par fichier temporaire, les verrous réels côté courrier, l'authentification par clé d'API (donc les comptes à double authentification), et l'assainissement des noms de fichiers côté courrier. S'y ajoute, côté poste et hors code, l'autorisation de l'hôte dans Office (`basichostallowlist`) : sans elle, Word refuse d'ouvrir, en HTTPS comme en HTTP (F14).
 - **Une dette structurelle** : les deux contrôleurs sont des copies l'un de l'autre. Chaque correctif est à faire deux fois — le journal des anomalies en porte déjà la trace (A-10 : les dates HTTP corrigées côté courrier, puis à nouveau côté ECM).
 - **Backlog** : 14 chantiers. Les 4 bloquants (P0) représentent 6 à 8 jours ; le socle commun (P1, 2 jours) doit passer **avant** pour que chaque correctif n'atterrisse qu'une fois.
 
@@ -143,9 +143,16 @@ Refusés partout (`aite_courrier_webdav/controllers/webdav.py:253`, service `:27
 
 #### F14 · Aide au montage — S — *partiellement traité*
 
-**Livré en 18.0.2.1.9** : le mode `unc` et le guide HTTPS lèvent le blocage d'Office sur une instance en clair. Reste la préparation du poste elle-même.
+**Livré en 18.0.2.1.9** : le mode `unc` et le guide HTTPS, présentés alors comme levant le blocage d'Office sur une instance en clair. **Constat du 24 septembre 2026 : ni l'un ni l'autre ne le lève.** Depuis la version 2311, Word, Excel et PowerPoint sous Windows bloquent par défaut l'invite d'authentification Basic — la seule que propose le serveur — en HTTPS comme en HTTP : le blocage porte sur la méthode, pas sur le transport (même message derrière Caddy, `https://localhost/…`). Un fichier pris dans le lecteur réseau n'y échappe pas : Word convertit le chemin `X:\…` en adresse `http(s)` et télécharge lui-même le fichier (constaté : `X:\…\ODOO45.docx` → `http://localhost:8069/webdav/aite_ecm/…/ODOO45.docx`, bloqué). Le mode `unc` (`aite_ecm.office_uri_mode = unc`, avec ou sans racine imposée par `aite_ecm.office_unc_root`) repasse donc par l'URL bloquée ; la spécification Office URI Schemes n'admet d'ailleurs pour `ms-word:ofe|u|` que des URI `http`/`https`. Ce mode n'est plus recommandé. Le remède est côté poste : la stratégie *Allow specified hosts to show Basic Authentication prompts to Office apps*, ou sa valeur de registre `basichostallowlist` (`REG_EXPAND_SZ`, stratégie Utilisateur) sous `HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity`, posée dans la session du compte Windows qui utilise Word, toutes applications Office fermées. HTTPS reste recommandé — il protège le mot de passe et dispense le client WebDAV de Windows de `BasicAuthLevel` — mais ne dispense pas de cette valeur. Reste la préparation du poste elle-même.
 
-Le premier montage bute sur des réglages du **poste** (service WebClient, `BasicAuthLevel`, `DavWWWRoot`, syntaxe `\\hôte@port\…`) que l'utilisateur ne peut pas deviner — c'est exactement le parcours de cette semaine. Générer depuis Odoo un script `net use` prêt à l'emploi et une page d'instructions par système réduirait ce coût à zéro. En production, HTTPS supprime le réglage de registre.
+Le premier montage bute sur des réglages du **poste** (service WebClient, `BasicAuthLevel`, syntaxe `\\hôte@port\…` — sans `DavWWWRoot`) que l'utilisateur ne peut pas deviner — c'est exactement le parcours de cette semaine. La première ouverture dans Word bute en plus sur `basichostallowlist`. Générer depuis Odoo un script prêt à l'emploi et une page d'instructions par système réduirait ce coût à zéro — par exemple, sur le poste de test :
+
+```powershell
+net use X: \\localhost@8069\webdav\aite_ecm
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+```
+
+(`\\localhost@SSL\webdav\aite_ecm` en HTTPS ; en production, le nom du serveur dans les deux commandes.) En production, HTTPS supprime le réglage `BasicAuthLevel` du client WebDAV de Windows, pas `basichostallowlist` : Office bloque l'invite Basic en HTTPS aussi. Microsoft ne recommande cette autorisation qu'à titre transitoire.
 
 ---
 
@@ -166,7 +173,7 @@ Le premier montage bute sur des réglages du **poste** (service WebClient, `Basi
 | F11 | `HttpCase` courrier, séquence Office | les deux | M | non-régression en CI |
 | F12 | Documentation et commentaires | les deux | S | promesses = code |
 | F13 | `COPY`, `MOVE` entre courriers | les deux | S | à arbitrer |
-| F14 | Aide au montage | les deux | S | premier montage sans support |
+| F14 | Aide au montage | les deux | S | premier montage et première ouverture dans Word sans support |
 
 Ordre recommandé : F3 et F6 sont livrés (aide partagée dans `aite_courrier_base/tools/webdav_auth.py`, utilisée par les deux contrôleurs — un premier pas vers F5). Reste **F5 → F4 → F1 → F2** (le cœur de l'usage Windows/Office, ≈ 7 à 9 jours), puis F7–F9 en un lot « robustesse » (≈ 4 jours), puis F10–F12 (≈ 4 jours). F13 et F14 à la demande.
 

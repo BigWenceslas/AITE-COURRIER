@@ -237,9 +237,15 @@ class TestEcmWebdav(HttpCase):
         self.assertTrue(self.doc.office_uri.startswith(
             "ms-word:ofe|u|http://srv-ecm:8069/webdav/aite_ecm/"))
 
-    def test_15_mode_unc_pour_une_instance_en_http(self):
-        """Office refuse Basic sur http ; le mode « unc » passe par le lecteur
-        réseau, où c'est Windows qui s'authentifie."""
+    def test_15_mode_unc_forme_du_chemin_en_http(self):
+        """Le mode « unc » sert le chemin du lecteur réseau (``hôte@port``).
+
+        Il ne contourne pas le blocage de l'authentification Basic par
+        Office, en http comme en https : Word convertit ce chemin en adresse
+        http(s) et s'authentifie lui-même (remède sur le poste : voir
+        ``_office_uri_mode`` du modèle). Le test ne vérifie que la forme de
+        l'adresse, que la spécification Office URI Schemes ne prévoit pas
+        après ``ofe|u|`` (URI http ou https seulement)."""
         self._parametre('web.base.url', 'http://srv-ecm:8069')
         self._parametre('aite_ecm.office_uri_mode', 'unc')
         self.assertEqual(
@@ -263,7 +269,8 @@ class TestEcmWebdav(HttpCase):
 
         Windows range « \\\\hôte@8069\\… » en zone « Sites sensibles » : il y
         lit un « utilisateur@hôte ». Désigner la lettre du lecteur monté
-        contourne ce classement.
+        contourne ce classement, mais pas le blocage de l'authentification
+        Basic par Office : depuis « Z:\\… », Word repasse par l'URL WebDAV.
         """
         self._parametre('web.base.url', 'http://srv-ecm:8069')
         self._parametre('aite_ecm.office_uri_mode', 'unc')

@@ -21,6 +21,28 @@ internes, `$REF` = la référence du courrier créé en 1.2.
 | 0.2 | `db_name` renseigné dans `odoo.conf` | sinon 401 systématique sur un serveur multi-base | ☐ |
 | 0.3 | Deux comptes internes `alice` et `bob`, rôle *Agent* | connexion possible aux deux | ☐ |
 | 0.4 | Un fichier PDF, un DOCX et un fichier `.exe` quelconque sous la main | — | ☐ |
+| 0.5 | Valeur `basichostallowlist` (et, en `http`, l'ancienne clé Office `BasicAuthLevel = 2`) posée sur les postes d'alice et de bob (commande ci-dessous, pour chaque compte Windows qui ouvre Word) | `reg query "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist` affiche `basichostallowlist    REG_EXPAND_SZ    localhost;localhost:8069` | ☐ |
+
+Sans 0.5, Word n'ouvre rien aux étapes 4.3 à 4.8 : depuis la version 2311,
+Microsoft 365 bloque par défaut toute invite d'authentification Basic —
+« Microsoft Office a bloqué l'accès aux … car la source utilise une méthode de
+connexion qui peut être non sécurisée » —, en `http` comme en `https`, y
+compris pour un fichier ouvert depuis `X:` : Word traduit le chemin du lecteur
+en adresse `http(s)` et télécharge lui-même le fichier. L'Explorateur, lui,
+n'est pas concerné. Dans la session du compte Windows qui ouvre Word —
+PowerShell *en tant qu'administrateur* si ce compte est administrateur du
+poste, jamais avec un autre compte, dont `HKCU` serait alors le profil —,
+toutes applications Office fermées, puis rouvertes après la commande :
+
+```powershell
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+# instance en http : ancienne clé Office, qui autorise Basic hors SSL
+reg add "HKCU\Software\Microsoft\Office\16.0\Common\Internet" /v BasicAuthLevel /t REG_DWORD /d 2 /f
+```
+
+Sur un serveur autre que `localhost`, mettre son nom. Détail et limites
+(valeur existante, Cloud Policy, versions d'Office concernées) :
+[`DEPLOIEMENT_WEBDAV_WINDOWS.md`](../DEPLOIEMENT_WEBDAV_WINDOWS.md) §3.
 
 ---
 
@@ -70,12 +92,12 @@ internes, `$REF` = la référence du courrier créé en 1.2.
 |---|--------|---------|---|
 | 4.1 | Déposer un DOCX dans `X:\Sans classement\` | un document ECM est créé, avec une **référence `DOC-AAAA-NNNNN`** | ☐ |
 | 4.2 | Rafraîchir le dossier | le fichier est republié sous `DOC-AAAA-NNNNN - <titre>.docx` | ☐ |
-| 4.3 | Ouvrir ce fichier depuis `X:` dans Word | Word demande les identifiants Odoo à la première ouverture, puis ouvre en écriture | ☐ |
+| 4.3 | Ouvrir ce fichier depuis `X:` dans Word (poste préparé en 0.5) | Word **demande les identifiants Odoo** à la première ouverture — il s'authentifie lui-même, pas par la connexion du lecteur —, puis ouvre en écriture. « Microsoft Office a bloqué l'accès… méthode de connexion qui peut être non sécurisée » : 0.5 manquant ou non pris en compte (Office pas entièrement fermé, valeur posée sous un autre compte Windows) | ☐ |
 | 4.4 | Pendant l'édition, consulter la fiche dans Odoo | le document est **réservé** au nom d'alice | ☐ |
-| 4.5 | Connecté en **bob**, tenter d'enregistrer le même fichier | refus `423` — Word propose d'enregistrer une copie | ☐ |
+| 4.5 | Connecté en **bob** (poste préparé en 0.5), tenter d'enregistrer le même fichier | refus `423` — Word propose d'enregistrer une copie. Sans 0.5, Word bloque dès l'ouverture et le `423` n'est jamais atteint | ☐ |
 | 4.6 | Modifier et **Enregistrer** dans Word (alice) | une **nouvelle version** apparaît dans l'ECM, au nom d'alice | ☐ |
 | 4.7 | Fermer Word | la **réservation est libérée** | ☐ |
-| 4.8 | Depuis la fiche ECM, bouton **Ouvrir dans Office** | Word s'ouvre sur le même document, sans passer par le lecteur | ☐ |
+| 4.8 | Depuis la fiche ECM, bouton **Ouvrir dans Office** (`aite_ecm.office_uri_mode` à `url`, valeur par défaut) | Word s'ouvre sur l'adresse WebDAV du même document, sans passer par le lecteur, en demandant au besoin les identifiants Odoo. Sans 0.5 : même blocage qu'en 4.3 — le mode `unc` n'y change rien | ☐ |
 | 4.9 | Avec un compte **Manager**, dans `X:\Juridique et contrats\` : *Nouveau dossier*, le nommer `Essai` | le dossier s'appelle `Essai` dans l'Explorateur **et** dans le plan de classement d'Odoo | ☐ |
 | 4.10 | Supprimer ce dossier vide dans l'Explorateur | il disparaît du lecteur ; dans Odoo, il est **archivé** (filtre *Archivés*) | ☐ |
 | 4.11 | Tenter de supprimer `X:\Juridique et contrats\` | refus : le dossier contient des documents | ☐ |
@@ -141,6 +163,7 @@ internes, `$REF` = la référence du courrier créé en 1.2.
 | Dépôt → création de document | 3.1, 4.1 | ☐ |
 | Versionnage par simple enregistrement | 3.4, 4.6 | ☐ |
 | Renommage, suppression, création de dossier | 3.5 – 3.7, 4.9 – 4.11 | ☐ |
+| Ouverture dans Word, depuis le lecteur et par le bouton (hôte autorisé) | 0.5, 4.3, 4.8 | ☐ |
 | Réservation Office ↔ verrou ECM | 4.4 – 4.7 | ☐ |
 | Confidentialité héritée | 5.1 – 5.5 | ☐ |
 | Verrouillage des documents finalisés | 6.1 – 6.4 | ☐ |

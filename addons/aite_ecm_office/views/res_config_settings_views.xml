@@ -8,7 +8,7 @@
             <xpath expr="//app[@name='aite_ecm']" position="inside">
                 <block title="Office et Google Docs" name="ecm_office_block">
                     <setting string="Word, Excel, PowerPoint, LibreOffice" id="ecm_office_webdav"
-                             help="Les boutons « Ouvrir dans Word / Excel / PowerPoint / LibreOffice » utilisent cette adresse WebDAV. Office exige HTTPS pour s'authentifier ; l'ouverture réserve le document et chaque enregistrement crée une version.">
+                             help="Les boutons « Ouvrir dans Word / Excel / PowerPoint / LibreOffice » utilisent cette adresse WebDAV. HTTPS est recommandé mais ne suffit pas : depuis la version 2311, Word, Excel et PowerPoint sous Windows bloquent par défaut l'authentification Basic de ce serveur, en HTTPS comme en HTTP. Chaque poste doit autoriser l'hôte (stratégie « Allow specified hosts to show Basic Authentication prompts to Office apps », ou valeur basichostallowlist sous HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity), toutes applications Office fermées. L'ouverture réserve le document et chaque enregistrement crée une version.">
                         <div class="row mt8">
                             <label for="ecm_webdav_url" class="col-lg-4 o_light_label"/>
                             <field name="ecm_webdav_url" readonly="1"/>

@@ -33,22 +33,50 @@ class AiteEcmDocument(models.Model):
 
     @api.model
     def _office_uri_mode(self):
-        """Forme d'adresse remise aux applications de bureau.
+        r"""Forme d'adresse remise aux applications de bureau.
 
         ``url`` (défaut) sert l'URL WebDAV ; ``unc`` sert le chemin UNC du
         lecteur réseau Windows.
 
-        Le mode ``unc`` existe pour les instances servies en **http** : Office
-        refuse l'authentification Basic sur une connexion en clair — « Microsoft
-        Office a bloqué l'accès… car la source utilise une méthode de connexion
-        qui peut être non sécurisée » — alors que le même fichier s'ouvre sans
-        difficulté depuis le lecteur réseau, où c'est Windows qui
-        s'authentifie. Il suppose donc un poste **Windows** dont le lecteur est
-        monté : sur un poste macOS ou Linux, et pour LibreOffice qui n'a pas ce
-        blocage, l'URL reste la bonne réponse. D'où un choix explicite plutôt
-        qu'une détection automatique.
+        Le mode ``unc`` a été introduit pour les instances servies en
+        **http**, contre le blocage d'Office — « Microsoft Office a bloqué
+        l'accès… car la source utilise une méthode de connexion qui peut être
+        non sécurisée ». Il ne le contourne pas. Depuis la version 2311, Word,
+        Excel et PowerPoint sous Windows bloquent par défaut toute invite
+        d'authentification Basic : le blocage vise la méthode, pas le
+        transport, et vaut **en https comme en http**. Un fichier ouvert
+        depuis le lecteur réseau n'y échappe pas : Word convertit le chemin
+        (``X:\…``, ``\\hote@8069\…``) en adresse http(s) et télécharge
+        lui-même le fichier. La spécification Office URI Schemes n'admet
+        d'ailleurs, après ``ofe|u|``, que des URI http ou https. Ce mode n'est
+        donc plus recommandé ; il reste servi tel quel sur choix explicite, et
+        suppose un poste **Windows** dont le lecteur est monté : sur un poste
+        macOS ou Linux, et pour LibreOffice qui n'a pas ce blocage, l'URL
+        reste la bonne réponse. D'où un choix explicite plutôt qu'une
+        détection automatique.
 
-        La réponse durable reste **HTTPS**, qui rend ce mode inutile.
+        Le serveur WebDAV d'Odoo n'offrant que Basic, le remède est sur le
+        poste : autoriser l'hôte par la stratégie « Allow specified hosts to
+        show Basic Authentication prompts to Office apps » (GPO ou Cloud
+        Policy), ou par son équivalent registre. Celui-ci s'exécute dans la
+        session du compte Windows qui utilise Word (PowerShell administrateur
+        si ce compte est administrateur du poste, jamais avec un autre compte :
+        ``HKCU`` serait celui de l'autre compte), toutes les applications
+        Office fermées ::
+
+            reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+
+        Hôtes séparés par « ; », sans ``https://`` ; en production, le nom du
+        serveur ; guillemets obligatoires en PowerShell. À la réouverture,
+        Word demande des identifiants : login Odoo et mot de passe, ou clé
+        d'API. Selon son libellé, la stratégie ne vaut que pour les versions
+        d'Office sur abonnement ; une Cloud Policy du tenant ou le Baseline
+        Security Mode peuvent primer ; Microsoft ne la recommande qu'à titre
+        transitoire.
+
+        HTTPS reste recommandé : il protège le mot de passe et dispense le
+        client WebDAV de Windows de ``BasicAuthLevel``. Il ne lève pas ce
+        blocage.
         """
         mode = self.env['ir.config_parameter'].sudo().get_param(
             'aite_ecm.office_uri_mode', 'url')
@@ -69,7 +97,10 @@ class AiteEcmDocument(models.Model):
 
         Le paramètre système ``aite_ecm.office_unc_root`` prend le pas sur
         cette déduction : y mettre ``Z:`` désigne le lecteur monté, ce qui
-        évite la zone de sécurité que Windows attribue à ``hote@port``.
+        évite la zone de sécurité que Windows attribue à ``hote@port``. Cela
+        ne lève pas le blocage de l'authentification Basic par Office : depuis
+        ``Z:\…``, Word repasse par l'URL WebDAV et s'authentifie lui-même
+        (voir ``_office_uri_mode``, qui décrit le remède sur le poste).
         """
         settings = self.env['ir.config_parameter'].sudo()
         # Racine imposée par l'administrateur : lettre du lecteur monté
@@ -104,7 +135,10 @@ class AiteEcmDocument(models.Model):
             url = "%s/%s" % (base, '/'.join(quote(p) for p in path.split('/')))
             doc.webdav_url = url
             # L'adresse affichée reste toujours l'URL ; seule celle remise aux
-            # applications de bureau peut prendre la forme UNC.
+            # applications de bureau peut prendre la forme UNC. Cette forme
+            # sort de la spécification Office URI Schemes (``ofe|u|`` suivi
+            # d'une URI http ou https) et ne contourne pas le blocage Basic
+            # d'Office : voir ``_office_uri_mode``.
             doc.office_target = ('%s\\%s' % (unc_root, path.replace('/', '\\'))
                                  if unc else url)
             ext = doc.latest_version_id.file_extension
@@ -115,7 +149,11 @@ class AiteEcmDocument(models.Model):
 
     def action_open_in_office(self):
         """Ouvre le fichier dans Word / Excel / PowerPoint (édition sur le
-        serveur, enregistrement → nouvelle version)."""
+        serveur, enregistrement → nouvelle version).
+
+        Prérequis de poste : l'hôte autorisé par ``basichostallowlist``, sans
+        quoi Office bloque l'invite d'authentification Basic, en https comme
+        en http (voir ``_office_uri_mode``)."""
         self.ensure_one()
         if not self.office_uri:
             raise UserError(_("Ce format ne s'ouvre pas dans une application Office."))

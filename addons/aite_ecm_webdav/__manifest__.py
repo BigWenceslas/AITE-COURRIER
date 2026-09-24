@@ -15,6 +15,10 @@ AITE ECM - Lecteur réseau et ouverture dans Office
   l'application de bureau ouvre le fichier directement sur le serveur ;
   chaque enregistrement crée une **nouvelle version** ECM, attribuée à
   l'utilisateur ; le verrou posé par Office devient une **réservation**.
+  Sous Windows, chaque poste doit autoriser l'hôte dans Office, en HTTPS
+  comme en HTTP (stratégie *Allow specified hosts to show Basic
+  Authentication prompts to Office apps*, valeur ``basichostallowlist`` :
+  voir README, § 3).
 * Dépôt d'un fichier dans un dossier du lecteur → document ECM créé ;
   renommage / déplacement → titre / dossier mis à jour ; suppression →
   corbeille ; création de dossier → dossier de classement (managers).

@@ -6,7 +6,7 @@
 >
 > **Pour une installation de bout en bout**, du premier module au lecteur
 > monté, suivre plutôt [`TUTORIEL_WEBDAV_HTTPS.md`](./TUTORIEL_WEBDAV_HTTPS.md) :
-> chaque étape y porte sa vérification, et les onze obstacles rencontrés en
+> chaque étape y porte sa vérification, et les douze obstacles rencontrés en
 > conditions réelles y sont annotés là où ils surviennent. Le présent document
 > reste la référence sur le reverse proxy lui-même.
 
@@ -15,13 +15,15 @@
 ## 1. Ce que HTTPS débloque
 
 Sur une instance en `http://`, trois obstacles apparaissent l'un après
-l'autre — tous côté client, tous levés d'un coup par le chiffrement :
+l'autre, tous côté client. Le chiffrement ne lève que le premier, et met fin au
+mot de passe en clair ; le blocage d'Office et la limite de taille demeurent en
+`https` :
 
 | Obstacle | En `http` | En `https` |
 | --- | --- | --- |
 | Montage du lecteur réseau | refusé, sauf clé de registre `BasicAuthLevel` sur chaque poste | fonctionne sans réglage |
-| **Ouvrir dans Word / Excel** | **bloqué par Office** : « la source utilise une méthode de connexion qui peut être non sécurisée » | fonctionne |
-| Fichiers de plus de 50 Mo | limite du client Windows, clé `FileSizeLimitInBytes` | limite du serveur seulement |
+| **Ouvrir dans Word / Excel** | **bloqué par Office** : « la source utilise une méthode de connexion qui peut être non sécurisée » | **bloqué aussi** : Office vise la méthode (Basic), pas le transport. Autoriser l'hôte par `basichostallowlist` (§6), comme en `http` |
+| Fichiers de plus de 50 Mo | limite du client Windows, clé `FileSizeLimitInBytes` | **même limite** : elle tient au client WebClient, pas au protocole ; même clé |
 | Mot de passe sur le réseau | **en clair à chaque requête** | chiffré |
 
 Ce dernier point suffirait : un client WebDAV présente ses identifiants à
@@ -37,7 +39,8 @@ Odoo ne sait pas servir HTTPS lui-même : on place un **reverse proxy** devant.
 Caddy tient en un exécutable, émet son propre certificat et sait l'installer
 dans le magasin de la machine — ce qui est exactement ce qui manque avec un
 certificat auto-signé posé à la main : sans autorité de confiance, Word le
-refuse comme il refusait le `http`.
+refuse. Un certificat approuvé ne suffit pas pour autant : Word exige aussi que
+l'hôte soit autorisé par `basichostallowlist` (§6).
 
 1. Télécharger l'exécutable depuis <https://caddyserver.com/download> et le
    renommer, car il arrive sous le nom de sa plateforme :
@@ -123,8 +126,10 @@ https://localhost        (ou https://ecm.exemple.fr)
 ```
 
 C'est cette valeur qui construit les adresses envoyées à Word : tant qu'elle
-reste en `http://`, le bouton *Ouvrir dans Office* continuera d'être bloqué,
-même si l'instance répond en HTTPS.
+reste en `http://`, le bouton *Ouvrir dans Office* envoie Word sur le port en
+clair, même si l'instance répond en HTTPS. En `https://`, Word atteint bien
+Caddy, mais il bloque encore l'authentification Basic tant que l'hôte n'est
+pas autorisé par `basichostallowlist` (§6).
 
 > **Odoo réécrit `web.base.url` tout seul.** À chaque connexion d'un
 > administrateur, Odoo y recopie l'adresse par laquelle il a été atteint. Une
@@ -167,7 +172,66 @@ Dans l'Explorateur, le champ *Dossier* accepte directement
 
 ---
 
-## 6. Vérifier
+## 6. Autoriser l'hôte dans Office
+
+HTTPS ne suffit pas à Word. Depuis la version 2311 (Current Channel, décembre
+2023 ; Monthly Enterprise, janvier 2024 ; Semi-Annual 2402, juillet 2024),
+Word, Excel et PowerPoint sous Windows bloquent **par défaut** les invites
+d'authentification Basic :
+
+> Microsoft Office a bloqué l'accès aux … car la source utilise une méthode de
+> connexion qui peut être non sécurisée
+
+Office 2016, 2019 et 2021 achetés au détail suivent le calendrier du Current
+Channel ; les versions LTSC en licence en volume ne sont pas concernées. Le
+blocage vise la méthode, pas le transport : il s'applique en `https` comme en
+`http` — constaté derrière Caddy, sur `https://localhost/webdav/aite_ecm/…`.
+Le serveur WebDAV d'Odoo n'offrant que Basic, chaque poste doit autoriser
+l'hôte.
+
+Passer par le lecteur réseau n'y change rien : ouvert depuis `X:`, un fichier
+est converti par Word en adresse `http(s)`, et Word le télécharge lui-même. Le
+lecteur, en revanche, n'est pas concerné : l'Explorateur et `net use` créent
+dossiers et fichiers dans `X:` même quand Word refuse de les ouvrir.
+
+Fermer **toutes** les applications Office, puis, dans la session du compte
+Windows qui utilise Word — PowerShell « en tant qu'administrateur » si ce
+compte est administrateur du poste, les sources consultées indiquant que des
+droits d'administration sont requis :
+
+```powershell
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+```
+
+- `/f` remplace une valeur `basichostallowlist` existante (posée par l'administrateur, ou pour un autre serveur) : la lire d'abord avec `reg query "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist` et reprendre ses hôtes dans `/d`.
+- les hôtes se donnent par leur nom, sans `https://`, séparés par `;` ; en
+  production, le nom du serveur (`ecm.client.fr`) ;
+- `localhost:8069` s'ajoute par prudence : aucune source ne dit si le port
+  compte ;
+- les guillemets sont obligatoires en PowerShell, où le `;` sépare les
+  instructions ;
+- jamais depuis un autre compte, même administrateur : `HKCU` désignerait
+  alors le profil de ce compte, et Word n'en verrait rien.
+
+Rouvrir Office : au lieu du blocage, Word demande un identifiant et un mot de
+passe — le login Odoo et son mot de passe, ou une clé d'API.
+
+Sur un parc, la stratégie *Allow specified hosts to show Basic Authentication
+prompts to Office apps* (Configuration utilisateur › Stratégies › Modèles
+d'administration › Microsoft Office 2016 › Security Settings, modèles ADMX
+Office 5359.1000 ou ultérieurs) pose la même valeur ; une Cloud Policy aussi.
+Microsoft ne recommande cette autorisation qu'à titre transitoire (voir la
+[page Microsoft Learn](https://learn.microsoft.com/microsoft-365-apps/security/basic-authentication-prompts-blocked)).
+
+> **Si Word bloque encore.** Selon sa description, la stratégie ne s'applique
+> qu'aux versions d'Office sur abonnement. Une Cloud Policy du tenant
+> (`HKCU\Software\Policies\Microsoft\Cloud\Office\16.0`) ou le Baseline
+> Security Mode de Microsoft 365 peuvent aussi primer sur la valeur locale :
+> voir avec l'administrateur Microsoft 365.
+
+---
+
+## 7. Vérifier
 
 ```powershell
 curl.exe -i -X OPTIONS --ssl-no-revoke https://localhost/webdav/aite_ecm
@@ -190,15 +254,18 @@ Vérification complémentaire, plus parlante : ouvrir `https://localhost/web`
 dans le navigateur. Le cadenas et l'écran de connexion Odoo suffisent à
 confirmer que le proxy et le certificat tiennent.
 
-Puis, dans Odoo, le bouton **Ouvrir dans Office** sur une fiche document : Word
-doit s'ouvrir sur le fichier, en écriture.
+Puis, dans Odoo, le bouton **Ouvrir dans Office** sur une fiche document, une
+fois l'hôte autorisé (§6) : Word doit demander les identifiants Odoo, puis
+s'ouvrir sur le fichier, en écriture. S'il affiche « Microsoft Office a bloqué
+l'accès aux "https://localhost/webdav/aite_ecm/…" », l'hôte n'est pas
+autorisé : revenir au §6.
 
 ---
 
-## 7. Retirer les contournements
+## 8. Retirer les contournements
 
-Une fois HTTPS en place, les réglages de registre posés pour survivre au `http`
-n'ont plus lieu d'être. Les laisser, c'est garder ouverte l'autorisation
+Une fois HTTPS en place, les clés `BasicAuthLevel` posées pour survivre au
+`http` n'ont plus lieu d'être. Les laisser, c'est garder ouverte l'autorisation
 d'envoyer un mot de passe en clair :
 
 ```powershell
@@ -207,7 +274,9 @@ reg add HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters `
   /v BasicAuthLevel /t REG_DWORD /d 1 /f
 Restart-Service WebClient
 
-# Autorisation Basic sur HTTP — Office (session utilisateur)
+# Autorisation Basic sur HTTP — ancienne clé Office (session utilisateur),
+# seulement si elle avait été posée : inutile en HTTPS, et insuffisante
+# depuis la version 2311
 reg add HKCU\Software\Microsoft\Office\16.0\Common\Internet `
   /v BasicAuthLevel /t REG_DWORD /d 1 /f
 ```
@@ -215,9 +284,20 @@ reg add HKCU\Software\Microsoft\Office\16.0\Common\Internet `
 `1` est la valeur par défaut de Windows : Basic accepté, mais sur connexion
 chiffrée uniquement.
 
-Et si le paramètre système `aite_ecm.office_uri_mode` avait été mis à `unc`
-pour contourner le blocage d'Office, le remettre à `url` : en HTTPS, l'URL
-fonctionne et vaut pour tous les systèmes, pas seulement Windows.
+**À ne pas retirer** : la valeur `basichostallowlist` sous
+`HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity` (§6). Ce n'est
+pas un contournement du `http` : tant que le serveur n'offre que Basic, c'est
+elle qui permet à Word de demander les identifiants, HTTPS compris. De même,
+une clé `FileSizeLimitInBytes` relevée reste utile : la limite tient au client
+WebClient, pas au protocole.
+
+Et si le paramètre système `aite_ecm.office_uri_mode` avait été mis à `unc`,
+le remettre à `url`. Le mode `unc` ne contournait pas le blocage d'Office :
+Word convertit le chemin du lecteur en adresse `http(s)` et s'authentifie
+lui-même ; la spécification Office URI Schemes n'accepte d'ailleurs, après
+`ms-word:ofe|u|`, que des adresses `http` ou `https`. L'URL, elle, vaut pour
+tous les systèmes, pas seulement Windows ; sous Windows, elle suppose l'hôte
+autorisé (§6).
 
 ---
 

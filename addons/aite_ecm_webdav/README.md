@@ -12,7 +12,8 @@
 Le module publie le plan de classement de l'ECM à l'adresse
 `https://<votre-odoo>/webdav/aite_ecm` en **WebDAV** — le protocole que
 Windows, macOS et Linux savent monter comme un disque, et que Word, Excel et
-PowerPoint savent ouvrir directement.
+PowerPoint savent ouvrir directement, à condition, sous Windows, que le poste
+autorise le serveur à leur demander des identifiants (§3, *Prérequis*).
 
 Il apporte deux gestes, pour deux besoins différents :
 
@@ -68,11 +69,70 @@ La réponse est un XML `multistatus` listant vos dossiers de classement.
 
 C'est la façon la plus directe : aucun lecteur à connecter.
 
+**Prérequis, une fois par poste Windows : autoriser le serveur dans Office.**
+Depuis la version 2311 (Current Channel, décembre 2023 ; Monthly Enterprise
+Channel, janvier 2024 ; Semi-Annual Enterprise Channel 2402, juillet 2024 ;
+Office 2016, 2019 et 2021 vendus au détail, au rythme du Current Channel),
+Word, Excel et PowerPoint sous Windows bloquent par défaut les demandes
+d'identifiants en authentification **Basic** — la seule que propose le serveur
+WebDAV d'Odoo. Au lieu de demander vos identifiants, Word affiche « Microsoft
+Office a bloqué l'accès aux … car la source utilise une méthode de connexion
+qui peut être non sécurisée ». Le blocage porte sur la **méthode**, pas sur le
+transport : il s'applique en `https` comme en `http`, au bouton *Ouvrir dans
+Office* comme à un fichier ouvert depuis le lecteur réseau (§4). Les versions
+d'Office en licence en volume (LTSC) ne sont pas concernées.
+
+Le remède est la stratégie *Allow specified hosts to show Basic
+Authentication prompts to Office apps*. Sur un poste, son équivalent
+registre :
+
+1. Enregistrer puis **fermer toutes les applications Office** (Word, Excel,
+   PowerPoint, Outlook).
+2. Ouvrir PowerShell **dans la session du compte Windows qui utilise Word** —
+   *en tant qu'administrateur* si ce compte est administrateur du poste (les
+   sources Microsoft indiquent que des droits d'administration sont requis),
+   mais jamais avec un autre compte : `HKCU` désignerait alors le profil de
+   cet autre compte. Puis :
+
+   ```powershell
+   reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+   ```
+
+3. Rouvrir Word : il **demande des identifiants** au lieu de bloquer.
+
+- **Hôtes.** `/d` liste des noms d'hôtes séparés par `;`, sans `https://`.
+  `localhost;localhost:8069` vaut pour un poste de test ; en production,
+  mettre le nom du serveur (par exemple `ecm.client.fr`). La forme
+  `hôte:port` s'ajoute par prudence : aucune source ne dit si le port compte.
+  Garder les **guillemets** : en PowerShell, `;` sépare deux instructions et
+  la liste serait tronquée. `/f` remplace une valeur existante : en reprendre
+  d'abord les hôtes (`reg query` sur la même clé).
+- **Sur un parc**, poser la même liste par stratégie de groupe (*User
+  Configuration › Policies › Administrative Templates › Microsoft Office 2016
+  › Security Settings*, modèles d'administration Office 5359.1000 ou plus
+  récents) ou par Cloud Policy.
+- **Limites.** Selon son libellé, la stratégie ne s'applique qu'aux versions
+  d'Office sur abonnement. Une Cloud Policy du tenant Microsoft 365
+  (`HKCU\Software\Policies\Microsoft\Cloud\Office\16.0`) ou le Baseline
+  Security Mode peuvent primer sur la valeur locale. Microsoft ne recommande
+  cette autorisation qu'à titre transitoire.
+- **Instance de test en `http`.** L'ancienne clé d'Office
+  `HKCU\Software\Microsoft\Office\16.0\Common\Internet\BasicAuthLevel` à
+  `2` (Basic autorisé hors SSL), distincte de celle du service WebClient
+  (§4.1), y reste utile, mais **ne suffit plus** depuis la version 2311 ; en
+  `https`, elle est inutile.
+- **HTTPS** reste recommandé — il protège le mot de passe — mais ne dispense
+  pas de cette valeur.
+
+Puis, à chaque document :
+
 1. Ouvrez le document dans l'ECM (fiche ou explorateur).
 2. Cliquez **Ouvrir dans Office** — le bouton n'apparaît que pour les formats
    bureautiques (Word, Excel, PowerPoint et leurs équivalents OpenDocument).
 3. À la première utilisation, Word demande vos **identifiants Odoo** (login et
-   mot de passe) et les mémorise.
+   mot de passe, ou clé d'API — §7) et les mémorise. S'il affiche à la place
+   « …méthode de connexion qui peut être non sécurisée », le prérequis
+   ci-dessus manque.
 4. Travaillez, puis **Enregistrer** : une nouvelle version apparaît dans
    l'ECM, à votre nom.
 5. Fermez Word : la réservation est libérée.
@@ -109,7 +169,15 @@ C'est la façon la plus directe : aucun lecteur à connecter.
 > connexion non chiffrée. Sur un poste de test uniquement, un administrateur
 > peut passer la clé
 > `HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters\BasicAuthLevel`
-> à `2` puis redémarrer le service *WebClient*.
+> à `2` puis redémarrer le service *WebClient*. HTTPS ne lève pas, en
+> revanche, le blocage d'Office décrit au §3.
+
+> **Ouvrir un fichier du lecteur dans Word, Excel ou PowerPoint** suppose le
+> même prérequis que le bouton (§3, *Prérequis*) : Word ne réutilise pas la
+> connexion du lecteur, il convertit le chemin `E:\…` en adresse `http(s)` et
+> télécharge lui-même le fichier. Les gestes de l'Explorateur, eux, n'en
+> dépendent pas : copier, renommer, créer un dossier ou un fichier
+> fonctionnent même quand Word refuse d'ouvrir.
 
 > **Fichiers de plus de 50 Mo.** Le client WebDAV de Windows limite les
 > transferts à 50 Mo : augmentez `FileSizeLimitInBytes` (même emplacement,
@@ -162,7 +230,7 @@ Le volume apparaît dans la barre latérale.
 | Dans l'Explorateur ou l'application | Effet dans l'ECM |
 |---|---|
 | Ouvrir un fichier | lecture, si vos droits le permettent |
-| Ouvrir dans Word ou LibreOffice | **réservation** à votre nom |
+| Ouvrir dans Word ou LibreOffice (Word sous Windows : poste préparé, §3 *Prérequis*) | **réservation** à votre nom |
 | Enregistrer | **nouvelle version**, empreinte SHA-256, audit source « WebDAV » |
 | Fermer l'application | **libération** de la réservation |
 | Copier un nouveau fichier dans un dossier | **nouveau document ECM**, titre = nom du fichier sans extension |
@@ -188,7 +256,9 @@ Deux comportements méritent une explication :
 ## 7. Sécurité
 
 - **Authentification** : HTTP Basic vers un compte Odoo, en HTTPS. Les
-  utilisateurs *portail* n'ont pas accès.
+  utilisateurs *portail* n'ont pas accès. Word, Excel et PowerPoint sous
+  Windows bloquent par défaut cette méthode, en HTTPS aussi : chaque poste
+  doit autoriser le serveur (§3, *Prérequis*).
 - **Droits** : identiques à ceux de l'ECM — rôle, droits du dossier (groupes
   et personnes nommées), confidentialité, partage nominatif, réservation, gel
   juridique. Un document que vous ne voyez pas dans Odoo n'apparaît pas dans
@@ -207,6 +277,8 @@ Deux comportements méritent une explication :
 |---|---|---|
 | Windows : « Le nom du dossier n'est pas valide » | URL en `http://`, ou service *WebClient* arrêté | passer en HTTPS ; démarrer le service *WebClient* (services.msc) |
 | Demande de mot de passe en boucle | `BasicAuthLevel` à 1, ou mot de passe incorrect | vérifier les identifiants ; voir §4.1 |
+| Word : « Microsoft Office a bloqué l'accès… car la source utilise une méthode de connexion qui peut être non sécurisée » (bouton ou lecteur réseau, `http` ou `https`) | le poste n'autorise pas le serveur : Office bloque l'authentification Basic | §3, *Prérequis* : valeur `basichostallowlist`, toutes applications Office fermées, puis rouvrir Word |
+| Même message, valeur pourtant posée | Office pas entièrement fermé ; valeur posée dans la session d'un autre compte Windows ; Cloud Policy du tenant ou Baseline Security Mode prioritaire ; Office hors abonnement | §3, *Prérequis* (*Limites*) ; voir avec l'administrateur Microsoft 365 |
 | Word ouvre en lecture seule | document finalisé, archivé, réservé par un autre, ou droits insuffisants | consulter le bandeau de la fiche ECM |
 | Enregistrement refusé (« fichier verrouillé ») | réservation d'un collègue ou gel juridique | attendre la libération ; un manager peut libérer |
 | Fichier volumineux refusé | limite Windows de 50 Mo | augmenter `FileSizeLimitInBytes` |
@@ -236,10 +308,12 @@ une nouvelle route.
 403, `WebdavLocked` → 423, `WebdavConflict` → 409 : les clients WebDAV
 affichent alors un message compréhensible plutôt qu'une erreur générique.
 
-**Tests.** `--test-tags /aite_ecm_webdav` — 7 cas : arborescence, lecture avec
+**Tests.** `--test-tags /aite_ecm_webdav` — 22 cas : arborescence, lecture avec
 ETag, enregistrement (version et nouveau document), verrou et conflit entre
-utilisateurs, déplacement, construction de l'URI Office, sécurité (401 et
-documents confidentiels absents du listing).
+utilisateurs, déplacement, construction de l'URI Office (modes `url` et `unc`),
+sécurité (401 et documents confidentiels absents du listing), clé d'API,
+création depuis l'Explorateur, `HEAD`, dossiers (création, renommage,
+déplacement, suppression, droits).
 
 **Modules voisins.** `aite_courrier_webdav` publie de la même façon les pièces
 de courrier sur `/webdav/aite_courrier` ; `aite_ecm_office` ajoute l'édition
