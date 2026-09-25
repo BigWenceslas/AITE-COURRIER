@@ -67,8 +67,10 @@ Sur **Odoo Community**, ne cliquez pas sur *Activer* : Community affiche
 l'app Signature comme une offre commerciale (bouton *Mettre à niveau* vers
 odoo.com), si bien qu'Odoo accepte la demande sans erreur visible… puis ne
 peut rien installer. Le module reste bloqué **« à installer »** (bouton
-*Annuler l'installation*), et chaque démarrage ou mise à jour d'Odoo écrit
-dans le journal :
+*Annuler l'installation*). Tant qu'il y reste, Odoo **suspend toutes les
+tâches planifiées de la base** — envoi des e-mails en file, relances SLA,
+capture, indexation — pendant jusqu'à cinq heures, et chaque démarrage ou mise
+à jour écrit dans le journal :
 
 ```
 ERROR … odoo.modules.loading: Some modules have inconsistent states, some dependencies may be missing: ['aite_courrier_sign']

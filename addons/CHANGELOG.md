@@ -7,9 +7,12 @@ bloqué « à installer ». Community présente l'app Sign comme une offre
 commerciale (module `sign` à l'état « non installable », bouton *Mettre à
 niveau* vers odoo.com) : *Activer* passe sans erreur visible, puis Odoo ne
 peut rien charger. Chaque démarrage écrit alors « Some modules have
-inconsistent states, some dependencies may be missing: ['aite_courrier_sign'] »
-— sans bloquer les autres modules, mais en faisant échouer la vérification
-« aucune ligne ERROR » des procédures de mise à jour. Reproduit sur Odoo 18.0
+inconsistent states, some dependencies may be missing: ['aite_courrier_sign'] ».
+Les mises à jour des autres modules passent, mais **toutes les tâches
+planifiées de la base sont suspendues** : Odoo n'exécute aucun cron tant
+qu'un module est « à installer » (`ir.cron._check_modules_state`) — file
+d'envoi des e-mails, relances SLA, capture, indexation, conservation —, et ne
+remet lui-même les états à zéro qu'au bout de cinq heures. Reproduit sur Odoo 18.0
 Community ; *Annuler l'installation* ramène le module à « non installé » et
 fait disparaître la ligne.
 
