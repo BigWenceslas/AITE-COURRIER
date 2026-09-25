@@ -115,5 +115,13 @@ Une installation réussie se termine par `Modules loaded.` sans ligne `ERROR`.
 ## Modules non installés sur Community
 
 `aite_courrier_sign`, `aite_ecm_documents` et `aite_courrier_ged_documents`
-dépendent d'Odoo Enterprise. Ils restent présents dans `custom_addons` mais
-hors des listes ci-dessus. Les 25 autres composent la suite.
+dépendent d'Odoo Enterprise (apps Sign et Documents). Les 25 autres composent
+la suite.
+
+Ne pas les laisser dans `custom_addons` sur une instance Community : ils
+apparaissent dans Applications, et un clic sur *Activer* ne produit aucune
+erreur visible — Community présente Sign comme une offre commerciale — mais
+laisse le module bloqué « à installer ». Chaque démarrage écrit alors
+`Some modules have inconsistent states, some dependencies may be missing`.
+Remède : Applications → le module → **Annuler l'installation**, puis retirer
+son dossier. Le paquet de la suite les range à part, dans `enterprise/`.

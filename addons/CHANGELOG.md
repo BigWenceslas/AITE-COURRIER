@@ -1,5 +1,24 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.13 — Community : les modules Enterprise à l'écart
+
+Sur l'instance Windows (Odoo 18 Community), `aite_courrier_sign` restait
+bloqué « à installer ». Community présente l'app Sign comme une offre
+commerciale (module `sign` à l'état « non installable », bouton *Mettre à
+niveau* vers odoo.com) : *Activer* passe sans erreur visible, puis Odoo ne
+peut rien charger. Chaque démarrage écrit alors « Some modules have
+inconsistent states, some dependencies may be missing: ['aite_courrier_sign'] »
+— sans bloquer les autres modules, mais en faisant échouer la vérification
+« aucune ligne ERROR » des procédures de mise à jour. Reproduit sur Odoo 18.0
+Community ; *Annuler l'installation* ramène le module à « non installé » et
+fait disparaître la ligne.
+
+- **paquet** : les trois modules Enterprise (`aite_courrier_sign`,
+  `aite_courrier_ged_documents`, `aite_ecm_documents`) sont rangés dans
+  `enterprise/`, hors du dossier `addons/` à copier sur Community.
+- **docs** : le piège et son remède dans le tutoriel de signature (§2 et
+  dépannage), le guide de déploiement et `addons/LISEZMOI_INSTALLATION.md`.
+
 ## 18.0.2.1.12 — Office bloque Basic en HTTPS aussi (documentation)
 
 Sur l'instance Windows, un document Word créé dans le lecteur `X:` refusait

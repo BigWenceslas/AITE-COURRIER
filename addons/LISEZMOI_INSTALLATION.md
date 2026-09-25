@@ -16,7 +16,11 @@ modules de votre instance. Sous Windows, avec l'installateur officiel :
 C:\Program Files\Odoo 18.0.<version>\server\odoo\addons\
 ```
 
-Vous devez y retrouver les 28 dossiers `aite_*`. Si vous utilisez un dossier
+Vous devez y retrouver les dossiers `aite_*` : 25 sur Odoo Community, 28 sur
+Enterprise. Les trois modules Enterprise — `aite_courrier_sign`,
+`aite_courrier_ged_documents`, `aite_ecm_documents` — ne se copient **que sur
+Enterprise** : sur Community, *Activer* les laisse bloqués « à installer »
+(voir `docs/TUTORIEL_SIGNATURE.md` §2). Si vous utilisez un dossier
 personnalisé déclaré dans `addons_path`, copiez-les là — mais **à un seul
 endroit** : deux exemplaires du même module provoquent des erreurs.
 

@@ -63,6 +63,22 @@ promettre ce que le module ne tient pas :
 Le point 2.3 n'est pas optionnel : sans envoi d'e-mail, le signataire ne reçoit
 jamais son lien, et la demande reste en attente sans que personne ne le sache.
 
+Sur **Odoo Community**, ne cliquez pas sur *Activer* : Community affiche
+l'app Signature comme une offre commerciale (bouton *Mettre à niveau* vers
+odoo.com), si bien qu'Odoo accepte la demande sans erreur visible… puis ne
+peut rien installer. Le module reste bloqué **« à installer »** (bouton
+*Annuler l'installation*), et chaque démarrage ou mise à jour d'Odoo écrit
+dans le journal :
+
+```
+ERROR … odoo.modules.loading: Some modules have inconsistent states, some dependencies may be missing: ['aite_courrier_sign']
+```
+
+Pour en sortir : ouvrir le module dans Applications → **Annuler
+l'installation**. Le module redevient « non installé » et la ligne disparaît.
+Le mieux est ensuite de retirer son dossier du répertoire des modules — le
+paquet de la suite le range à part, dans `enterprise\`, pour cette raison.
+
 ---
 
 ## 3. Installer le module
@@ -194,6 +210,7 @@ regrouper les demandes par courrier — pratique pour un suivi transverse.
 | « Cette étape exige une signature électronique » | garde §5.4 | demander la signature, attendre la complétion |
 | Le signataire ne reçoit rien | serveur de messagerie non configuré | §2.3 |
 | Le lien de signature pointe au mauvais endroit | `web.base.url` erroné | §2.4 |
+| Le module reste « à installer » ; journal : *Some modules have inconsistent states … ['aite_courrier_sign']* | instance **Community** : l'app Sign n'existe pas | *Annuler l'installation* (§2) ; la signature exige Odoo Enterprise |
 
 ---
 
