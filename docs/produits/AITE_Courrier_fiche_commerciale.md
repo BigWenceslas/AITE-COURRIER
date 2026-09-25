@@ -40,7 +40,7 @@
 | DSI | 100 % Odoo 18, sans serveur documentaire tiers ; guides de mise en HTTPS et du lecteur réseau ; 302 tests automatisés et 18 scénarios de recette validés sur Odoo 18 Community (campagne du 16 septembre 2026, compléments Enterprise non couverts) |
 
 ### Ce qui est livré
-**Logiciel** : 29 modules Odoo 18 en français, dont 26 sur Community, recettés — signature électronique comprise, par le module communautaire OCA `sign_oca` —, et 3 compléments Enterprise (Odoo Sign, deux passerelles vers l'application Documents), non recettés, à valider sur Odoo Enterprise. **Paramétrage** : 5 circuits, 3 modèles de réponse, 5 règles de conservation, 2 types de dossiers métier, jeu de données de démonstration. **Documentation** : guides d'installation, de mise en HTTPS, de déploiement Windows, de capture et OCR, de signature et de recette.
+**Logiciel** : 29 modules Odoo 18 en français, dont 26 sur Community, recettés, et 3 compléments Enterprise (Odoo Sign, deux passerelles vers l'application Documents), non recettés, à valider sur Odoo Enterprise. **Paramétrage** : 5 circuits, 3 modèles de réponse, 5 règles de conservation, 2 types de dossiers métier, jeu de données de démonstration. **Documentation** : guides d'installation, de mise en HTTPS, de déploiement Windows, de capture et OCR, de signature et de recette.
 
 ### Services AITE Consulting
 Cadrage et plan de classement · paramétrage des circuits, rôles et règles de conservation · déploiement (Community ou Enterprise, HTTPS, postes Windows) · reprise de données · formation par rôle · support et maintenance.
