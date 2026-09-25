@@ -1,5 +1,44 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.15 — Signature électronique sur Odoo Community
+
+`aite_courrier_sign` exige l'app Sign d'Odoo Enterprise : sur Community, la
+signature des courriers n'existait pas. Nouveau module
+**`aite_courrier_sign_oca`** 18.0.1.0.0, adossé au module communautaire OCA
+`sign_oca` (18.0.1.4.3, commit `2489814`, AGPL-3), livré dans le paquet sous
+`oca/`. Il reprend le paramétrage de la variante Enterprise (case
+*Signature requise* sur l'étape, bouton *Demander la signature*, garde
+serveur) et va plus loin :
+
+- **feat(sign_oca)** : le signataire (responsable du courrier) signe depuis le
+  lien reçu par e-mail, sans compte Odoo ; le **PDF signé revient en GED**
+  comme nouvelle version (`<pièce>_signe.pdf`, l'original reste), ou dans le
+  fil du courrier si la pièce est verrouillée ou si le demandeur n'y a plus
+  accès — les contrôles GED se font au nom du demandeur.
+- **feat(sign_oca)** : la garde vaut **par passage sur l'étape** : un retour
+  sur l'étape, ou une seconde étape à signer, exige une nouvelle signature
+  (la variante Enterprise accepte toute signature complétée du courrier).
+  Redemander remplace la demande en attente ; quitter l'étape l'annule.
+- **feat(sign_oca)** : demander la signature est réservé à qui peut agir sur
+  l'étape ; un refus est tracé « Tentative non autorisée ». Journal
+  d'audit : *Demande de signature*, *Action bloquée*, *Signature complétée*.
+- **fix(sign_oca)** : trois ouvertures de `sign_oca` refermées — lecture de
+  toutes les demandes (PDF compris) par tout utilisateur interne ; lecture
+  des lignes signataires, donc des jetons de signature, entre collègues
+  rattachés à une même société partenaire ; téléchargement
+  `/my/sign/<id>/download` de n'importe quelle demande par tout utilisateur
+  connecté.
+- **test(sign_oca)** : 12 tests (parcours, garde par passage, remplacement,
+  annulation, pièce verrouillée, droits du demandeur, cloisonnement,
+  téléchargement, signature anonyme par le lien). Campagne complète avec le
+  module : 342 tests, 0 échec ; mêmes tests et ceux de `sign_oca` sous
+  Python 3.12 et reportlab 4.1.0 (installateur Windows) : 0 échec ; parcours
+  réel dans Chromium ; installation sur la copie d'une base où
+  `aite_courrier_sign` était bloqué « à installer ».
+- **docs** : `docs/TUTORIEL_SIGNATURE_COMMUNITY.md` ; renvois depuis le
+  tutoriel Enterprise, `addons/LISEZMOI_INSTALLATION.md`, le plan de test et
+  les fiches produit. `docs/recette/run_tests.sh` accepte `EXTRA_MODULES`.
+
 ## 18.0.2.1.14 — Journal d'audit : les refus restent tracés
 
 Le moteur de validation écrit « Tentative non autorisée » ou « Action bloquée »

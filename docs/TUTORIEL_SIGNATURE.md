@@ -5,6 +5,10 @@
 > connues et recette.
 >
 > Module `aite_courrier_sign` 18.0.1.0.0.
+>
+> **Sur Odoo Community**, utilisez la variante `aite_courrier_sign_oca`,
+> adossée au module communautaire OCA `sign_oca` et testée :
+> `TUTORIEL_SIGNATURE_COMMUNITY.md`.
 
 > ⚠️ **À lire avant de commencer.** Ce module exige **Odoo Enterprise** : il
 > s'appuie sur l'app `sign`, absente de Community. Il n'a jamais été exécuté
@@ -80,6 +84,8 @@ Pour en sortir : ouvrir le module dans Applications → **Annuler
 l'installation**. Le module redevient « non installé » et la ligne disparaît.
 Le mieux est ensuite de retirer son dossier du répertoire des modules — le
 paquet de la suite le range à part, dans `enterprise\`, pour cette raison.
+La signature s'installe alors par `aite_courrier_sign_oca`
+(`TUTORIEL_SIGNATURE_COMMUNITY.md`).
 
 ---
 
@@ -212,7 +218,7 @@ regrouper les demandes par courrier — pratique pour un suivi transverse.
 | « Cette étape exige une signature électronique » | garde §5.4 | demander la signature, attendre la complétion |
 | Le signataire ne reçoit rien | serveur de messagerie non configuré | §2.3 |
 | Le lien de signature pointe au mauvais endroit | `web.base.url` erroné | §2.4 |
-| Le module reste « à installer » ; journal : *Some modules have inconsistent states … ['aite_courrier_sign']* | instance **Community** : l'app Sign n'existe pas | *Annuler l'installation* (§2) ; la signature exige Odoo Enterprise |
+| Le module reste « à installer » ; journal : *Some modules have inconsistent states … ['aite_courrier_sign']* | instance **Community** : l'app Sign n'existe pas | *Annuler l'installation* (§2), puis installer `aite_courrier_sign_oca` |
 
 ---
 

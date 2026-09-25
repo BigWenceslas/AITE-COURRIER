@@ -28,6 +28,10 @@ pendant la campagne sont listées dans [`ANOMALIES.md`](./ANOMALIES.md).
 > ils restent simplement non installés, ce que prévoit la documentation
 > d'installation. Leur code est en revanche couvert par la relecture et par
 > les contrôles d'intégrité du module chapeau.
+>
+> `aite_courrier_sign_oca` (signature sur Community) dépend du module OCA
+> `sign_oca`, hors du dépôt : il rejoint la campagne quand `sign_oca` est dans
+> l'`addons_path`, avec `EXTRA_MODULES=aite_courrier_sign_oca` (§2).
 
 ### Installer et préparer
 
@@ -54,7 +58,9 @@ aite_courrier_portal,aite_ecm_demo --stop-after-init
 ```
 
 Le script `run_tests.sh` fourni dans ce dossier enchaîne base neuve,
-installation et exécution complète.
+installation et exécution complète. `EXTRA_MODULES=aite_courrier_sign_oca`
+y ajoute la signature sur Community (module OCA `sign_oca` requis dans
+l'`addons_path`) : 26 modules, 342 tests au 25/09/2026.
 
 ### Couverture par module
 
@@ -85,6 +91,7 @@ installation et exécution complète.
 | `aite_ecm_nextcloud_courrier` | 8 | miroir Nextcloud des pièces de courrier |
 | `aite_ecm_demo` | 10 | plan de génération, phases, purge (résidus des ponts compris), cohérence des compteurs |
 | `aite_ecm` | 16 | intégrité de l'assemblage + parcours fonctionnel complet (courrier → circuit → ECM → preuve → partage → WebDAV → API) |
+| `aite_courrier_sign_oca` | 12 | demande, garde par passage d'étape, PDF signé en GED, remplacement et annulation, pièce verrouillée, droits du demandeur, cloisonnement des demandes et des jetons, téléchargement, signature anonyme par le lien *(optionnel, `sign_oca`)* |
 
 ---
 

@@ -20,6 +20,9 @@ aite_courrier_portal,aite_ecm_document,aite_ecm_workflow,aite_ecm_dossier,\
 aite_ecm_share,aite_ecm_api,aite_courrier_ecm,aite_ecm_records,aite_ecm_sae,\
 aite_ecm_webdav,aite_ecm_office,aite_ecm_nextcloud,\
 aite_ecm_nextcloud_courrier,aite_ecm_demo,aite_ecm"
+# Modules optionnels, ex. EXTRA_MODULES=aite_courrier_sign_oca (requiert le
+# module OCA sign_oca dans l'addons_path).
+MODULES="$MODULES${EXTRA_MODULES:+,$EXTRA_MODULES}"
 MODULES=$(echo "$MODULES" | tr -d '\\\n')
 TAGS=$(echo "$MODULES" | tr ',' '\n' | sed 's|^|/|' | paste -sd,)
 

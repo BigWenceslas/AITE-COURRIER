@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_aite_workflow_circuit_form_sign_oca" model="ir.ui.view">
+        <field name="name">aite.workflow.circuit.form.sign.oca</field>
+        <field name="model">aite.workflow.circuit</field>
+        <field name="inherit_id" ref="aite_courrier_workflow.view_aite_workflow_circuit_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='step_ids']/list/field[@name='is_final']" position="after">
+                <field name="require_signature" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

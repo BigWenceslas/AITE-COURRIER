@@ -126,3 +126,8 @@ planifiées de la base (jusqu'à cinq heures), et chaque démarrage écrit
 `Some modules have inconsistent states, some dependencies may be missing`.
 Remède : Applications → le module → **Annuler l'installation**, puis retirer
 son dossier. Le paquet de la suite les range à part, dans `enterprise/`.
+
+La signature électronique s'installe sur Community par
+`aite_courrier_sign_oca`, qui s'appuie sur le module OCA `sign_oca` livré
+dans `oca/` : copier `oca/sign_oca` dans `custom_addons`, puis
+`-i aite_courrier_sign_oca` (`docs/TUTORIEL_SIGNATURE_COMMUNITY.md`).

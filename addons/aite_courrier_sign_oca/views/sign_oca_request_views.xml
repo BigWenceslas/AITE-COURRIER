@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sign_oca_request_form_courrier" model="ir.ui.view">
+        <field name="name">sign.oca.request.form.courrier</field>
+        <field name="model">sign.oca.request</field>
+        <field name="inherit_id" ref="sign_oca.sign_oca_request_form_view"/>
+        <field name="arch" type="xml">
+            <field name="record_ref" position="after">
+                <field name="courrier_id" invisible="not courrier_id"/>
+                <field name="courrier_step_id" invisible="not courrier_step_id"/>
+                <field name="courrier_document_id" invisible="not courrier_document_id"/>
+                <field name="courrier_signers_summary" invisible="not courrier_id"/>
+            </field>
+        </field>
+    </record>
+    <record id="view_sign_oca_request_list_courrier" model="ir.ui.view">
+        <field name="name">sign.oca.request.list.courrier</field>
+        <field name="model">sign.oca.request</field>
+        <field name="inherit_id" ref="sign_oca.sign_oca_request_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="record_ref" position="after">
+                <field name="courrier_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+    <record id="view_sign_oca_request_search_courrier" model="ir.ui.view">
+        <field name="name">sign.oca.request.search.courrier</field>
+        <field name="model">sign.oca.request</field>
+        <field name="inherit_id" ref="sign_oca.sign_oca_request_search_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="courrier_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

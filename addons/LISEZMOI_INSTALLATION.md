@@ -1,4 +1,4 @@
-# AITE ECM & AITE Courrier — 28 modules Odoo 18
+# AITE ECM & AITE Courrier — 29 modules Odoo 18
 
 Archive unique contenant **tous les modules** de la suite, prêts à être copiés
 dans le dossier `addons` d'Odoo 18 (Community ou Enterprise).
@@ -16,13 +16,18 @@ modules de votre instance. Sous Windows, avec l'installateur officiel :
 C:\Program Files\Odoo 18.0.<version>\server\odoo\addons\
 ```
 
-Vous devez y retrouver les dossiers `aite_*` : 25 sur Odoo Community, 28 sur
+Vous devez y retrouver les dossiers `aite_*` : 26 sur Odoo Community, 29 sur
 Enterprise. Les trois modules Enterprise — `aite_courrier_sign`,
 `aite_courrier_ged_documents`, `aite_ecm_documents` — ne se copient **que sur
 Enterprise** : sur Community, *Activer* les laisse bloqués « à installer »
 (voir `docs/TUTORIEL_SIGNATURE.md` §2). Si vous utilisez un dossier
 personnalisé déclaré dans `addons_path`, copiez-les là — mais **à un seul
 endroit** : deux exemplaires du même module provoquent des erreurs.
+
+Pour la **signature électronique sur Community** (`aite_courrier_sign_oca`),
+copiez aussi, au même endroit, le dossier `oca\sign_oca` du paquet : c'est
+le module communautaire OCA sur lequel elle s'appuie
+(`docs/TUTORIEL_SIGNATURE_COMMUNITY.md`).
 
 **2. Redémarrer le service Odoo**, puis, dans Apps, cliquer
 **Mettre à jour la liste des Apps**.
@@ -45,7 +50,7 @@ Sous Linux : `./odoo-bin -c odoo.conf -d <base> -i aite_ecm --stop-after-init`
 
 ---
 
-## 2. Les 28 modules
+## 2. Les 29 modules
 
 ### Socle et courrier
 
@@ -62,6 +67,7 @@ Sous Linux : `./odoo-bin -c odoo.conf -d <base> -i aite_ecm --stop-after-init`
 | `aite_courrier_webdav` | Pièces de courrier en lecteur réseau |
 | `aite_courrier` | **Chapeau Courrier** + tableau de bord |
 | `aite_courrier_portal` | Dépôt et suivi par les tiers *(optionnel)* |
+| `aite_courrier_sign_oca` | Signature électronique via le module OCA `sign_oca` *(optionnel, **Community**)* |
 | `aite_courrier_sign` | Signature via Odoo Sign *(optionnel, **Enterprise**)* |
 
 ### Fondation ECM
@@ -109,6 +115,10 @@ Enterprise et restent simplement non installés sinon :
 `aite_courrier_sign` (Odoo Sign), `aite_ecm_documents` et
 `aite_courrier_ged_documents` (app Documents). Les deux derniers s'installent
 d'eux-mêmes quand l'app Documents est présente.
+
+La signature électronique existe dans les deux éditions : sur Community,
+`aite_courrier_sign_oca` (module OCA `sign_oca`, livré dans `oca\`) ; sur
+Enterprise, `aite_courrier_sign` (Odoo Sign). Les deux s'excluent.
 
 ---
 
