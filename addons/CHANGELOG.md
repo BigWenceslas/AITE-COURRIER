@@ -1,5 +1,27 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.14 — Journal d'audit : les refus restent tracés
+
+Le moteur de validation écrit « Tentative non autorisée » ou « Action bloquée »
+au journal d'audit, puis lève une exception. Sur un vrai serveur, l'exception
+annule la transaction de la requête — et l'entrée d'audit avec elle : aucun
+refus n'était jamais conservé, contrairement à ce qu'annonçaient la
+documentation et les fiches produit. Les tests ne le voyaient pas : ils
+partagent une seule transaction. Constaté sur Odoo 18.0 Community, serveur
+démarré, par une tentative réelle : 0 entrée après le refus.
+
+- **fix(base): les entrées « err » s'écrivent dans une transaction à part**
+  (`aite.courrier.audit.log._log`), validée aussitôt, avec l'identité de
+  l'utilisateur. Cela couvre les refus de `aite_courrier_validation` et la
+  garde de signature. Pendant les tests, l'écriture reste dans la transaction
+  partagée ; si l'écriture à part échoue, repli sur la transaction courante.
+  `aite_courrier_base` 18.0.1.2.0.
+- **test(base)** : le chemin d'exploitation passe par un curseur dédié, les
+  autres types restent dans la transaction courante.
+- **recette** : `docs/recette/verif_audit_refus.py` rejoue un refus par
+  XML-RPC sur un serveur démarré et compte les entrées. Avant : 0 → 0 ;
+  après : 0 → 1, puis 1 → 2.
+
 ## 18.0.2.1.13 — Community : les modules Enterprise à l'écart
 
 Sur l'instance Windows (Odoo 18 Community), `aite_courrier_sign` restait
