@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ResConfigSettings(models.TransientModel):
@@ -36,6 +36,10 @@ class ResConfigSettings(models.TransientModel):
                            'message': "Serveur joignable — %d formats : %s"
                            % (len(exts), ', '.join(exts[:20]))}}
 
+    # La page Paramètres s'ouvre par un onchange qui laisse vides les champs
+    # calculés sans dépendance : company_id, qui a une valeur par défaut,
+    # déclenche le calcul et l'adresse s'affiche.
+    @api.depends('company_id')
     def _compute_ecm_google_redirect(self):
         base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url')
                 or '').rstrip('/')

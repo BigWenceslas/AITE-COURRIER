@@ -1,4 +1,4 @@
-# Guide d'installation et de mise à jour — suite AITE 2.1.15
+# Guide d'installation et de mise à jour — suite AITE 2.1.16
 
 > AITE Courrier et AITE ECM pour Odoo 18 Community, signature électronique
 > comprise. Ce guide accompagne le paquet `aite-suite-18.0-<commit>.zip` :
@@ -25,6 +25,16 @@ installer », ce qui suspend toutes les tâches planifiées de la base.
 
 ## 2. Dernières nouveautés
 
+**2.1.16** (6 octobre 2026) — la page Paramètres :
+
+| Module | Version | Changement |
+| --- | --- | --- |
+| `aite_ecm_office` | 18.0.2.0.4 | **correctif** : Paramètres ne s'ouvrait plus (*Octal escape sequences are not allowed in template strings*) ; l'adresse WebDAV et l'URI de redirection Google s'affichent |
+| `aite_ecm_document` | 18.0.2.0.2 | l'adresse de scan vers e-mail s'affiche dans Paramètres |
+| `aite_ecm` | 18.0.2.0.1 | l'onglet *AITE ECM* des Paramètres retrouve son icône |
+
+**2.1.15** — la signature sur Community :
+
 | Module | Version | Changement |
 | --- | --- | --- |
 | `aite_courrier_sign_oca` | 18.0.1.0.0 | **nouveau** : signature électronique des courriers sur Community (§5) |
@@ -36,6 +46,9 @@ Historique complet : `addons\CHANGELOG.md`.
 ---
 
 ## 3. Mettre à jour une instance en service
+
+> **Déjà en 2.1.15, signature installée ?** Les étapes 3.0 et 3.5 sont
+> faites : suivez 3.1 à 3.4, puis 3.6 et 3.7.
 
 ### 3.0 Débloquer `aite_courrier_sign`
 
@@ -118,7 +131,12 @@ Applications, filtre retiré :
 | `aite_courrier_sign_oca` | 18.0.1.0.0 | installé |
 | `sign_oca` | 18.0.1.4.3 | installé |
 | `aite_courrier_base` | 18.0.1.2.0 | installé |
+| `aite_ecm_office` | 18.0.2.0.4 | installé |
 | `aite_courrier_sign` | — | **non installé** |
+
+Puis ouvrez **Paramètres** : la page s'affiche, et l'onglet *AITE ECM*
+(avec son icône) donne, sous *Office et Google Docs*, l'adresse WebDAV de
+l'ECM — `http://localhost:8069/webdav/aite_ecm/` sur une instance locale.
 
 ---
 
@@ -230,6 +248,7 @@ prompts to Office apps*. Détail : `DEPLOIEMENT_WEBDAV_WINDOWS.pdf`, §3.
 
 | Symptôme | Remède |
 | --- | --- |
+| Paramètres : *UncaughtPromiseError > OwlError … Octal escape sequences are not allowed in template strings* | `aite_ecm_office` antérieur à 18.0.2.0.4 : §3.3, §3.4, puis redémarrer et **Ctrl+F5** (§3.6) |
 | *Les modules … sont incompatibles* | §3.0, puis relancer §3.5 |
 | `sign_oca` introuvable à l'installation | `oca\sign_oca` non copié, ou hors de l'`addons_path` (§3.3) |
 | Journal : *Some modules have inconsistent states … ['aite_courrier_sign']* | §3.0 |
@@ -262,15 +281,22 @@ prompts to Office apps*. Détail : `DEPLOIEMENT_WEBDAV_WINDOWS.pdf`, §3.
 
 Vérifié sur Odoo 18.0 Community et PostgreSQL 16, avec le code de ce paquet :
 
-- campagne complète (`docs\recette\run_tests.sh`, avec la signature) : base
-  neuve, 26 modules, 342 tests, 0 échec ;
-- tests de la signature et de `sign_oca` sous Python 3.12 et reportlab
-  4.1.0, les versions de l'installateur Windows d'Odoo 18 : 0 échec ;
-- parcours réel de signature dans un navigateur (Chromium) ;
-- installation depuis le paquet sur une base neuve, sans erreur ;
-- installation sur la copie d'une base où `aite_courrier_sign` était bloqué
-  « à installer » : refus attendu, puis installation sans erreur une fois
-  le blocage levé.
+- campagne complète (`docs\recette\run_tests.sh`, avec la signature) sous
+  Python 3.12 et reportlab 4.1.0, les versions de l'installateur Windows
+  d'Odoo 18 : base neuve, 26 modules, 348 tests, 0 échec ;
+- la page Paramètres dans un navigateur (Chromium), sur la copie d'une base
+  touchée par le plantage, après la mise à jour du §3.4 : aucune erreur,
+  les 4 applications de réglages s'affichent, avec l'adresse WebDAV, l'URI
+  Google, l'adresse de scan et l'icône *AITE ECM* ;
+- les 4 tests ajoutés (`test_web_client_views`) échouent sur la 2.1.15 et
+  passent sur cette version ;
+- installation depuis le paquet sur une base neuve, sans erreur.
+
+Repris de la 2.1.15, dont le code de la signature n'a pas changé : tests de
+`sign_oca` sous Python 3.12 ; parcours réel de signature dans Chromium ;
+installation sur la copie d'une base où `aite_courrier_sign` était bloqué
+« à installer » (refus attendu, puis installation sans erreur une fois le
+blocage levé).
 
 Non vérifié dans cet environnement : l'envoi réel des e-mails (pas de
 serveur SMTP) et l'autorisation Office d'un poste Windows (§6).

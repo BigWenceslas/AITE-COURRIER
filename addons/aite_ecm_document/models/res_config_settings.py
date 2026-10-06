@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ResConfigSettings(models.TransientModel):
@@ -31,6 +31,10 @@ class ResConfigSettings(models.TransientModel):
     ecm_scan_alias = fields.Char(
         string="Adresse de scan vers e-mail", compute='_compute_ecm_scan_alias')
 
+    # La page Paramètres s'ouvre par un onchange qui laisse vides les champs
+    # calculés sans dépendance : company_id, qui a une valeur par défaut,
+    # déclenche le calcul et l'adresse s'affiche.
+    @api.depends('company_id')
     def _compute_ecm_scan_alias(self):
         alias = self.env.ref('aite_ecm_document.mail_alias_ecm_scan',
                              raise_if_not_found=False)

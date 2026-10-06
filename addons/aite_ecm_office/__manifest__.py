@@ -29,7 +29,7 @@ compatibles Odoo Community :
 
 Paramétrage : ECM › Configuration › Paramètres › *Édition Office*.
 """,
-    'version': '18.0.2.0.3',
+    'version': '18.0.2.0.4',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',

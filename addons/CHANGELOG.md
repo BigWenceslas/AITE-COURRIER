@@ -1,5 +1,45 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.16 — Page Paramètres : le plantage corrigé
+
+Depuis 18.0.2.1.12, ouvrir **Paramètres** affichait *UncaughtPromiseError >
+OwlError : Failed to compile template … Octal escape sequences are not allowed
+in template strings*, et plus aucun réglage n'était accessible, toutes
+applications confondues. L'aide du réglage *Word, Excel, PowerPoint,
+LibreOffice* (`aite_ecm_office`) citait la clé de registre
+`HKCU\Software\…\Office\16.0\…`. Or Odoo 18 recopie les textes d'une vue
+dans un gabarit JavaScript sans en échapper l'antislash
+(`toStringExpression`, `web/static/src/views/utils.js`). « \16 » y devient
+une séquence octale interdite, et la page entière, qui réunit les réglages
+de tous les modules, ne se compile plus. Les tests serveur ne compilent pas
+les gabarits, et la page n'avait pas été rouverte dans un navigateur après ce
+changement.
+
+- **fix(office)** : l'aide écrit la clé avec « › » et renvoie au guide
+  `DEPLOIEMENT_WEBDAV_WINDOWS` (§3) pour la commande à copier.
+  `aite_ecm_office` 18.0.2.0.4.
+- **fix(office, document)** : trois réglages s'affichaient vides : l'adresse
+  WebDAV de l'ECM, l'URI de redirection Google et l'adresse de scan vers
+  e-mail. Odoo ouvre Paramètres par un `onchange` qui met `False` dans les
+  champs calculés et ne recalcule que ceux dont une dépendance a une valeur
+  par défaut. Ils dépendent désormais de `company_id`, comme les réglages
+  calculés d'Odoo. `aite_ecm_document` 18.0.2.0.2.
+- **fix(ecm)** : l'onglet *AITE ECM* des Paramètres n'avait pas d'icône
+  (`/aite_ecm/static/description/icon.png` absent, erreur 404). Le module
+  chapeau `aite_ecm` reçoit l'icône de l'ECM. `aite_ecm` 18.0.2.0.1.
+- **test(base)** : `aite_courrier_base/tests/test_web_client_views.py`,
+  4 tests sur ce que le client web fait des vues AITE, sans navigateur :
+  - aucun antislash dans les vues formulaire, liste et kanban, pour chaque
+    langue installée, ni dans la page Paramètres assemblée ;
+  - une icône pour chaque application de réglages AITE ;
+  - les réglages calculés sont renseignés à l'ouverture de la page.
+
+  Chaque test échoue sur le code précédent et passe sur celui-ci.
+  Campagne complète avec la signature, sous Python 3.12 et reportlab 4.1.0 :
+  348 tests, 0 échec. Page Paramètres parcourue dans Chromium sur la copie
+  d'une base touchée, après `-u` : aucune erreur, 4 applications de
+  réglages, valeurs et icône affichées.
+
 ## 18.0.2.1.15 — Signature électronique sur Odoo Community
 
 `aite_courrier_sign` exige l'app Sign d'Odoo Enterprise : sur Community, la

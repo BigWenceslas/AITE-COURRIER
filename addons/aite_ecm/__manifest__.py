@@ -19,7 +19,7 @@ Ce module chapeau installe l'ensemble de la suite :
 Les modules optionnels ``aite_courrier_sign`` et ``aite_courrier_portal``
 s'installent séparément.
 """,
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.0.1',
     'category': 'AITE/ECM',
     'author': 'AITE Consulting',
     'website': 'https://www.aite-consulting.com',
