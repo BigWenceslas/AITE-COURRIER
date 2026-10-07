@@ -62,14 +62,16 @@ elles ne créent pas de doublon.
 
 ## A.2 Installer
 
+PowerShell administrateur, en remplaçant `ma_base` par le nom de votre base :
+
 ```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$base = "ma_base"
 net stop odoo-server-18.0
-
-& "C:\Program Files\Odoo 18\python\python.exe" `
-  "C:\Program Files\Odoo 18\server\odoo-bin" `
-  -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-  -i aite_courrier_capture --stop-after-init
-
+& $py $bin -c $cfg -d $base --logfile= -i aite_courrier_capture --stop-after-init
 net start odoo-server-18.0
 ```
 
@@ -183,8 +185,12 @@ la pièce jointe, ce qui le rend visible à la recherche native d'Odoo.
 
 ## B.2 Installer
 
+Dans le PowerShell du §A.2 (variables `$py`, `$bin`, `$cfg` et `$base`) :
+
 ```powershell
-... odoo-bin -c odoo.conf -d <votre_base> -i aite_courrier_ocr --stop-after-init
+net stop odoo-server-18.0
+& $py $bin -c $cfg -d $base --logfile= -i aite_courrier_ocr --stop-after-init
+net start odoo-server-18.0
 ```
 
 ✅ **Vérification** — **Paramètres → Technique → Automatisation → Actions
@@ -220,7 +226,8 @@ sudo systemctl restart odoo
 4. Les paquets Python, avec le Python d'Odoo :
 
 ```powershell
-& "C:\Program Files\Odoo 18\python\python.exe" -m pip install pytesseract pdf2image Pillow
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+& "$odoo\python\python.exe" -m pip install pytesseract pdf2image Pillow
 ```
 
 5. Redémarrer le service Odoo.

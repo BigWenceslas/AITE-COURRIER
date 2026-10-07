@@ -1,5 +1,82 @@
 # Changelog — AITE Courrier / AITE ECM
 
+## 18.0.2.1.17 — Paramètres tient bon, la mise à jour aboutit
+
+La 2.1.16 corrigeait le plantage de **Paramètres** (*Octal escape sequences
+are not allowed in template strings*), mais la correction n'arrivait dans
+une base qu'après sa mise à niveau. Or la procédure livrée échouait souvent
+sans message visible :
+
+- la commande visait `C:\Program Files\Odoo 18`, alors que l'installateur
+  Windows installe dans `Odoo 18.0.<date>` ;
+- le paramètre `<votre_base>` est une erreur de syntaxe en PowerShell ;
+- le journal partait dans `odoo.log` ;
+- `LISEZMOI_INSTALLATION.md` mettait à jour avec `-u aite_ecm`, qui ne
+  touche pas `aite_ecm_office`.
+
+Le guide demandait aussi de supprimer « tous les dossiers `aite_*` »,
+consigne qui emportait les modules d'autres suites AITE comme Core Banking.
+
+- **fix(base)** : Paramètres s'ouvre même avec une vue en retard sur son
+  module (fichiers copiés, base pas encore mise à niveau). Dans la page
+  servie au navigateur, l'antislash des textes est remplacé par « ⧵ »
+  (U+29F5), de même dessin. Les expressions (`invisible`, `domain`,
+  `context`…) sont laissées intactes : elles passent par `JSON.stringify`.
+  Un avertissement dans `odoo.log` nomme la vue à mettre à niveau. Il
+  suffit donc de copier les fichiers et de redémarrer pour retrouver la
+  page. `aite_courrier_base` 18.0.1.2.1.
+- **test(base)** : `test_settings_page_survives_stale_view` recrée l'aide
+  d'`aite_ecm_office` 18.0.2.0.3 dans une vue héritée et vérifie trois
+  points :
+  - plus aucun antislash dans les textes de la page ;
+  - le chemin s'affiche avec « ⧵ » ;
+  - les expressions sont gardées et la vue est signalée.
+
+  Ce test échoue sans la protection.
+- **docs** : `GUIDE_INSTALLATION_MISE_A_JOUR` §3 réécrit.
+  - Le dossier d'Odoo est lu dans le registre (`$odoo`).
+  - Une commande de contrôle liste les modules de la suite que voit Odoo,
+    avec leur version, et fait ressortir doublons et anciens exemplaires.
+  - Les dossiers à remplacer sont nommés.
+  - La colonne *Dernière version* d'Applications sert de contrôle.
+  - La base se met à niveau en un clic : **Mettre à niveau** sur
+    *AITE Courrier - Socle*, dont dépend toute la suite.
+  - En ligne de commande, `-u aite_courrier_base --logfile=` remplace la
+    liste des 25 modules.
+  - Le §7 couvre les messages de PowerShell et les copies mal placées.
+
+  `LISEZMOI_INSTALLATION.md` est corrigé de même.
+- **docs** : six autres documents portaient le même chemin faux et
+  `<votre_base>`, corrigés de même :
+  - `TUTORIEL_SIGNATURE_COMMUNITY`, `TUTORIEL_SIGNATURE`,
+    `TUTORIEL_CAPTURE_OCR`, `TUTORIEL_WEBDAV_HTTPS` ;
+  - `DEPLOIEMENT_WEBDAV_WINDOWS` ;
+  - le README d'`aite_courrier_sign_oca`.
+
+  Les PDF coupent une ligne de code trop longue, et un copier-coller la
+  livre alors en deux morceaux. Deux défauts en découlaient :
+  - `reg add … basichostallowlist`, ainsi coupée, posait une valeur vide,
+    et Word restait bloqué ;
+  - le générateur de PDF aplatissait les blocs de code imbriqués dans une
+    liste : le §4 du guide perdait ses retours à la ligne et
+    `<votre_base>`.
+
+  Les commandes tiennent désormais sur une ligne de PDF, et les blocs de
+  code sont sortis des listes.
+
+Vérifié :
+
+- campagne complète, signature comprise : 349 tests, 0 échec ;
+- sur la copie d'une base antérieure à la 2.1.16 (fr_FR), dans Chromium :
+  - avec les nouveaux fichiers sans mise à niveau, Paramètres s'ouvre et
+    l'avertissement nomme `aite_ecm_office.res_config_settings_view_form_office` ;
+  - le bouton *Mettre à niveau* met les 26 modules à la version du disque
+    en 13 s, et l'aide nouvelle s'affiche ;
+- la ligne de commande du guide, avec un `odoo.conf` qui désigne un
+  journal : même résultat, journal à l'écran ;
+- les blocs PowerShell du guide, sous PowerShell 7, sur une installation
+  simulée.
+
 ## 18.0.2.1.16 — Page Paramètres : le plantage corrigé
 
 Depuis 18.0.2.1.12, ouvrir **Paramètres** affichait *UncaughtPromiseError >

@@ -149,7 +149,8 @@ Le premier montage bute sur des réglages du **poste** (service WebClient, `Basi
 
 ```powershell
 net use X: \\localhost@8069\webdav\aite_ecm
-reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+$cle = "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity"
+reg add $cle /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
 ```
 
 (`\\localhost@SSL\webdav\aite_ecm` en HTTPS ; en production, le nom du serveur dans les deux commandes.) En production, HTTPS supprime le réglage `BasicAuthLevel` du client WebDAV de Windows, pas `basichostallowlist` : Office bloque l'invite Basic en HTTPS aussi. Microsoft ne recommande cette autorisation qu'à titre transitoire.

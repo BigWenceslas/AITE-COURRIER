@@ -68,25 +68,27 @@ installé » : relancer la commande suffit aussi.
 
 ## 3. Installer
 
-1. Copier le dossier **`oca\sign_oca`** du paquet dans le dossier des
-   modules, à côté des `aite_*`. Un seul exemplaire : ne pas le copier à
-   deux endroits de `addons_path`.
-2. Installer, service arrêté (PowerShell administrateur) :
+**Copier** le dossier **`oca\sign_oca`** du paquet dans le dossier des
+modules, à côté des `aite_*`. Un seul exemplaire : ne pas le copier à deux
+endroits de `addons_path`.
 
-   ```powershell
-   net stop odoo-server-18.0
+**Installer**, service arrêté, dans un PowerShell administrateur, en
+remplaçant `ma_base` par le nom de votre base :
 
-   & "C:\Program Files\Odoo 18\python\python.exe" `
-     "C:\Program Files\Odoo 18\server\odoo-bin" `
-     -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-     -i aite_courrier_sign_oca --stop-after-init
+```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$base = "ma_base"
+net stop odoo-server-18.0
+& $py $bin -c $cfg -d $base --logfile= -i aite_courrier_sign_oca --stop-after-init
+net start odoo-server-18.0
+```
 
-   net start odoo-server-18.0
-   ```
-
-   La commande installe aussi `sign_oca` et deux modules standard d'Odoo,
-   `base_sparse_field` et `web_editor`. Aucune bibliothèque Python à ajouter :
-   `sign_oca` utilise celles qu'Odoo embarque (reportlab, PyPDF2).
+La commande installe aussi `sign_oca` et deux modules standard d'Odoo,
+`base_sparse_field` et `web_editor`. Aucune bibliothèque Python à ajouter :
+`sign_oca` utilise celles qu'Odoo embarque (reportlab, PyPDF2).
 
 ✅ **Vérification** : Courrier › Configuration › Circuits de traitement,
 ouvrir un circuit : la liste des étapes porte une colonne **Signature

@@ -91,14 +91,16 @@ La signature s'installe alors par `aite_courrier_sign_oca`
 
 ## 3. Installer le module
 
+PowerShell administrateur, en remplaçant `ma_base` par le nom de votre base :
+
 ```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$base = "ma_base"
 net stop odoo-server-18.0
-
-& "C:\Program Files\Odoo 18\python\python.exe" `
-  "C:\Program Files\Odoo 18\server\odoo-bin" `
-  -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-  -i aite_courrier_sign --stop-after-init
-
+& $py $bin -c $cfg -d $base --logfile= -i aite_courrier_sign --stop-after-init
 net start odoo-server-18.0
 ```
 

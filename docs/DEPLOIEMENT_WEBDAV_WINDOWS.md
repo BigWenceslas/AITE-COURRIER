@@ -84,7 +84,8 @@ Décompresser l'archive et copier les **7 dossiers de modules** dans le
 répertoire d'addons personnalisé déclaré par `addons_path` :
 
 ```powershell
-Copy-Item -Recurse -Force .\addons\* "C:\Program Files\Odoo 18\server\custom_addons\"
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+Copy-Item -Recurse -Force .\addons\* "$odoo\server\custom_addons\"
 ```
 
 Les 7 modules sont la fermeture complète des dépendances des deux modules
@@ -112,26 +113,27 @@ Côté Odoo natif, seuls des modules **Community** sont requis : `base`, `web`,
 
 ```ini
 [options]
-addons_path = C:\Program Files\Odoo 18\server\odoo\addons,C:\Program Files\Odoo 18\server\custom_addons
+addons_path = C:\Program Files\Odoo 18.0.<date>\server\odoo\addons,C:\Program Files\Odoo 18.0.<date>\server\custom_addons
 
 ; INDISPENSABLE au WebDAV : le contrôleur s'authentifie hors session et ne
 ; peut pas deviner la base. Sans db_name, un serveur qui héberge plusieurs
 ; bases répond 401 quels que soient les identifiants.
-db_name = <votre_base>
+db_name = ma_base
 ```
 
 ### 2.3 Installer les modules
 
-Arrêter le service, puis :
+PowerShell administrateur, en remplaçant `ma_base` par le nom de votre base :
 
 ```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$base = "ma_base"
+$modules = "aite_courrier_webdav,aite_ecm_webdav"
 net stop odoo-server-18.0
-
-& "C:\Program Files\Odoo 18\python\python.exe" `
-  "C:\Program Files\Odoo 18\server\odoo-bin" `
-  -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-  -i aite_courrier_webdav,aite_ecm_webdav --stop-after-init
-
+& $py $bin -c $cfg -d $base --logfile= -i $modules --stop-after-init
 net start odoo-server-18.0
 ```
 
@@ -202,7 +204,8 @@ ci-dessous), reprendre ses hôtes dans `/d` : `/f` la remplace. Puis :
 
 ```powershell
 # Indispensable, en http comme en https : autoriser l'hôte à demander des identifiants
-reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+$cle = "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity"
+reg add $cle /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
 
 # En http seulement : ancienne clé, qui autorise Basic hors SSL
 reg add HKCU\Software\Microsoft\Office\16.0\Common\Internet `

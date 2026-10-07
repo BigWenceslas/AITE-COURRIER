@@ -57,21 +57,26 @@ en production (§11).
 
 ## 1. Installer les modules
 
-Copier le contenu de `addons\` dans le répertoire déclaré par `addons_path`,
-typiquement `C:\Program Files\Odoo 18\server\custom_addons\`.
+Copier les dossiers de modules de `addons\` dans un répertoire déclaré par
+`addons_path`, par exemple `C:\Program Files\Odoo 18.0.<date>\server\odoo\addons\`
+avec l'installateur Windows (`GUIDE_INSTALLATION_MISE_A_JOUR`, §3.2, pour le
+trouver). Puis, dans un PowerShell administrateur, en remplaçant `ma_base` par
+le nom de votre base :
 
 ```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$base = "ma_base"
+$modules = "aite_courrier_webdav,aite_ecm_webdav"
+$options = "--load-language=fr_FR", "--without-demo=all", "--stop-after-init"
 net stop odoo-server-18.0
-
-& "C:\Program Files\Odoo 18\python\python.exe" `
-  "C:\Program Files\Odoo 18\server\odoo-bin" `
-  -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-  --load-language=fr_FR --without-demo=all --stop-after-init `
-  -i aite_courrier_webdav,aite_ecm_webdav
+& $py $bin -c $cfg -d $base --logfile= $options -i $modules
 ```
 
-Pour la suite complète, remplacer la dernière ligne par la liste des 24 modules
-Community donnée dans le `LISEZMOI.txt` du paquet. **Ne pas sélectionner**
+Pour la suite complète, reprendre la liste `$modules` du
+`GUIDE_INSTALLATION_MISE_A_JOUR`, §4. **Ne pas sélectionner**
 `aite_courrier_sign`, `aite_courrier_ged_documents` ni `aite_ecm_documents` :
 ils dépendent de modules Odoo Enterprise et feraient échouer l'installation.
 
@@ -88,7 +93,7 @@ Dans `odoo.conf` :
 ; Le contrôleur WebDAV s'authentifie hors session et ne peut pas deviner la
 ; base : sans cette ligne, un serveur multi-base répond 401 à tout, quels que
 ; soient les identifiants.
-db_name = <votre_base>
+db_name = ma_base
 
 ; Odoo sera derrière un proxy : faire confiance aux en-têtes X-Forwarded-*.
 proxy_mode = True
@@ -245,7 +250,8 @@ Word** (§8).
 3. Coller :
 
 ```powershell
-reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+$cle = "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity"
+reg add $cle /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
 ```
 
    `/f` remplace une valeur `basichostallowlist` existante (posée par l'administrateur, ou pour un autre serveur) : la lire d'abord avec `reg query "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist` et reprendre ses hôtes dans `/d`.

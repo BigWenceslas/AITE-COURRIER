@@ -39,10 +39,12 @@ courrier quitte l'étape.
 2. Installer, service Odoo arrêté :
 
    ```powershell
-   & "C:\Program Files\Odoo 18\python\python.exe" `
-     "C:\Program Files\Odoo 18\server\odoo-bin" `
-     -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-     -i aite_courrier_sign_oca --stop-after-init
+   $odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+   $py = "$odoo\python\python.exe"
+   $bin = "$odoo\server\odoo-bin"
+   $cfg = "$odoo\server\odoo.conf"
+   $base = "ma_base"
+   & $py $bin -c $cfg -d $base --logfile= -i aite_courrier_sign_oca --stop-after-init
    ```
 
    `sign_oca` s'installe avec, ainsi que `base_sparse_field` et

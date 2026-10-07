@@ -116,7 +116,7 @@ Dans `odoo.conf`, deux lignes :
 proxy_mode = True
 
 ; Toujours indispensable au WebDAV, quel que soit le protocole
-db_name = <votre_base>
+db_name = ma_base
 ```
 
 Puis **Paramètres → Technique → Paramètres système**, `web.base.url` :
@@ -200,7 +200,8 @@ compte est administrateur du poste, les sources consultées indiquant que des
 droits d'administration sont requis :
 
 ```powershell
-reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+$cle = "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity"
+reg add $cle /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
 ```
 
 - `/f` remplace une valeur `basichostallowlist` existante (posée par l'administrateur, ou pour un autre serveur) : la lire d'abord avec `reg query "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist` et reprendre ses hôtes dans `/d`.

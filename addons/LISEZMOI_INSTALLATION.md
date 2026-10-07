@@ -9,14 +9,16 @@ Version 2.1 · Septembre 2026 · AITE Consulting
 
 ## 1. Installation
 
-**1. Copier les modules.** Décompressez cette archive dans le dossier des
-modules de votre instance. Sous Windows, avec l'installateur officiel :
+**1. Copier les modules.** Copiez les dossiers de modules de ce dossier
+`addons` (pas le dossier lui-même) dans le dossier des modules de votre
+instance. Sous Windows, avec l'installateur officiel :
 
 ```
-C:\Program Files\Odoo 18.0.<version>\server\odoo\addons\
+C:\Program Files\Odoo 18.0.<date>\server\odoo\addons\
 ```
 
-Vous devez y retrouver les dossiers `aite_*` : 26 sur Odoo Community, 29 sur
+Vous devez y retrouver, côte à côte avec les autres modules, les dossiers
+`aite_courrier*` et `aite_ecm*` : 26 sur Odoo Community, 29 sur
 Enterprise. Les trois modules Enterprise — `aite_courrier_sign`,
 `aite_courrier_ged_documents`, `aite_ecm_documents` — ne se copient **que sur
 Enterprise** : sur Community, *Activer* les laisse bloqués « à installer »
@@ -39,14 +41,23 @@ Nous recommandons la ligne de commande plutôt que le bouton de l'interface :
 l'installation peut dépasser la limite de temps des workers HTTP, et le
 journal affiche l'erreur exacte en cas de problème.
 
+PowerShell administrateur, en remplaçant `ma_base` par le nom de votre
+base :
+
 ```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$base = "ma_base"
 net stop odoo-server-18.0
-cd "C:\Program Files\Odoo 18.0.<version>\server"
-& "..\python\python.exe" odoo-bin -c odoo.conf -d <base> -i aite_ecm --stop-after-init
+& $py $bin -c $cfg -d $base --stop-after-init --logfile= -i aite_ecm
 net start odoo-server-18.0
 ```
 
-Sous Linux : `./odoo-bin -c odoo.conf -d <base> -i aite_ecm --stop-after-init`
+`--logfile=` affiche le journal à l'écran au lieu de `odoo.log`.
+
+Sous Linux : `./odoo-bin -c odoo.conf -d ma_base -i aite_ecm --stop-after-init`
 
 ---
 
@@ -142,16 +153,36 @@ Courrier* (32 pages), *Tutoriel lecteur réseau et ouverture dans Office*,
 
 ## 5. Mise à jour d'une instance existante
 
-```powershell
-net stop odoo-server-18.0
-REM remplacer les dossiers aite_* par ceux de cette archive
-cd "C:\Program Files\Odoo 18.0.<version>\server"
-& "..\python\python.exe" odoo-bin -c odoo.conf -d <base> -u aite_ecm --stop-after-init
-net start odoo-server-18.0
-```
+Procédure détaillée et contrôles : `GUIDE_INSTALLATION_MISE_A_JOUR.pdf`, §3.
 
-Videz ensuite le cache du navigateur (Ctrl+F5) : les gabarits d'interface font
-partie des ressources compilées côté client.
+1. Service arrêté (`net stop odoo-server-18.0`), remplacez les dossiers
+   `aite_courrier*`, `aite_ecm*` et `sign_oca` par ceux de ce paquet.
+   **Seulement eux** : vos autres modules `aite_*`, par exemple Core
+   Banking, n'en font pas partie.
+2. Redémarrez le service (`net start odoo-server-18.0`).
+3. Mettez la base à niveau, faute de quoi elle garde les écrans de
+   l'ancienne version. Dans **Applications**, retirez le filtre *Apps* et
+   cherchez `aite_courrier_base`, puis sur la carte
+   *AITE Courrier - Socle* : **⋮ › Mettre à niveau**. Toute la suite
+   suit, car elle dépend de ce module.
+
+   En ligne de commande, l'équivalent est `-u aite_courrier_base` (et non
+   `-u aite_ecm`, qui ne met à niveau ni `aite_ecm_office` ni les autres
+   modules dont `aite_ecm` dépend) :
+
+   ```powershell
+   $odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+   $py = "$odoo\python\python.exe"
+   $bin = "$odoo\server\odoo-bin"
+   $cfg = "$odoo\server\odoo.conf"
+   $base = "ma_base"
+   net stop odoo-server-18.0
+   & $py $bin -c $cfg -d $base --stop-after-init --logfile= -u aite_courrier_base
+   net start odoo-server-18.0
+   ```
+
+4. Videz le cache du navigateur (Ctrl+F5) : les gabarits d'interface font
+   partie des ressources compilées côté client.
 
 ---
 

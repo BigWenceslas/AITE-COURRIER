@@ -1,4 +1,4 @@
-# Guide d'installation et de mise à jour — suite AITE 2.1.16
+# Guide d'installation et de mise à jour — suite AITE 2.1.17
 
 > AITE Courrier et AITE ECM pour Odoo 18 Community, signature électronique
 > comprise. Ce guide accompagne le paquet `aite-suite-18.0-<commit>.zip` :
@@ -25,6 +25,26 @@ installer », ce qui suspend toutes les tâches planifiées de la base.
 
 ## 2. Dernières nouveautés
 
+**2.1.17** (7 octobre 2026) — une mise à jour qui aboutit :
+
+| Module | Version | Changement |
+| --- | --- | --- |
+| `aite_courrier_base` | 18.0.1.2.1 | **correctif** : Paramètres s'ouvre même si la base n'a pas encore été mise à niveau, et le journal d'Odoo nomme la vue en retard |
+
+La procédure du §3 est corrigée. Le guide précédent indiquait le
+dossier `C:\Program Files\Odoo 18`, alors que l'installateur Windows
+installe dans `Odoo 18.0.<date>`. Sa commande de mise à jour échouait donc,
+souvent sans message visible. Désormais :
+
+- le dossier d'Odoo est trouvé automatiquement ;
+- la base se met à niveau en un clic depuis Odoo ;
+- les dossiers à remplacer sont nommés un par un. Vos autres modules
+  `aite_*`, comme ceux de Core Banking, ne sont plus concernés.
+
+Les tutoriels de signature, de capture et de WebDAV sont corrigés de la
+même façon. Leurs commandes tiennent maintenant sur une ligne de PDF :
+copiées depuis le PDF, elles ne se coupent plus en deux.
+
 **2.1.16** (6 octobre 2026) — la page Paramètres :
 
 | Module | Version | Changement |
@@ -47,131 +67,233 @@ Historique complet : `addons\CHANGELOG.md`.
 
 ## 3. Mettre à jour une instance en service
 
-> **Déjà en 2.1.15, signature installée ?** Les étapes 3.0 et 3.5 sont
-> faites : suivez 3.1 à 3.4, puis 3.6 et 3.7.
+Trois temps, tous indispensables :
+
+1. remplacer les dossiers des modules ;
+2. redémarrer Odoo ;
+3. **mettre la base à niveau**.
+
+Copier les dossiers ne suffit pas : tant que l'étape 3.5 n'est pas faite,
+la base garde les écrans de l'ancienne version.
+
+> **Signature déjà installée (2.1.15 ou 2.1.16) ?** Les étapes 3.0 et 3.6
+> sont faites : suivez 3.1 à 3.5, puis 3.7.
 
 ### 3.0 Débloquer `aite_courrier_sign`
 
 Si `aite_courrier_sign` est resté bloqué « à installer » (Applications,
 filtre retiré, bouton **Annuler l'installation** visible), cliquez
 **Annuler l'installation**. Sinon l'installation de la signature Community
-(§3.5) est refusée :
+(§3.6) est refusée :
 
 ```
 Les modules "AITE Courrier - Signature électronique (OCA)" et
 "AITE Courrier - Signature électronique" sont incompatibles.
 ```
 
-Cet échec débloque d'ailleurs le module : relancer la commande suffit alors.
+Ce refus débloque d'ailleurs le module : il suffit alors de relancer la
+commande.
 
 ### 3.1 Sauvegarder la base
 
 `http://localhost:8069/web/database/manager` › **Backup**, format zip.
 Le mot de passe maître est `admin_passwd` dans `odoo.conf`.
 
-### 3.2 Arrêter le service
+### 3.2 Repérer le dossier d'Odoo et celui des modules
 
-PowerShell **administrateur** :
+L'installateur Windows place Odoo dans `C:\Program Files\Odoo 18.0.<date>`,
+par exemple `Odoo 18.0.20251006`. Ouvrez un PowerShell **administrateur**
+et gardez-le ouvert jusqu'à la fin de la mise à jour :
+
+```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$odoo
+$conf = Get-Content $cfg
+$conf -match "^\s*(addons_path|db_name)\s*="
+```
+
+Ces commandes affichent le dossier d'Odoo, les dossiers de modules
+(`addons_path`) et la base (`db_name`). Les variables `$py`, `$bin` et
+`$cfg` servent aux commandes suivantes. Pour lister les modules de la suite
+qu'Odoo voit, avec leur version :
+
+```powershell
+$ligne = ($conf -match "^\s*addons_path\s*=")[0]
+$dossiers = (($ligne -replace "^[^=]*=", "") -split ",").Trim()
+Get-ChildItem $dossiers -Directory -ErrorAction SilentlyContinue |
+  Where-Object Name -Match "^(aite_courrier|aite_ecm|sign_oca$)" |
+  Sort-Object Name |
+  ForEach-Object {
+    $f = "$($_.FullName)\__manifest__.py"
+    $v = Select-String -Path $f -Pattern "version.\s*:\s*.\d+\.\d+"
+    "{0,-12} {1}" -f ($v[0].Line -replace "[^\d.]", ""), $_.FullName
+  }
+```
+
+Chaque module doit apparaître **une seule fois**. Le dossier qui les
+contient est celui de l'étape 3.3 ; avec l'installateur, c'est souvent
+`…\server\odoo\addons`. La liste ne montre que la suite Courrier et ECM.
+Vos autres modules `aite_*`, par exemple `aite_core_banking`, n'y figurent
+pas et ne doivent pas être touchés.
+
+### 3.3 Arrêter le service et remplacer les modules
 
 ```powershell
 net stop odoo-server-18.0
 ```
 
-### 3.3 Remplacer les modules
+Puis, dans l'Explorateur, dans le dossier repéré au §3.2 :
 
-Dans le dossier des modules (celui qui contient déjà vos `aite_*`) :
+1. supprimez les dossiers dont le nom commence par `aite_courrier` ou
+   `aite_ecm`, ainsi que `sign_oca`, **et eux seuls** ;
+2. ouvrez le dossier `addons\` du paquet, sélectionnez les **26 dossiers**
+   qu'il contient (pas le dossier `addons` lui-même) et collez-les ;
+3. collez de même le dossier `oca\sign_oca`.
 
-1. **supprimer** tous les dossiers `aite_*` ;
-2. copier les **26 dossiers** de `addons\` ;
-3. copier le dossier **`oca\sign_oca`**.
+Ne copiez ni `enterprise\`, ni le dossier du paquet tel quel
+(`aite-suite-18.0-…`). Odoo ne lit que les dossiers de modules posés
+directement dans un dossier de l'`addons_path`.
 
-Un seul exemplaire de chaque module dans tout l'`addons_path` ; ne pas
-copier `enterprise\`.
-
-### 3.4 Mettre la suite à jour
-
-Une seule commande ; les modules que vous n'avez pas installés sont ignorés :
-
-```powershell
-& "C:\Program Files\Odoo 18\python\python.exe" `
-  "C:\Program Files\Odoo 18\server\odoo-bin" `
-  -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-  --stop-after-init `
-  -u aite_courrier,aite_courrier_base,aite_courrier_capture,aite_courrier_core,aite_courrier_ecm,aite_courrier_ged,aite_courrier_ocr,aite_courrier_portal,aite_courrier_reponse,aite_courrier_validation,aite_courrier_webdav,aite_courrier_workflow,aite_ecm,aite_ecm_api,aite_ecm_demo,aite_ecm_document,aite_ecm_dossier,aite_ecm_nextcloud,aite_ecm_nextcloud_courrier,aite_ecm_office,aite_ecm_records,aite_ecm_sae,aite_ecm_share,aite_ecm_webdav,aite_ecm_workflow
-```
-
-La commande doit se terminer sans ligne `ERROR`.
-
-### 3.5 Installer la signature Community
-
-```powershell
-& "C:\Program Files\Odoo 18\python\python.exe" `
-  "C:\Program Files\Odoo 18\server\odoo-bin" `
-  -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-  --stop-after-init -i aite_courrier_sign_oca
-```
-
-`sign_oca` s'installe avec, ainsi que deux modules standard d'Odoo
-(`base_sparse_field`, `web_editor`). Aucune bibliothèque Python à ajouter.
-
-### 3.6 Redémarrer
+### 3.4 Redémarrer et contrôler
 
 ```powershell
 net start odoo-server-18.0
 ```
 
-Puis **Ctrl+F5** dans le navigateur.
+Dans Odoo, ouvrez **Applications**. Retirez le filtre *Apps* de la barre de
+recherche, cherchez `AITE` et passez en **vue liste**. La colonne
+*Dernière version* donne la version des fichiers qu'Odoo a lus :
+
+| Nom de module | Dernière version |
+| --- | --- |
+| AITE Courrier - Socle | 18.0.1.2.1 |
+| AITE ECM - Édition Office et Google Docs | 18.0.2.0.4 |
+
+Une version plus ancienne signifie que les nouveaux dossiers ne sont pas au
+bon endroit, ou qu'un ancien exemplaire est resté. Relancez le contrôle du
+§3.2.
+
+### 3.5 Mettre la base à niveau
+
+**Depuis Odoo**, sans ligne de commande :
+
+1. dans **Applications**, filtre *Apps* retiré, cherchez
+   `aite_courrier_base` ;
+2. sur la carte *AITE Courrier - Socle*, cliquez **⋮ › Mettre à niveau**.
+
+Tous les modules AITE Courrier et AITE ECM installés suivent, car ils
+dépendent tous de ce module. Comptez une quinzaine de secondes sur une base
+de test, puis la page se recharge. En cas d'échec, Odoo affiche l'erreur :
+envoyez-la nous.
+
+Sur un serveur Linux configuré avec des workers, préférez la ligne de
+commande pour une grosse base. Une requête du navigateur y est interrompue
+au-delà de `limit_time_real`, 120 secondes par défaut.
+
+**Ou en ligne de commande**, dans le PowerShell du §3.2. Remplacez
+`ma_base` par le nom de votre base : la valeur `db_name` affichée au §3.2,
+ou le nom visible sur `/web/database/manager`.
+
+```powershell
+$base = "ma_base"
+net stop odoo-server-18.0
+& $py $bin -c $cfg -d $base --stop-after-init --logfile= -u aite_courrier_base
+net start odoo-server-18.0
+```
+
+`--logfile=` affiche le journal dans la fenêtre, au lieu de l'écrire dans
+`odoo.log`. Il ne doit contenir aucune ligne `ERROR`. Comme le bouton,
+`-u aite_courrier_base` met à niveau toute la suite.
+
+### 3.6 Installer la signature Community
+
+À faire une seule fois, dans le PowerShell du §3.2, avec le nom de votre
+base comme au §3.5 :
+
+```powershell
+$base = "ma_base"
+net stop odoo-server-18.0
+& $py $bin -c $cfg -d $base --stop-after-init --logfile= -i aite_courrier_sign_oca
+net start odoo-server-18.0
+```
+
+`sign_oca` s'installe avec, ainsi que deux modules standard d'Odoo
+(`base_sparse_field`, `web_editor`). Aucune bibliothèque Python à ajouter.
 
 ### 3.7 Vérifier
 
-Applications, filtre retiré :
+Appuyez sur **Ctrl+F5**, puis ouvrez **Paramètres**. La page doit
+s'afficher. Dans l'onglet *AITE ECM*, avec son icône, le bloc
+*Office et Google Docs* présente deux points à contrôler :
 
-| Module | Version | État |
+- l'adresse WebDAV de l'ECM s'affiche, par exemple
+  `http://localhost:8069/webdav/aite_ecm/` sur une instance locale ;
+- l'aide du réglage *Word, Excel, PowerPoint, LibreOffice* se termine par
+  « HKCU › Software › Policies › … ».
+
+Si elle montre encore « HKCU⧵Software⧵… », la page tient grâce à la
+protection de la 2.1.17, mais la base n'est pas à niveau : reprenez le
+§3.5.
+
+Signature, dans **Applications** en vue liste :
+
+| Nom de module | Dernière version | Statut |
 | --- | --- | --- |
-| `aite_courrier_sign_oca` | 18.0.1.0.0 | installé |
-| `sign_oca` | 18.0.1.4.3 | installé |
-| `aite_courrier_base` | 18.0.1.2.0 | installé |
-| `aite_ecm_office` | 18.0.2.0.4 | installé |
-| `aite_courrier_sign` | — | **non installé** |
+| AITE Courrier - Signature électronique (OCA) | 18.0.1.0.0 | Installé |
+| Sign Oca | 18.0.1.4.3 | Installé |
+| AITE Courrier - Signature électronique | — | **non installé** |
 
-Puis ouvrez **Paramètres** : la page s'affiche, et l'onglet *AITE ECM*
-(avec son icône) donne, sous *Office et Google Docs*, l'adresse WebDAV de
-l'ECM — `http://localhost:8069/webdav/aite_ecm/` sur une instance locale.
 
 ---
 
 ## 4. Installation neuve
 
-1. Odoo 18 Community (l'installateur Windows convient) et PostgreSQL.
-2. Copier `addons\aite_*` (26 dossiers) et `oca\sign_oca` dans le dossier
-   déclaré par `addons_path`. Sur **Enterprise** seulement, copier aussi
-   `enterprise\aite_*`, et utiliser `aite_courrier_sign` au lieu de
-   `aite_courrier_sign_oca` : les deux s'excluent.
-3. Dans `odoo.conf` :
+**Prérequis** : Odoo 18 Community (l'installateur Windows convient) et
+PostgreSQL. Aucune bibliothèque Python à ajouter.
 
-   ```ini
-   db_name = <votre_base>      ; indispensable au WebDAV
-   proxy_mode = True           ; si Odoo est derrière un reverse proxy
-   ```
+**Copier les modules** : les 26 dossiers de `addons\` et `oca\sign_oca`,
+dans un dossier déclaré par `addons_path` (§3.2 pour le trouver). Sur
+**Enterprise** seulement, copiez aussi `enterprise\aite_*`, et utilisez
+`aite_courrier_sign` au lieu de `aite_courrier_sign_oca` : les deux
+s'excluent.
 
-4. Installer, service arrêté :
+**Compléter `odoo.conf`** :
 
-   ```powershell
-   net stop odoo-server-18.0
+```ini
+db_name = ma_base           ; indispensable au WebDAV
+proxy_mode = True           ; si Odoo est derrière un reverse proxy
+```
 
-   & "C:\Program Files\Odoo 18\python\python.exe" `
-     "C:\Program Files\Odoo 18\server\odoo-bin" `
-     -c "C:\Program Files\Odoo 18\server\odoo.conf" -d <votre_base> `
-     --load-language=fr_FR --without-demo=all --stop-after-init `
-     -i aite_courrier,aite_courrier_base,aite_courrier_capture,aite_courrier_core,aite_courrier_ecm,aite_courrier_ged,aite_courrier_ocr,aite_courrier_portal,aite_courrier_reponse,aite_courrier_sign_oca,aite_courrier_validation,aite_courrier_webdav,aite_courrier_workflow,aite_ecm,aite_ecm_api,aite_ecm_document,aite_ecm_dossier,aite_ecm_nextcloud,aite_ecm_nextcloud_courrier,aite_ecm_office,aite_ecm_records,aite_ecm_sae,aite_ecm_share,aite_ecm_webdav,aite_ecm_workflow
+**Installer**, dans un PowerShell administrateur, en remplaçant `ma_base`
+par le nom choisi dans `odoo.conf` :
 
-   net start odoo-server-18.0
-   ```
+```powershell
+$odoo = (Get-ItemProperty "HKLM:\SOFTWARE\Odoo 18.0").Install_dir
+$py = "$odoo\python\python.exe"
+$bin = "$odoo\server\odoo-bin"
+$cfg = "$odoo\server\odoo.conf"
+$base = "ma_base"
+$modules = "aite_courrier,aite_courrier_base,aite_courrier_capture," +
+  "aite_courrier_core,aite_courrier_ecm,aite_courrier_ged,aite_courrier_ocr," +
+  "aite_courrier_portal,aite_courrier_reponse,aite_courrier_sign_oca," +
+  "aite_courrier_validation,aite_courrier_webdav,aite_courrier_workflow," +
+  "aite_ecm,aite_ecm_api,aite_ecm_document,aite_ecm_dossier," +
+  "aite_ecm_nextcloud,aite_ecm_nextcloud_courrier,aite_ecm_office," +
+  "aite_ecm_records,aite_ecm_sae,aite_ecm_share,aite_ecm_webdav," +
+  "aite_ecm_workflow"
+$options = "--load-language=fr_FR", "--without-demo=all", "--stop-after-init"
+net stop odoo-server-18.0
+& $py $bin -c $cfg -d $base --logfile= $options -i $modules
+net start odoo-server-18.0
+```
 
-   Jeu de données de démonstration : ajouter `aite_ecm_demo`. Sans
-   signature : retirer `aite_courrier_sign_oca`.
+Jeu de données de démonstration : ajoutez `aite_ecm_demo` à `$modules`.
+Sans signature : retirez-en `aite_courrier_sign_oca`.
 
-5. Poursuivre avec `TUTORIEL_WEBDAV_HTTPS.pdf`, §3.
+**Poursuivre** avec `TUTORIEL_WEBDAV_HTTPS.pdf`, §3.
 
 ---
 
@@ -235,7 +357,8 @@ Une fois par poste, Word, Excel, PowerPoint et Outlook **fermés**, dans un
 PowerShell administrateur ouvert avec le compte Windows qui utilise Word :
 
 ```powershell
-reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity" /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
+$cle = "HKCU\Software\Policies\Microsoft\Office\16.0\Common\Identity"
+reg add $cle /v basichostallowlist /t REG_EXPAND_SZ /d "localhost;localhost:8069" /f
 ```
 
 Remplacer `localhost` par le nom du serveur chez un client, ou déployer la
@@ -248,8 +371,14 @@ prompts to Office apps*. Détail : `DEPLOIEMENT_WEBDAV_WINDOWS.pdf`, §3.
 
 | Symptôme | Remède |
 | --- | --- |
-| Paramètres : *UncaughtPromiseError > OwlError … Octal escape sequences are not allowed in template strings* | `aite_ecm_office` antérieur à 18.0.2.0.4 : §3.3, §3.4, puis redémarrer et **Ctrl+F5** (§3.6) |
-| *Les modules … sont incompatibles* | §3.0, puis relancer §3.5 |
+| Paramètres : *UncaughtPromiseError > OwlError … Octal escape sequences are not allowed in template strings* | Odoo lit encore les anciens fichiers. Contrôlez la colonne *Dernière version* (§3.4), puis faites le §3.5 et **Ctrl+F5**. Avec la 2.1.17 en place, la page s'ouvre dès le redémarrage |
+| *Dernière version* inchangée après la copie | Cause possible : dossiers collés hors de l'`addons_path`, ou dossier parent collé (`…\addons\addons\…`, `…\aite-suite-18.0-…\…`) ; contrôle du §3.2 |
+| *Dernière version* inchangée, contrôle du §3.2 correct | Cause possible : ancien exemplaire resté ailleurs, ou service non redémarré ; contrôle du §3.2, puis §3.4 |
+| Paramètres s'ouvre, mais l'aide affiche « HKCU⧵Software⧵… » | base non mise à niveau : §3.5 |
+| `odoo.log` : *Page Paramètres : antislash remplacé à l'affichage (…)* | même cause : §3.5 ; le message nomme la vue en retard |
+| PowerShell : *Le terme « C:\Program Files\Odoo 18\… » n'est pas reconnu* | chemin des guides antérieurs à la 2.1.17 : le dossier est `Odoo 18.0.<date>`, utilisez `$odoo` (§3.2) |
+| PowerShell : *L'opérateur « < » est réservé à un usage futur* | `<votre_base>` des guides antérieurs laissé tel quel : `$base = "ma_base"` (§3.5) |
+| *Les modules … sont incompatibles* | §3.0, puis relancer §3.6 |
 | `sign_oca` introuvable à l'installation | `oca\sign_oca` non copié, ou hors de l'`addons_path` (§3.3) |
 | Journal : *Some modules have inconsistent states … ['aite_courrier_sign']* | §3.0 |
 | Le bouton *Demander la signature* n'apparaît pas | étape non cochée (§5.2), ou vous n'êtes pas habilité à agir sur l'étape |
@@ -279,18 +408,33 @@ prompts to Office apps*. Détail : `DEPLOIEMENT_WEBDAV_WINDOWS.pdf`, §3.
 
 ## 9. Qualité de la version
 
-Vérifié sur Odoo 18.0 Community et PostgreSQL 16, avec le code de ce paquet :
+Vérifié sur Odoo 18.0 Community et PostgreSQL 16, avec le code de ce
+paquet, sous Python 3.12 et reportlab 4.1.0, les versions de l'installateur
+Windows d'Odoo 18 :
 
-- campagne complète (`docs\recette\run_tests.sh`, avec la signature) sous
-  Python 3.12 et reportlab 4.1.0, les versions de l'installateur Windows
-  d'Odoo 18 : base neuve, 26 modules, 348 tests, 0 échec ;
-- la page Paramètres dans un navigateur (Chromium), sur la copie d'une base
-  touchée par le plantage, après la mise à jour du §3.4 : aucune erreur,
-  les 4 applications de réglages s'affichent, avec l'adresse WebDAV, l'URI
-  Google, l'adresse de scan et l'icône *AITE ECM* ;
-- les 4 tests ajoutés (`test_web_client_views`) échouent sur la 2.1.15 et
-  passent sur cette version ;
-- installation depuis le paquet sur une base neuve, sans erreur.
+- **campagne complète, signature comprise** : 26 modules, 349 tests,
+  0 échec.
+- **base antérieure à la 2.1.16**, en français, avec l'aide fautive, sur
+  une copie :
+  - avec les nouveaux fichiers et un simple redémarrage, Paramètres s'ouvre
+    dans Chromium sans erreur, et `odoo.log` nomme la vue en retard ;
+  - le bouton **Mettre à niveau** de *AITE Courrier - Socle* (§3.5),
+    actionné dans le navigateur, met les 26 modules à la version du disque
+    en 13 secondes ;
+  - Paramètres affiche ensuite la nouvelle aide, sans message au journal.
+- **ligne de commande du §3.5**, sur une autre copie et avec un `odoo.conf`
+  qui désigne un fichier journal comme celui de l'installateur : le journal
+  s'affiche à l'écran, aucune erreur, la suite entière est à niveau.
+- **blocs PowerShell du guide**, exécutés sous PowerShell 7 sur une
+  installation simulée :
+  - le contrôle du §3.2 signale un doublon et un ancien exemplaire ;
+  - il ignore un module Core Banking et un dossier de paquet collé tel
+    quel ;
+  - les commandes transmettent leurs arguments intacts, chemins avec
+    espaces compris ;
+  - non vérifié sur un poste Windows, ni sous Windows PowerShell 5.1.
+- **test ajouté** (`test_settings_page_survives_stale_view`) : il échoue
+  sans la protection et passe avec elle.
 
 Repris de la 2.1.15, dont le code de la signature n'a pas changé : tests de
 `sign_oca` sous Python 3.12 ; parcours réel de signature dans Chromium ;
