@@ -110,7 +110,7 @@ CH1 = {
     'titre': 'Enregistrer un courrier', 'qui': 'Agent courrier',
     'sous': "Du pli reçu à un courrier référencé, en circulation dans son circuit.",
     'roles': ['Agent courrier'],
-    'voix': "Premier chapitre : enregistrer un courrier. C'est le geste de l'agent courrier, à l'accueil.",
+    'voix': "enregistrer un courrier. C'est le geste de l'agent courrier, à l'accueil.",
     'ecran': ecran_1(), 'vue_initiale': 'c1-liste',
     'etapes': [
         {'qui': "Étape 1 · L'agent courrier", 'titre': 'La liste des courriers',
@@ -210,7 +210,7 @@ CH2 = {
     'titre': 'Faire avancer le circuit', 'qui': 'Manager, assistante',
     'sous': "Chaque étape a ses rôles, ses délais et sa trace — jusqu'au cachet de traitement.",
     'roles': ['Assistante', 'Manager', 'Archiviste'],
-    'voix': "Deuxième chapitre : faire avancer le circuit. Le courrier passe d'étape en étape, entre les mains des rôles habilités.",
+    'voix': "faire avancer le circuit. Le courrier passe d'étape en étape, entre les mains des rôles habilités.",
     'ecran': ecran_2(), 'vue_initiale': 'c2-liste',
     'etapes': [
         {'qui': 'Étape 1 · Le manager', 'titre': 'Sa file de travail',
@@ -274,7 +274,7 @@ CH3 = {
     'titre': 'Les pièces et leurs versions', 'qui': 'Assistante',
     'sous': "L'espace documentaire du courrier : chaque pièce, chaque version, sa confidentialité.",
     'roles': ['Assistante'],
-    'voix': "Troisième chapitre : les pièces du courrier, et leurs versions.",
+    'voix': "les pièces du courrier, et leurs versions.",
     'ecran': ecran_3(), 'vue_initiale': 'c3-liste',
     'etapes': [
         {'qui': "Étape 1 · L'assistante", 'titre': "L'espace documentaire",
@@ -383,7 +383,7 @@ CH4 = {
     'titre': 'La gestion documentaire', 'qui': 'Archiviste',
     'sous': "AITE ECM : un fonds documentaire classé, typé, versionné, au-delà du courrier.",
     'roles': ['Archiviste', 'Tous les rôles selon leurs droits'],
-    'voix': "Quatrième chapitre : la gestion documentaire. Aïte E C M organise tout le fonds documentaire de l'organisation, pas seulement le courrier.",
+    'voix': "la gestion documentaire. Aïte E C M organise tout le fonds documentaire de l'organisation, pas seulement le courrier.",
     'ecran': ecran_4(), 'vue_initiale': 'c4-liste',
     'etapes': [
         {'qui': "Étape 1 · L'archiviste", 'titre': 'Le fonds documentaire',
@@ -483,7 +483,7 @@ CH5 = {
     'titre': 'Conservation et archives', 'qui': 'Archiviste, manager',
     'sous': "Combien de temps garder, quoi éliminer, quoi protéger — et où est le papier.",
     'roles': ['Archiviste', 'Manager'],
-    'voix': "Cinquième chapitre : la conservation et les archives. Combien de temps garder chaque document, que faire à l'échéance, "
+    'voix': "la conservation et les archives. Combien de temps garder chaque document, que faire à l'échéance, "
             "et où se trouvent les originaux papier.",
     'ecran': ecran_5(), 'vue_initiale': 'c5-regles',
     'etapes': [
@@ -575,7 +575,7 @@ CH6 = {
     'titre': 'La valeur probante', 'qui': 'Audit, archiviste',
     'sous': "Chaque dépôt est scellé et horodaté ; l'intégrité se vérifie à tout moment.",
     'roles': ['Audit', 'Archiviste'],
-    'voix': "Sixième chapitre : la valeur probante. Prouver qu'un document n'a pas changé depuis son dépôt.",
+    'voix': "la valeur probante. Prouver qu'un document n'a pas changé depuis son dépôt.",
     'ecran': ecran_6(), 'vue_initiale': 'c6-journal',
     'etapes': [
         {'qui': "Étape 1 · L'auditeur", 'titre': 'Le journal de preuve',
@@ -647,7 +647,7 @@ CH7 = {
     'titre': 'Dossiers métier et partages', 'qui': 'Comptabilité, manager',
     'sous': "Des dossiers qui savent ce qui leur manque ; des liens externes sous contrôle.",
     'roles': ['Comptabilité', 'Manager'],
-    'voix': "Septième chapitre : les dossiers métier, et le partage de documents avec l'extérieur.",
+    'voix': "les dossiers métier, et le partage de documents avec l'extérieur.",
     'ecran': ecran_7(), 'vue_initiale': 'c7-dossier',
     'etapes': [
         {'qui': 'Étape 1 · La comptabilité', 'titre': 'Un dossier qui se sait incomplet',
@@ -715,7 +715,7 @@ CH8 = {
     'titre': 'Le portail des tiers', 'qui': 'Tiers externe',
     'sous': "Vos correspondants déposent leurs demandes en ligne et suivent leur traitement.",
     'roles': ['Tiers externe (portail)'],
-    'voix': "Huitième chapitre : le portail. Vos correspondants externes déposent leurs demandes en ligne, et en suivent le traitement.",
+    'voix': "le portail. Vos correspondants externes déposent leurs demandes en ligne, et en suivent le traitement.",
     'ecran': ecran_8(), 'vue_initiale': 'c8-compte',
     'etapes': [
         {'qui': 'Étape 1 · Le tiers', 'titre': 'Son espace, ses courriers',
@@ -778,7 +778,7 @@ CH9 = {
     'titre': 'Sécurité et traçabilité', 'qui': 'Audit, agent courrier',
     'sous': "Huit rôles, une confidentialité respectée partout, et la trace de chaque action.",
     'roles': ['Audit', 'Agent courrier'],
-    'voix': "Neuvième chapitre : la sécurité et la traçabilité. Qui a fait quoi, et qui peut voir quoi.",
+    'voix': "la sécurité et la traçabilité. Qui a fait quoi, et qui peut voir quoi.",
     'ecran': ecran_9(), 'vue_initiale': 'c9-audit',
     'etapes': [
         {'qui': "Étape 1 · L'auditeur", 'titre': "Le journal d'audit",
@@ -818,7 +818,7 @@ CH10 = {
     'titre': "Piloter l'activité", 'qui': 'Manager',
     'sous': "Le tableau de bord du courrier : volumes, retards, délais, charge par étape.",
     'roles': ['Manager', 'Administrateur'],
-    'voix': "Dixième chapitre : piloter l'activité.",
+    'voix': "piloter l'activité.",
     'ecran': ecran_10(), 'vue_initiale': 'c10-tb',
     'etapes': [
         {'qui': 'Étape 1 · Le manager', 'titre': "L'activité d'un coup d'œil",
@@ -864,8 +864,8 @@ SCENARIO = {
     ],
     'parcours': {
         'kicker': 'Le parcours', 'titre': "Cinq étapes, cinq rôles, un délai pour chacune",
-        'etapes': [('Réception', 'Agent courrier', '4'), ('Qualification', 'Agent courrier · Assistante', '8'),
-                   ('Affectation', 'Assistante · Manager', '4'), ('Traitement', 'Manager', '48'), ('Archivage', 'Archiviste', '24')],
+        'etapes': [('Réception', 'Agent courrier', 'SLA 4 h'), ('Qualification', 'Agent courrier · Assistante', 'SLA 8 h'),
+                   ('Affectation', 'Assistante · Manager', 'SLA 4 h'), ('Traitement', 'Manager', 'SLA 48 h'), ('Archivage', 'Archiviste', 'SLA 24 h')],
         'note': "Le circuit <b>Courrier entrant standard</b>, livré avec la solution. Les circuits se <b>paramètrent sans développement</b> : "
                 "étapes, rôles habilités, délais et transitions, par type de courrier.",
     },

@@ -1,12 +1,17 @@
-# Vidéo de présentation d'AITE Courrier
+# Vidéos de présentation d'AITE Courrier et d'AITE ECM
 
-Une vidéo de présentation complète de la solution (AITE Courrier et AITE ECM),
-en dix chapitres tirés des dix-huit scénarios de la recette applicative
+Trois vidéos de présentation, tirées des dix-huit scénarios de la recette applicative
 (`docs/recette/GUIDE_RECETTE.md`). L'interface y est **rejouée en HTML** avec
 les couleurs et les libellés d'Odoo 18 et des modules AITE — jamais filmée,
 jamais capturée — puis rendue en MP4 par
 [HyperFrames](https://hyperframes.heygen.com), avec une voix off féminine
-française.
+française :
+
+| Vidéo (`--video`) | Scénario | Fichier livré |
+|---|---|---|
+| `courrier` (défaut) — AITE Courrier, dix chapitres | `scenarios/presentation.py` | `livrees/aite-courrier-presentation.mp4` |
+| `ecm` — AITE ECM, six chapitres | `scenarios/ecm.py` | `livrees/aite-ecm-presentation.mp4` |
+| `suite` — Courrier et ECM réunis, onze chapitres | `scenarios/suite.py` | `livrees/aite-suite-courrier-ecm.mp4` |
 
 Méthode et moteur : skill `aite-motion-design-1` (moteur des guides vidéo
 PGest), adapté ici à une longue vidéo à chapitres.
@@ -26,6 +31,8 @@ python3 docs/videos/produire.py                # voix + projet + check
 python3 docs/videos/produire.py --planche      # + planches contact à relire
 python3 docs/videos/produire.py --rendu        # + rendu MP4 et compression
 python3 docs/videos/produire.py --muet --planche   # sans voix, pour relire vite
+python3 docs/videos/produire.py --video ecm --rendu     # la vidéo d'AITE ECM
+python3 docs/videos/produire.py --video suite --rendu   # la vidéo combinée
 ```
 
 Prérequis : Node.js (`npx`), `ffmpeg`, Python 3. Au premier lancement, le
@@ -38,6 +45,8 @@ figé à la version `0.8.139`.
 | Fichier | Rôle |
 |---|---|
 | `scenarios/presentation.py` | Le scénario : ouverture, parcours, rôles, dix chapitres et leurs étapes, recette, fin — avec les phrases de la voix off |
+| `scenarios/chapitres_ecm.py` | « Travailler sur un document » (réserver, ouvrir dans Office, libérer, corbeille), propre aux vidéos ECM et suite |
+| `scenarios/ecm.py`, `scenarios/suite.py` | Les vidéos ECM et combinée, qui reprennent les chapitres de `presentation.py` |
 | `demo.py` | Les données de démonstration, toutes fictives |
 | `ecrans.py` | Les écrans d'Odoo 18 rejoués : barre, listes, fiches, barre d'étapes, assistant, fil de discussion, portail, tableau de bord |
 | `presentation.py` | Les scènes de la présentation et leur enchaînement |

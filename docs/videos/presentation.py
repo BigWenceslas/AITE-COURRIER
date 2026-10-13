@@ -55,17 +55,19 @@ class Presentation(moteur.Video):
         s = self.s['ouverture']
         ti = t + INTRO
         d = INTRO + self.duree('ouverture', BASE['ouverture'])
-        lettres = ''.join('<span class="lettre%s">%s</span>' % (' violet' if i >= 5 else '', '&nbsp;' if c == ' ' else e(c))
-                          for i, c in enumerate('AITE Courrier'))
+        m1, m2 = self.s.get('marque', ('AITE', 'Courrier'))
+        nom = m1 + ' ' + m2
+        lettres = ''.join('<span class="lettre%s">%s</span>' % (' violet' if i > len(m1) else '', '&nbsp;' if c == ' ' else e(c))
+                          for i, c in enumerate(nom))
         mots = ' '.join('<span class="mot%s">%s</span>' % (' v' if m.startswith('*') else '', e(m.strip('*')))
                         for m in s['titre'].split())
         html = ('<div class="ouv" id="ouv-in"><div class="ouv-signe" id="ouv-signe">'
-                '<div class="ouv-icone" id="ouv-icone"><img src="assets/logos/aite_courrier.png" alt=""></div>'
+                '<div class="ouv-icone" id="ouv-icone"><img src="assets/logos/%s" alt=""></div>'
                 '<div class="ouv-marque" id="ouv-marque">%s</div><div class="ouv-ligne" id="ouv-ligne"></div>'
                 '<div class="ouv-sous" id="ouv-sous">%s</div></div>'
                 '<div class="ouv-titre-bloc"><div class="kicker" id="ouv-k">%s</div><h1 class="ouv-titre" id="ouv-t">%s</h1>'
                 '<div class="tirets" id="ouv-tirets"><i></i><i></i><i></i></div><p class="ouv-mission" id="ouv-m">%s</p></div></div>'
-                % (lettres, e(s['sous']), e(s['kicker']), mots, e(s['mission'])))
+                % (self.s.get('icone', 'aite_courrier.png'), lettres, e(s['sous']), e(s['kicker']), mots, e(s['mission'])))
         self.clip('sc-ouverture', t, d, html, self._piste())
         self.op(op='fromTo', sel='#fond .halo', de={'autoAlpha': 0, 'scale': 0.7},
                 a={'autoAlpha': 1, 'scale': 1, 'duration': 1.4, 'ease': 'power2.out', 'immediateRender': True}, t=t)
@@ -112,7 +114,7 @@ class Presentation(moteur.Video):
         xs = [x0 + i * (x1 - x0) / (n - 1) for i in range(n)]
         noeuds = ''.join(
             '<div class="par-noeud" id="par-n%d" style="left:%dpx;top:%dpx"><div class="par-rond" id="par-r%d">%d</div>'
-            '<div class="par-nom">%s</div><div class="par-role">%s</div><div class="par-sla">SLA %s h</div></div>'
+            '<div class="par-nom">%s</div><div class="par-role">%s</div><div class="par-sla">%s</div></div>'
             % (i, xs[i], y, i, i + 1, e(nom), e(role), e(sla)) for i, (nom, role, sla) in enumerate(p['etapes']))
         html = ('<div id="sc-parcours-in" class="clip"><div class="entete" id="par-tete"><div class="kicker">%s</div>'
                 '<div class="titre-scene">%s</div></div>'
@@ -251,10 +253,12 @@ class Presentation(moteur.Video):
 
     def scene_fin(self, t):
         f = self.s['fin']
+        m1, m2 = self.s.get('marque', ('AITE', 'Courrier'))
         html = ('<div id="sc-fin-in" class="clip"><div class="fin-bloc"><div class="fin-icone" id="fin-i">'
-                '<img src="assets/logos/aite_courrier.png" alt=""></div><div class="fin-t" id="fin-t">AITE <span class="violet">Courrier</span></div>'
+                '<img src="assets/logos/%s" alt=""></div><div class="fin-t" id="fin-t">%s <span class="violet">%s</span></div>'
                 '<div class="fin-s" id="fin-s">%s</div><div class="fin-aite" id="fin-a"><img src="assets/logos/aite.jpg" alt=""></div>'
-                '<div class="fin-p" id="fin-p">%s</div></div></div>' % (e(f['sous']), e(f['pied'])))
+                '<div class="fin-p" id="fin-p">%s</div></div></div>'
+                % (self.s.get('icone', 'aite_courrier.png'), e(m1), e(m2), e(f['sous']), e(f['pied'])))
         d = self.duree('fin', BASE['fin'])
         self.clip('sc-fin', t, d, html, self._piste())
         self.entree('#fin-i', t + 0.1, d=0.6, y=30, echelle=0.85)
@@ -295,8 +299,8 @@ class Presentation(moteur.Video):
                             '<div id="curseur" class="masque">%s</div><div id="onde"></div><div class="anneau" id="anneau"></div></div>'
                             % (total, curseur_svg()))
         fond = ('<div id="fond" class="clip" data-start="0" data-duration="%.3f" data-track-index="0"><div class="halo"></div>'
-                '<div class="halo2"></div><div class="signature"><img src="assets/logos/aite_courrier.png" alt="">AITE Courrier</div></div>'
-                % total)
+                '<div class="halo2"></div><div class="signature"><img src="assets/logos/%s" alt="">%s</div></div>'
+                % (total, s.get('icone', 'aite_courrier.png'), e(' '.join(s.get('marque', ('AITE', 'Courrier'))))))
         audios = ''.join('<audio id="voix-%s" src="%s" data-start="%.3f" data-duration="%.3f" data-track-index="%d"></audio>'
                          % (case, chemin, debut, max(0.1, duree - 0.06), 20 + (i % 2))
                          for i, (case, chemin, debut, duree) in enumerate(self.audios))
@@ -305,7 +309,7 @@ class Presentation(moteur.Video):
             audios += ('<audio id="bruitages" src="%s" data-start="0" data-duration="%.3f" data-track-index="19"></audio>'
                        % (self.bruitages, total))
         plan = {'duree': total, 'cibles': self.cibles, 'defilements': sorted(self.defilements, key=lambda x: x['t']), 'ops': self.ops}
-        html = TEMPLATE % {'titre': escape(s['titre_page']), 'id': 'presentation', 'duree': total,
+        html = TEMPLATE % {'titre': escape(s['titre_page']), 'id': s.get('id', 'presentation'), 'duree': total,
                            'couches': fond + ''.join(self.couches) + audios,
                            'plan': json.dumps(plan, ensure_ascii=False).replace('</', '<\\/')}
         return html, total

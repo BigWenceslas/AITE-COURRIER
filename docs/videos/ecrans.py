@@ -178,7 +178,9 @@ def bande(boutons, droite='', identifiant=None, apres=None):
     groupe ``<id>-b`` révélé à la place de ``<id>-a``."""
     g = '<span class="groupe-bt" id="%s-a">%s</span>' % (identifiant, ''.join(boutons))
     if apres is not None:
-        g += '<span class="groupe-bt masque" id="%s-b">%s</span>' % (identifiant, ''.join(apres))
+        etats = apres if apres and isinstance(apres[0], (list, tuple)) else [apres]
+        for lettre, lot in zip('bcdef', etats):
+            g += '<span class="groupe-bt masque" id="%s-%s">%s</span>' % (identifiant, lettre, ''.join(lot))
     return '<div class="o-bande" id="%s"><span class="pile">%s</span><span class="sb-zone">%s</span></div>' % (identifiant, g, droite)
 
 

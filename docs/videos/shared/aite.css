@@ -398,3 +398,5 @@ img { display: block; }
 #onde { position: absolute; left: 0; top: 0; width: 90px; height: 90px; border-radius: 50%; border: 5px solid var(--orange); opacity: 0; visibility: hidden; }
 .anneau { position: absolute; border: 4px solid var(--orange); border-radius: 10px; box-shadow: 0 0 0 6px rgba(240,146,31,.22); opacity: 0; visibility: hidden; z-index: 45; }
 .o-cp .sauver { display: inline-flex; margin-left: 4px; } .o-cp .sauver svg { width: 18px; height: 18px; }
+.bt.vert { background: #198754; color: #fff; }
+.ruban.rouge { background: #DC3545; color: #fff; }

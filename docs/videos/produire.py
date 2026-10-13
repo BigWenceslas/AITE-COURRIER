@@ -114,10 +114,14 @@ def prononcer(texte):
     return texte
 
 
+ORDINAUX = ['Premier', 'Deuxième', 'Troisième', 'Quatrième', 'Cinquième', 'Sixième', 'Septième', 'Huitième',
+            'Neuvième', 'Dixième', 'Onzième', 'Douzième']
+
+
 def textes_voix(s):
     textes = dict(s['voix'])
     for n, c in enumerate(s['chapitres'], 1):
-        textes['chap-%d' % n] = c['voix']
+        textes['chap-%d' % n] = '%s chapitre : %s' % (ORDINAUX[n - 1], c['voix'])
         for m, et in enumerate(c['etapes'], 1):
             textes['c%d-e%d' % (n, m)] = et['voix']
     for bloc in s.get('cartes_intro', []) + s.get('cartes_fin', []):
@@ -149,8 +153,14 @@ def synthetiser(dossier, textes):
     return fichiers, durees
 
 
+VIDEOS = {'courrier': ('scenarios.presentation', 'aite-courrier-presentation'),
+          'ecm': ('scenarios.ecm', 'aite-ecm-presentation'),
+          'suite': ('scenarios.suite', 'aite-suite-courrier-ecm')}
+MODULE = VIDEOS['courrier'][0]
+
+
 def charger():
-    module = importlib.import_module('scenarios.presentation')
+    module = importlib.import_module(MODULE)
     importlib.reload(module)
     return module.SCENARIO
 
@@ -184,7 +194,7 @@ def ecrire_projet(dossier, scenario, gsap, voix):
         json.dump({'paths': {'blocks': 'compositions', 'components': 'compositions/components', 'assets': 'assets'},
                    'media': {'autoProxy': True}}, f, indent=2)
     with open(os.path.join(projet, 'meta.json'), 'w') as f:
-        json.dump({'id': 'presentation', 'name': 'AITE Courrier — présentation'}, f, ensure_ascii=False, indent=2)
+        json.dump({'id': scenario.get('id', 'presentation'), 'name': scenario.get('titre_page', NOM)}, f, ensure_ascii=False, indent=2)
     with open(os.path.join(projet, 'package.json'), 'w') as f:
         json.dump({'name': NOM, 'private': True, 'type': 'module'}, f, indent=2)
     with open(os.path.join(projet, 'plan-scenes.json'), 'w') as f:
@@ -258,7 +268,11 @@ def main():
     p.add_argument('--rendu', action='store_true')
     p.add_argument('--sans-check', action='store_true')
     p.add_argument('--sortie', default=SORTIE_DEPOT)
+    p.add_argument('--video', choices=sorted(VIDEOS), default='courrier',
+                   help='courrier (par défaut), ecm, ou suite (Courrier et ECM réunis)')
     args = p.parse_args()
+    global MODULE, NOM
+    MODULE, NOM = VIDEOS[args.video]
     args.dossier = os.path.abspath(args.dossier)
     gsap = preparer(args.dossier)
     scenario = charger()
