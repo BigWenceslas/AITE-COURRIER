@@ -122,7 +122,8 @@ CH1 = {
         {'qui': "Étape 2 · L'agent courrier", 'titre': "Saisir l'essentiel",
          'texte': "Objet, expéditeur, adresse et type. Le type désigne le circuit que suivra le courrier.",
          'voix': "Elle saisit l'objet, l'expéditeur et son adresse, puis choisit le type. Le type désigne le circuit : "
-                 "ici, le courrier entrant standard, en cinq étapes, chacune avec son délai en heures.",
+                 "ici, le courrier entrant standard, en cinq étapes, chacune avec son délai en heures. "
+                 "L'aperçu du circuit s'affiche avant même l'enregistrement : rien n'est laissé au hasard.",
          'gestes': [clic('#c1-objet', fx=0.3), saisir('c1-objet', N1['objet'], d=1.6),
                     clic('#c1-exp', fx=0.3), saisir('c1-exp', N1['expediteur'], d=1.3),
                     clic('#c1-mail', fx=0.3), saisir('c1-mail', N1['courriel'], d=1.0),
@@ -398,7 +399,8 @@ CH4 = {
         {'qui': "Étape 3 · L'archiviste", 'titre': 'Créer un document',
          'texte': "Titre, type et dossier de classement ; l'enregistrement attribue la référence.",
          'voix': "Pour créer un document, l'archiviste donne un titre, choisit le type, Procédure ou instruction, puis son dossier "
-                 "de classement. À l'enregistrement, la référence est attribuée.",
+                 "de classement, ici Qualité et procédures. À l'enregistrement, la référence est attribuée "
+                 "automatiquement, et le document apparaît dans le fonds, prêt à recevoir son fichier.",
          'gestes': [clic('#app-4-m0'), aller('c4-liste'), clic('#c4-nouveau', decale=0.2), aller('c4-form'),
                     clic('#c4-titre', fx=0.2), saisir('c4-titre', 'Procédure de traitement du courrier entrant', d=1.6),
                     clic('#c4-type', fx=0.2), choisir('c4-type', 'Procédure / instruction'),
@@ -724,7 +726,8 @@ CH8 = {
         {'qui': 'Étape 2 · Le tiers', 'titre': 'Déposer une demande',
          'texte': "Objet, nature, message et pièces jointes, plusieurs à la fois ; puis Envoyer la demande.",
          'voix': "Il dépose une nouvelle demande : l'objet, la nature, son message, et ses pièces jointes, plusieurs à la fois. "
-                 "À l'envoi, la demande arrive directement dans le courrier entrant de l'organisation.",
+                 "À l'envoi, la demande arrive directement dans le courrier entrant de l'organisation. "
+                 "Un message confirme la réception ; la référence lui sera communiquée dès la prise en charge.",
          'gestes': [clic('#c8-nouvelle'), aller('c8-form'), clic('#c8-objet', fx=0.2), saisir('c8-objet', 'Réclamation sur la facture de septembre', d=1.5),
                     clic('#c8-nature', fx=0.2), choisir('c8-nature', 'Courrier entrant'), clic('#c8-msg', fx=0.2, fy=0.3),
                     saisir('c8-msg', 'Le montant facturé ne correspond pas au devis accepté.', d=1.6),
