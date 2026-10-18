@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tutoriel 04 — Les pièces du courrier et leurs versions.
+"""Tutoriel 05 — Les pièces du courrier et leurs versions.
 
 Sources : aite_courrier_ged/views (espace documentaire, « Prévisualiser »,
 « Finaliser », onglet « Versions », ruban « Verrouillé », confidentialité
@@ -17,10 +17,10 @@ ASSIST = demo.PERSONNES['assistante']
 CH = base.CH3
 
 TUTO = {
-    'slug': 'tuto-04-les-pieces-et-leurs-versions',
-    'titre_page': 'AITE Courrier — Tutoriel 04 : les pièces et leurs versions',
+    'slug': 'tuto-05-les-pieces-et-leurs-versions',
+    'titre_page': 'AITE Courrier — Tutoriel 05 : les pièces et leurs versions',
     'titre': 'Les pièces et leurs versions',
-    'serie': dict(COURRIER, numero=4),
+    'serie': dict(COURRIER, numero=5),
     'adresse': ADRESSE % 'courrier',
     'accroche': {
         'question': 'Quelle est la *bonne* version de ce *devis ?*',

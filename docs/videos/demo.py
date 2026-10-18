@@ -16,6 +16,8 @@ PERSONNES = {
     'archiviste': ('Jules Abena', 'J', '#2E8B57'),
     'audit': ('Sandrine Owona', 'S', '#C27A12'),
     'compta': ('Hervé Mvondo', 'H', '#3D63B8'),
+    'signataire': ('Nicole Biyong', 'N', '#B5651A'),
+    'admin': ('Martin Ekoto', 'M', '#5E5665'),
 }
 
 TIERS = 'Groupe Horizon Services'

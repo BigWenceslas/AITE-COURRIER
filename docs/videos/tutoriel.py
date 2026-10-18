@@ -293,7 +293,8 @@ class Tutoriel(presentation.Presentation):
         serie = self.s['serie']
         html = ('<div id="sc-cta-in" class="clip cta"><div class="cta-bloc"><div class="cta-icone" id="cta-i"><img src="assets/logos/%s" alt=""></div>'
                 '<div class="cta-t" id="cta-t">%s</div><div class="cta-s" id="cta-s">%s</div>'
-                '<div class="cta-bt" id="cta-bt">Demander une démonstration</div><div class="cta-url" id="cta-u">www.aite-consulting.com</div>'
+                '<div class="cta-bt" id="cta-bt">Prendre rendez-vous pour une démo</div><div class="cta-url" id="cta-u">aite-consulting.com'
+                '<span>+237 656 801 098 · info@aite-consulting.com</span></div>'
                 '<div class="cta-aite" id="cta-a"><img src="assets/logos/aite.jpg" alt=""></div></div></div>'
                 % (serie['icone'], self._mots(c['titre']), e(c['sous'])))
         d = self.duree('cta', BASE['cta'])
@@ -352,8 +353,9 @@ class Tutoriel(presentation.Presentation):
                        % (self.bruitages, total))
         plan = {'duree': total, 'cibles': self.cibles, 'cameras': self.cameras,
                 'defilements': sorted(self.defilements, key=lambda x: x['t']), 'ops': self.ops}
+        style = '<style>%s</style>' % s['css'] if s.get('css') else ''
         html = presentation.TEMPLATE % {'titre': escape(s['titre_page']), 'id': s['slug'], 'duree': total,
-                                        'couches': fond + ''.join(self.couches) + audios,
+                                        'couches': style + fond + ''.join(self.couches) + audios,
                                         'plan': json.dumps(plan, ensure_ascii=False).replace('</', '<\\/')}
         return html, total
 
@@ -365,8 +367,10 @@ def fiche_youtube(s, chapitres, total):
     lignes = ['TITRE', y['titre'], '', 'DESCRIPTION', y['description'], '']
     lignes += ['%d:%02d %s' % (int(t) // 60, int(t) % 60, lib) for t, lib in chapitres]
     lignes += ['', 'Durée : %d min %02d s' % (int(total) // 60, int(total) % 60), '',
-               "AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Douala, Cameroun.",
-               'Demandez votre démonstration : www.aite-consulting.com', '',
+               "AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.",
+               'Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment',
+               'Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com',
+               'Le blog : https://aite-consulting.com/blog', '',
                'MOTS-CLÉS', ', '.join(y['mots_cles'])]
     return '\n'.join(lignes) + '\n'
 

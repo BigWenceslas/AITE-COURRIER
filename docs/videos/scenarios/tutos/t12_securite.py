@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tutoriel 11 — Confidentialité et journal d'audit.
+"""Tutoriel 12 — Confidentialité et journal d'audit.
 
 Sources : aite_courrier_base (journal d'audit en ajout seul, colonnes
 « Date/heure », « Utilisateur », « Action », « Type », « Objet », « Source »,
@@ -19,10 +19,10 @@ AUDIT = demo.PERSONNES['audit']
 CH = base.CH9
 
 TUTO = {
-    'slug': 'tuto-11-confidentialite-et-journal-d-audit',
-    'titre_page': "AITE Courrier — Tutoriel 11 : confidentialité et journal d'audit",
+    'slug': 'tuto-12-confidentialite-et-journal-d-audit',
+    'titre_page': "AITE Courrier — Tutoriel 12 : confidentialité et journal d'audit",
     'titre': "Confidentialité et audit",
-    'serie': dict(COURRIER, numero=11),
+    'serie': dict(COURRIER, numero=12),
     'adresse': ADRESSE % 'courrier',
     'accroche': {
         'question': 'Qui a *vu* ce courrier, et qui l\'a *modifié ?*',

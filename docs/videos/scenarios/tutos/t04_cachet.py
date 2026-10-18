@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tutoriel 03 — Le cachet de traitement.
+"""Tutoriel 04 — Le cachet de traitement.
 
 Sources : docs/produits/AITE_Courrier_cachet_de_traitement.md (ruban
 « Traité », onglet « Cachet » : étape, intervenant, fonction, date ; sur le
@@ -20,10 +20,10 @@ ecran = initiale(base.CH2['ecran'], 'c2-clos', 'c2-liste')
 portail = base.CH8['ecran'].replace('class="o-app portail" id="app-8"', 'class="o-app portail masque" id="app-8"', 1)
 
 TUTO = {
-    'slug': 'tuto-03-le-cachet-de-traitement',
-    'titre_page': 'AITE Courrier — Tutoriel 03 : le cachet de traitement',
+    'slug': 'tuto-04-le-cachet-de-traitement',
+    'titre_page': 'AITE Courrier — Tutoriel 04 : le cachet de traitement',
     'titre': 'Le cachet de traitement',
-    'serie': dict(COURRIER, numero=3),
+    'serie': dict(COURRIER, numero=4),
     'adresse': ADRESSE % 'courrier',
     'accroche': {
         'question': 'Ce courrier a-t-il *vraiment* été *traité ?*',

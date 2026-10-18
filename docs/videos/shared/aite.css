@@ -522,3 +522,4 @@ img { display: block; }
 .cta-aite img { width: 194px; }
 .o-app.muk .o-chatter { width: 236px; }
 .o-app.muk .sb { padding: 0 5px 0 14px; font-size: 12px; }
+.cta-url span { display: block; margin-top: 10px; font-size: 21px; font-weight: 500; letter-spacing: .02em; color: #E6D5EA; }

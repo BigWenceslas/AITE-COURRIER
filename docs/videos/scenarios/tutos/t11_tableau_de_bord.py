@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tutoriel 10 — Le tableau de bord.
+"""Tutoriel 11 — Le tableau de bord.
 
 Sources : aite_courrier/static/src/xml (indicateurs « En cours », « En retard
 (SLA) », « Reçus ce mois », « Archivés ce mois », « Taux de rejet », « Délai
@@ -18,10 +18,10 @@ MANAGER = demo.PERSONNES['manager']
 CH = base.CH10
 
 TUTO = {
-    'slug': 'tuto-10-le-tableau-de-bord',
-    'titre_page': 'AITE Courrier — Tutoriel 10 : le tableau de bord',
+    'slug': 'tuto-11-le-tableau-de-bord',
+    'titre_page': 'AITE Courrier — Tutoriel 11 : le tableau de bord',
     'titre': 'Le tableau de bord',
-    'serie': dict(COURRIER, numero=10),
+    'serie': dict(COURRIER, numero=11),
     'adresse': ADRESSE % 'courrier',
     'accroche': {
         'question': 'Combien de courriers *attendent,* et *où ?*',

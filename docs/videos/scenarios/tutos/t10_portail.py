@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tutoriel 09 — Le portail des tiers.
+"""Tutoriel 10 — Le portail des tiers.
 
 Sources : aite_courrier_portal/views/portal_templates.xml (« Mes courriers »,
 « Nouvelle demande », « Objet », « Nature de la demande », « Votre message »,
@@ -17,10 +17,10 @@ from tutoriel import bulle, dezoom, zoom
 CH = base.CH8
 
 TUTO = {
-    'slug': 'tuto-09-le-portail-des-tiers',
-    'titre_page': 'AITE Courrier — Tutoriel 09 : le portail des tiers',
+    'slug': 'tuto-10-le-portail-des-tiers',
+    'titre_page': 'AITE Courrier — Tutoriel 10 : le portail des tiers',
     'titre': 'Le portail des tiers',
-    'serie': dict(COURRIER, numero=9),
+    'serie': dict(COURRIER, numero=10),
     'adresse': 'courrier.aite-demo.test/my/courriers',
     'accroche': {
         'question': '« Où en est *ma* *demande ?* »',

@@ -8,27 +8,39 @@ complétés dans les modules des tutoriels quand un écran manque.
 """
 
 SERIE = [
-    ('01', 't01_enregistrer'),
-    ('02', 't02_traiter'),
-    ('03', 't03_cachet'),
-    ('04', 't04_pieces'),
-    ('09', 't09_portail'),
-    ('10', 't10_tableau_de_bord'),
-    ('11', 't11_securite'),
-    ('13', 't13_documents'),
-    ('14', 't14_travailler'),
-    ('18', 't18_conservation'),
-    ('19', 't19_elimination'),
-    ('20', 't20_preuve'),
+    # AITE Courrier
+    ('01', 't01_enregistrer'),          # enregistrer un courrier et lancer son circuit
+    ('02', 't02_traiter'),              # traiter, rejeter, commenter
+    ('03', 't03_circuits'),             # circuits et délais : SLA, relances, escalade
+    ('04', 't04_cachet'),               # le cachet de traitement
+    ('05', 't05_pieces'),               # les pièces et leurs versions
+    ('06', 't06_capture'),              # capture automatique des e-mails
+    ('07', 't07_recherche'),            # recherche plein texte (OCR)
+    ('08', 't08_repondre'),             # répondre avec un modèle
+    ('09', 't09_signature'),            # signature électronique
+    ('10', 't10_portail'),              # le portail des tiers
+    ('11', 't11_tableau_de_bord'),      # le tableau de bord
+    ('12', 't12_securite'),             # confidentialité et journal d'audit
+    # AITE ECM
+    ('13', 't13_documents'),            # explorateur et document ECM
+    ('14', 't14_travailler'),           # réservation, Office, versions, corbeille
+    ('15', 't15_numeriser'),            # numériser ses documents
+    ('16', 't16_dossiers'),             # les dossiers métier
+    ('17', 't17_partager'),             # partager en toute sécurité
+    ('18', 't18_conservation'),         # conservation et gels juridiques
+    ('19', 't19_elimination'),          # élimination et archives physiques
+    ('20', 't20_preuve'),               # la valeur probante
+    ('21', 't21_circuit_document'),     # circuit de validation d'un document
 ]
 
 COURRIER = {'produit': 'AITE Courrier', 'marque': ('AITE', 'Courrier'), 'icone': 'aite_courrier.png'}
 ECM = {'produit': 'AITE ECM', 'marque': ('AITE', 'ECM'), 'icone': 'aite_ecm.png'}
 ADRESSE = 'courrier.aite-demo.test/odoo/%s'
+# aite-consulting.com ouvre directement la prise de rendez-vous (/appointment).
 CTA_COURRIER = {'sous': 'AITE Courrier · le courrier et ses documents dans Odoo 18',
-                'voix': "Demandez votre démonstration sur Aïte Consulting point com."}
+                'voix': "Prenez rendez-vous pour une démonstration sur Aïte Consulting point com."}
 CTA_ECM = {'sous': 'AITE ECM · la gestion documentaire dans Odoo 18',
-           'voix': "Demandez votre démonstration sur Aïte Consulting point com."}
+           'voix': "Prenez rendez-vous pour une démonstration sur Aïte Consulting point com."}
 MOTS_CLES = ['AITE Consulting', 'Odoo 18', 'Odoo Cameroun', 'GED', 'dématérialisation', 'gestion du courrier',
              'gestion documentaire', 'tutoriel Odoo', 'Douala']
 
