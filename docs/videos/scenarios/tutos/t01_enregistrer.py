@@ -11,7 +11,7 @@ recette SC01. Écran : scenarios/presentation.py, chapitre 1.
 
 import demo
 from scenarios import presentation as base
-from scenarios.tutos import ADRESSE, COURRIER
+from scenarios.tutos import ADRESSE, COURRIER, youtube
 from moteur import anneau, cacher, choisir, clic, etat, montrer, pause, saisir, survol, texte, vue as aller
 from tutoriel import bulle, dezoom, zoom
 
@@ -88,4 +88,9 @@ TUTO = {
     },
     'cta': {'titre': 'Votre courrier, enfin *sous* *contrôle.*', 'sous': 'AITE Courrier · le courrier et ses documents dans Odoo 18',
             'voix': "Aïte Courrier : votre courrier, enfin sous contrôle. Demandez votre démonstration sur Aïte Consulting point com."},
+    'youtube': youtube('COMMENT ENREGISTRER UN COURRIER ET LANCER SON CIRCUIT AVEC AITE COURRIER (ODOO 18)',
+                       "Un courrier arrive : en quelques clics, il reçoit sa référence unique, part dans son circuit de "
+                       "traitement, et chaque personne concernée est prévenue. Tutoriel AITE Courrier, l'application de "
+                       "gestion du courrier d'AITE Consulting pour Odoo 18.",
+                       ['AITE Courrier', 'courrier entrant', 'circuit de traitement', 'référence courrier']),
 }

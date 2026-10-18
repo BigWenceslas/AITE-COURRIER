@@ -93,19 +93,25 @@ class Tutoriel(presentation.Presentation):
         self.cameras = []
         self.app = None
         self.bulles = []
+        self.bulles_actives = []
         self.t_vignette = None
 
     # ------------------------------------------------------------ outils --
     def _poser(self, g, t):
         k = g['geste']
         cam = '#cam-%s' % self.s['slug']
-        if k == 'zoom':
-            cle = self.cible(g['sel'])
-            self.op(op='camera', sel=cam, cle=cle, s=g['s'], fx=g['fx'], fy=g['fy'], t=t, d=g['d'])
-            return g['d']
-        if k == 'dezoom':
-            self.op(op='camera', sel=cam, s=1, t=t, d=g['d'])
-            return g['d']
+        if k in ('zoom', 'dezoom'):
+            # une bulle ne suivrait pas sa cible pendant un mouvement de caméra :
+            # la caméra attend qu'elle ait fini d'être lue
+            attente = max([0.0] + [fin + 0.3 - t for _, fin in self.bulles_actives])
+            self.bulles_actives = []
+            t = round(t + attente, 3)
+            if k == 'zoom':
+                cle = self.cible(g['sel'])
+                self.op(op='camera', sel=cam, cle=cle, s=g['s'], fx=g['fx'], fy=g['fy'], t=t, d=g['d'])
+            else:
+                self.op(op='camera', sel=cam, s=1, t=t, d=g['d'])
+            return attente + g['d']
         if k == 'bulle':
             n = len(self.bulles)
             ident = 'bul-%d' % n
@@ -115,6 +121,7 @@ class Tutoriel(presentation.Presentation):
                 fx, fy, dx, dy = 0, 0.5, -18, 0
             if g.get('ax') is not None:
                 fx = g['ax']
+            self.bulles_actives.append((ident, t + g['d']))
             self.op(op='etiquette', sel='#' + ident, cle=self.cible(g['sel']), fx=fx, fy=fy, dx=dx, dy=dy, t=t, d=g['d'])
             return 0.4
         return super()._poser(g, t)
@@ -254,7 +261,7 @@ class Tutoriel(presentation.Presentation):
         cam = 'cam-' + slug
         self.cameras.append('#' + cam)
         fenetre = ('<div class="pr-fen masque" id="pr-fen" style="left:%dpx;top:%dpx;width:%dpx;height:%dpx">'
-                   '<div class="pr-barre"><i></i><i></i><i></i><span>%s</span></div>'
+                   '<div class="pr-barre"><i></i><i></i><i></i><span id="pr-url">%s</span></div>'
                    '<div class="pr-vue" style="height:%dpx"><div class="camera" id="%s"><div class="pr-app" style="transform:scale(%.5f)">%s</div>'
                    '</div></div></div>'
                    % (FEN_X, FEN_Y, FEN_L, FEN_H + BARRE, e(s['adresse']), FEN_H, cam, ECHELLE, s['ecran']))
@@ -318,9 +325,15 @@ class Tutoriel(presentation.Presentation):
     def construire(self):
         s = self.s
         t = self.scene_accroche(0.0)
+        self.chapitres = [(0.0, 'Le problème')]
         t = self.scene_revelation(t)
+        self.chapitres.append((t, 'La solution : ' + s['apercu']['titre'].replace('*', '')))
         t = self.scene_produit(t)
+        for (_, m, t0, _), et in zip(self.etapes_t, s['etapes']):
+            self.chapitres.append((t0, 'Étape %d — %s' % (m, et['titre'])))
+        self.chapitres.append((t, 'Ce que vous y gagnez'))
         t = self.scene_benefices(t)
+        self.chapitres.append((t, 'Demander une démonstration'))
         t = self.scene_cta(t)
         total = round(t, 2)
         self.couches.append('<div id="couche-curseur" class="clip" data-start="0" data-duration="%.3f" data-track-index="9">'
@@ -343,6 +356,19 @@ class Tutoriel(presentation.Presentation):
                                         'couches': fond + ''.join(self.couches) + audios,
                                         'plan': json.dumps(plan, ensure_ascii=False).replace('</', '<\\/')}
         return html, total
+
+
+def fiche_youtube(s, chapitres, total):
+    """Le titre, la description (avec chapitres horodatés) et les mots-clés
+    à coller dans YouTube, au format des vidéos de la chaîne AITE Consulting."""
+    y = s['youtube']
+    lignes = ['TITRE', y['titre'], '', 'DESCRIPTION', y['description'], '']
+    lignes += ['%d:%02d %s' % (int(t) // 60, int(t) % 60, lib) for t, lib in chapitres]
+    lignes += ['', 'Durée : %d min %02d s' % (int(total) // 60, int(total) % 60), '',
+               "AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Douala, Cameroun.",
+               'Demandez votre démonstration : www.aite-consulting.com', '',
+               'MOTS-CLÉS', ', '.join(y['mots_cles'])]
+    return '\n'.join(lignes) + '\n'
 
 
 def textes_voix(s):

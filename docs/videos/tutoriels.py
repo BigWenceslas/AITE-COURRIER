@@ -101,6 +101,8 @@ def produire_un(numero, module, args, gsap):
     if args.rendu:
         source = produire.rendre(projet)
         cible, image = produire.compresser(source, video.vignette(), args.sortie)
+        with open(os.path.splitext(cible)[0] + '.youtube.txt', 'w', encoding='utf-8') as f:
+            f.write(tutoriel.fiche_youtube(s, video.chapitres, total))
         journal('  vidéo', cible, '— %.1f Mo' % (os.path.getsize(cible) / 1e6), '· vignette', image)
     return total
 
