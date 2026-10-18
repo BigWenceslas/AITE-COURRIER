@@ -81,15 +81,42 @@ def bouton(identifiant, libelle, style='second', ico=None):
 
 # ------------------------------------------------------------ fenêtre --
 
+# Thème de l'interface rejouée : 'odoo' (Odoo 18 d'origine, barre violette)
+# ou 'muk' (thème MuK installé chez le client : barre ardoise, barre
+# d'applications à gauche, boutons bleu acier). À poser avant de composer
+# les écrans (ils sont construits à l'import des scénarios).
+THEME = 'odoo'
+
+# La barre d'applications de MuK (muk_web_appsbar) : applications installées
+# sur la base de démonstration, dans l'ordre du menu, et leur pastille.
+APPS_MUK = [('Discussion', 'disc'), ('Courrier', 'aite_courrier.png'), ('ECM', 'aite_ecm.png'),
+            ('Contacts', 'cont'), ('Employés', 'empl'), ('Apps', 'apps')]
+PASTILLES_MUK = {
+    'disc': '<svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 3 6.6 3 11c0 2.4 1.1 4.5 3 6l-1 4 4.3-2.3c.9.2 1.8.3 2.7.3 5.5 0 9-3.6 9-8s-3.5-8-9-8z" fill="#F7931E"/></svg>',
+    'cont': '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="#21B799"/><circle cx="12" cy="10" r="3.4" fill="#fff"/><path d="M6.5 18c.8-3 2.9-4.4 5.5-4.4s4.7 1.4 5.5 4.4z" fill="#fff"/></svg>',
+    'empl': '<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3.2" fill="#E46F78"/><circle cx="16.5" cy="9" r="2.8" fill="#9B6BC7"/><path d="M2.5 19c.6-3.6 2.8-5.6 5.5-5.6s4.9 2 5.5 5.6z" fill="#E46F78"/><path d="M12 19c.5-3 2.3-4.7 4.5-4.7S20.5 16 21 19z" fill="#9B6BC7"/></svg>',
+    'apps': '<svg viewBox="0 0 24 24"><path d="M12 12V2a10 10 0 0110 10z" fill="#F06050"/><path d="M12 12h10a10 10 0 01-10 10z" fill="#2EB2A6"/><path d="M12 12v10A10 10 0 012 12z" fill="#3A6EE0"/><path d="M12 12H2A10 10 0 0112 2z" fill="#F6B23C"/></svg>',
+}
+
+
+def appsbar(app):
+    items = []
+    for nom, ico in APPS_MUK:
+        img = ('<img src="assets/logos/%s" alt="">' % ico) if ico.endswith('.png') else PASTILLES_MUK[ico]
+        items.append('<span class="mk-it%s"><span class="mk-ic">%s</span>%s</span>' % (' actif' if nom == app else '', img, e(nom)))
+    return '<div class="mk-bar">%s<span class="mk-logo"><img src="assets/logos/aite.jpg" alt=""></span></div>' % ''.join(items)
+
+
 def fenetre(app, menus, vues, avatar='A', couleur_avatar='#B5404A', calques='', ident='app'):
-    """Le cadre d'Odoo 18 : barre violette, puis les vues empilées."""
+    """Le cadre d'Odoo 18 : barre du haut, (barre d'applications MuK), puis les vues empilées."""
     m = ''.join('<span class="menu" id="%s-m%d">%s</span>' % (ident, i, e(x)) for i, x in enumerate(menus))
-    return ('<div class="o-app" id="%s"><div class="o-nav"><span class="grille">%s</span><span class="nom-app">%s</span>%s'
+    muk = THEME == 'muk'
+    return ('<div class="o-app%s" id="%s"><div class="o-nav"><span class="grille">%s</span><span class="nom-app">%s</span>%s'
             '<span class="droite"><span class="pi">%s<b>3</b></span><span class="pi">%s</span>'
             '<span class="societe">AITE Démo</span><span class="avatar" style="background:%s">%s</span></span></div>'
-            '<div class="o-contenu">%s</div>%s</div>'
-            % (ident, ICONES['grille'], e(app), m, ICONES['bulle'], ICONES['horloge'], couleur_avatar, e(avatar),
-               ''.join(vues), calques))
+            '%s<div class="o-contenu">%s</div>%s</div>'
+            % (' muk' if muk else '', ident, ICONES['grille'], e(app), m, ICONES['bulle'], ICONES['horloge'], couleur_avatar,
+               e(avatar), appsbar(app) if muk else '', ''.join(vues), calques))
 
 
 def vue(identifiant, contenu, initiale=False, groupe='odoo'):

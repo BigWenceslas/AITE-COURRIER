@@ -400,3 +400,125 @@ img { display: block; }
 .o-cp .sauver { display: inline-flex; margin-left: 4px; } .o-cp .sauver svg { width: 18px; height: 18px; }
 .bt.vert { background: #198754; color: #fff; }
 .ruban.rouge { background: #DC3545; color: #fff; }
+
+/* ================================================ thème MuK (muk_web_theme) ==
+   Relevé sur une base Odoo 18 où muk_web_theme 18.0.1.2.5 est installé
+   (styles calculés dans le navigateur, écran 1600 px ramené à 1100 px) :
+   barre du haut #243742, barre d'applications #111827 (texte #DEE2E6,
+   application active #5D8DA8), boutons primaires #5D8DA8, secondaires
+   #DEE2E6, étape courante #D9E3EA, liens et onglets #528099.
+   ========================================================================== */
+.o-app.muk { --o-violet: #5D8DA8; --o-violet-700: #528099; --o-lien: #528099; --o-lien-2: #528099; }
+.o-app.muk .o-nav { background: #243742; }
+.o-app.muk .o-nav .pi b { background: #5D8DA8; }
+.o-app.muk .o-contenu { left: 104px; }
+.o-app.muk .voile { left: 0; }
+.mk-bar { position: absolute; left: 0; top: 40px; bottom: 0; width: 104px; background: #111827; }
+.mk-it { display: flex; align-items: center; gap: 7px; height: 27px; padding: 0 8px; color: #DEE2E6; font-size: 11px; font-weight: 300; }
+.mk-it.actif { background: #5D8DA8; color: #fff; }
+.mk-ic { width: 15px; height: 15px; border-radius: 3px; overflow: hidden; flex: none; display: block; }
+.mk-ic svg, .mk-ic img { width: 15px; height: 15px; display: block; }
+.mk-logo { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 34px; border-radius: 4px; overflow: hidden; background: #fff;
+  display: flex; align-items: center; justify-content: center; }
+.mk-logo img { height: 30px; }
+.o-app.muk .bt.second { background: #DEE2E6; color: #000; font-weight: 500; }
+.o-app.muk .bt.prim { font-weight: 500; }
+.o-app.muk .sb { background: #DEE2E6; color: #6C757D; }
+.o-app.muk .sb::after { border-left-color: #DEE2E6; }
+.o-app.muk .sb.actif { background: #D9E3EA; color: #000; } .o-app.muk .sb.actif::after { border-left-color: #D9E3EA; }
+.o-app.muk .pl-it.actif { background: #DCE8EF; }
+.o-app.muk .case.on { background: #5D8DA8; border-color: #5D8DA8; }
+.o-app.muk .o-liste .ligne.survol, .o-app.muk .o-liste .ligne.sel { background: #EEF3F6; }
+
+/* ===================================================== tutoriels marketing ==
+   Format « explainer » : accroche, révélation de la marque, aperçu sur fond
+   violet, tutoriel dans une fenêtre de navigateur (zooms de caméra, bulles),
+   bénéfices, appel à l'action.
+   ========================================================================== */
+.kicker.clair { color: #F6B868; }
+/* accroche */
+.acc-gauche { position: absolute; left: 150px; top: 300px; width: 760px; }
+.acc-q { margin-top: 26px; font-family: var(--titre); font-size: 78px; font-weight: 700; letter-spacing: -.03em; line-height: 1.05; color: var(--encre); }
+.acc-q .mot { display: inline-block; } .acc-q .mot.v { color: var(--violet); }
+.acc-s { margin-top: 30px; font-size: 30px; line-height: 1.45; color: var(--gris); }
+.acc-perso { position: absolute; left: 1390px; top: 560px; translate: -50% -50%; text-align: center; width: 300px; }
+.acc-av { width: 210px; height: 210px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--titre); font-size: 96px; font-weight: 700; color: #fff; box-shadow: 0 24px 50px rgba(58,19,64,.25), 0 0 0 12px #fff; }
+.acc-nom { margin-top: 26px; font-family: var(--titre); font-size: 30px; font-weight: 700; color: var(--encre); }
+.acc-role { margin-top: 8px; display: inline-block; padding: 6px 16px; border-radius: 999px; background: var(--mauve); color: var(--violet-800);
+  font-size: 19px; font-weight: 600; }
+.chaos { position: absolute; translate: -50% -50%; display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 16px;
+  background: #fff; border: 1px solid var(--filet); box-shadow: 0 16px 34px rgba(28,22,32,.12); font-size: 21px; font-weight: 500;
+  color: var(--encre); white-space: nowrap; }
+.chaos .pi svg { width: 28px; height: 28px; display: block; }
+.chaos.alerte { background: #DC3545; border-color: #DC3545; color: #fff; }
+.chaos.bulle { border-radius: 18px 18px 18px 4px; background: #EAF4F9; border-color: #CFE6F1; }
+.chaos.note { background: #FFF1C9; border-color: #F6DE95; rotate: -4deg; border-radius: 4px; }
+.chaos.dossier { rotate: 3deg; }
+/* révélation */
+.rev { background: #fff; }
+.rev-a { position: absolute; left: -330px; top: 330px; width: 760px; height: 760px; border-radius: 50%; background: var(--violet); }
+.rev-b { position: absolute; right: -260px; top: -300px; width: 640px; height: 640px; border-radius: 50%; background: var(--orange); }
+.rev-c { position: absolute; right: 180px; bottom: 120px; width: 120px; height: 120px; border-radius: 50%; background: var(--bleu); }
+.rev-icone { position: absolute; left: 50%; top: 250px; width: 200px; height: 200px; margin-left: -100px; border-radius: 46px; overflow: hidden;
+  box-shadow: 0 30px 60px rgba(58,19,64,.28); }
+.rev-icone img { width: 200px; height: 200px; }
+.rev-marque { position: absolute; left: 0; right: 0; top: 500px; text-align: center; font-family: var(--titre); font-weight: 700; font-size: 108px;
+  letter-spacing: -.03em; color: var(--encre); }
+.rev-marque .lettre { display: inline-block; } .rev-marque .violet { color: var(--violet); }
+.rev-pill { position: absolute; left: 50%; top: 680px; translate: -50% 0; display: flex; align-items: center; gap: 16px; padding: 12px 30px 12px 12px;
+  border-radius: 999px; background: var(--violet-050); border: 1px solid #E6CFE6; font-family: var(--titre); font-size: 30px; font-weight: 600;
+  color: var(--violet-800); white-space: nowrap; }
+.rev-pill b { padding: 8px 18px; border-radius: 999px; background: var(--violet); color: #fff; font-size: 20px; letter-spacing: .12em; text-transform: uppercase; }
+/* aperçu et fenêtre de l'application */
+.pr-fond { position: absolute; inset: 0; background: linear-gradient(135deg, #6A2373 0%, #4A1752 50%, #2C0E33 100%); }
+.pr-haut { position: absolute; left: 0; right: 0; top: 64px; text-align: center; }
+.pr-t { margin-top: 14px; font-family: var(--titre); font-size: 56px; font-weight: 700; letter-spacing: -.02em; color: #fff; }
+.pr-t .mot { display: inline-block; } .pr-t .mot.v { color: #F6B868; }
+.pr-pills { margin-top: 24px; display: flex; justify-content: center; gap: 16px; }
+.pill { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 999px; background: #fff; color: var(--violet-900);
+  font-family: var(--titre); font-size: 24px; font-weight: 600; box-shadow: 0 12px 30px rgba(0,0,0,.25); }
+.pill i { width: 12px; height: 12px; border-radius: 50%; background: var(--orange); }
+.pill:nth-child(2) i { background: var(--violet); } .pill:nth-child(3) i { background: var(--bleu); }
+.pr-scene { position: absolute; inset: 0; perspective: 1800px; }
+.pr-fen { position: absolute; border-radius: 14px; overflow: hidden; background: #fff;
+  box-shadow: 0 40px 90px rgba(28,10,34,.32), 0 0 0 1px rgba(58,19,64,.10); }
+.pr-barre { height: 36px; background: #ECEEF2; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid #DDE1E6; }
+.pr-barre i { width: 12px; height: 12px; border-radius: 50%; background: #FF5F57; } .pr-barre i:nth-child(2) { background: #FEBC2E; }
+.pr-barre i:nth-child(3) { background: #28C840; }
+.pr-barre span { margin: 0 auto; padding: 4px 60px; border-radius: 6px; background: #fff; font-size: 14px; color: #5E6670; translate: -30px 0; }
+.pr-vue { position: relative; overflow: hidden; }
+.camera { position: absolute; inset: 0; }
+.pr-app { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.leg.tuto { top: 250px; }
+.leg.tuto .ln { width: 74px; height: 74px; border-radius: 22px; background: var(--violet); color: #fff; display: flex; align-items: center;
+  justify-content: center; font-family: var(--titre); font-size: 38px; font-weight: 700; margin-bottom: 26px; box-shadow: 0 14px 30px rgba(142,42,142,.3); }
+.bulle-tuto { position: absolute; left: 0; top: 0; translate: 0 -50%; padding: 12px 18px; border-radius: 12px; background: #1C1620; color: #fff;
+  font-size: 21px; font-weight: 500; white-space: nowrap; box-shadow: 0 14px 30px rgba(0,0,0,.28); z-index: 50; }
+.bulle-tuto i { position: absolute; left: -8px; top: 50%; margin-top: -8px; border-right: 9px solid #1C1620; border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent; }
+.bulle-tuto.dessous { translate: -50% 0; } .bulle-tuto.dessous i { left: 50%; top: -8px; margin: 0 0 0 -8px; border-right: 8px solid transparent;
+  border-left: 8px solid transparent; border-bottom: 9px solid #1C1620; border-top: 0; }
+.bulle-tuto.gauche { translate: -100% -50%; } .bulle-tuto.gauche i { left: auto; right: -8px; border-right: 0; border-left: 9px solid #1C1620; }
+/* bénéfices */
+.carte.gain .gi { width: 64px; height: 64px; border-radius: 18px; background: var(--violet); display: flex; align-items: center; justify-content: center; }
+.carte.gain .gi svg { width: 34px; height: 34px; }
+.carte.gain.b .gi { background: var(--bleu); } .carte.gain.o .gi { background: var(--orange); }
+.carte.gain .gc { margin-top: 26px; font-family: var(--titre); font-size: 54px; font-weight: 700; color: var(--violet); letter-spacing: -.02em; line-height: 1; }
+.carte.gain.b .gc { color: var(--bleu-700); } .carte.gain.o .gc { color: var(--orange-700); }
+.titre-scene .mot { display: inline-block; } .titre-scene .mot.v { color: var(--violet); }
+/* appel à l'action */
+.cta { background: linear-gradient(135deg, #6A2373 0%, #4A1752 50%, #2C0E33 100%); }
+.cta-bloc { position: absolute; left: 0; right: 0; top: 150px; text-align: center; }
+.cta-icone { width: 150px; height: 150px; margin: 0 auto; border-radius: 36px; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.35); }
+.cta-icone img { width: 150px; height: 150px; }
+.cta-t { margin-top: 44px; font-family: var(--titre); font-size: 76px; font-weight: 700; letter-spacing: -.03em; color: #fff; }
+.cta-t .mot { display: inline-block; } .cta-t .mot.v { color: #F6B868; }
+.cta-s { margin-top: 18px; font-size: 28px; color: #E6D5EA; }
+.cta-bt { display: inline-block; margin-top: 46px; padding: 22px 46px; border-radius: 999px; background: var(--orange); color: #1C1620;
+  font-family: var(--titre); font-size: 30px; font-weight: 700; box-shadow: 0 18px 40px rgba(240,146,31,.35); }
+.cta-url { margin-top: 22px; font-family: var(--titre); font-size: 26px; font-weight: 600; letter-spacing: .04em; color: #fff; }
+.cta-aite { margin: 34px auto 0; width: 230px; padding: 10px 18px; border-radius: 14px; background: #fff; }
+.cta-aite img { width: 194px; }
+.o-app.muk .o-chatter { width: 236px; }
+.o-app.muk .sb { padding: 0 5px 0 14px; font-size: 12px; }
