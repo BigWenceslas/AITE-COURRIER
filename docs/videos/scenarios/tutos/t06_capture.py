@@ -33,7 +33,7 @@ générique, sans marque.
 """
 
 import demo
-from ecrans import (ICONES, bande, bouton, bouton_stat, c_html, c_lien, c_num, case, champ, chatter, e, entree, fenetre,
+from ecrans import (ICONES, bande, bouton, bouton_stat, c_html, c_num, case, champ, chatter, e, entree, fenetre,
                     feuille, grille2, liste, onglets, panneau_fiche, panneau_lateral, panneau_liste, puce, sec_titre,
                     statusbar, table, v, vue)
 from scenarios import presentation as base
@@ -98,20 +98,26 @@ def _messagerie():
             '<div class="wm-ok masque" id="t6-wm-ok">Message envoyé</div></div>' % (env, dossiers, carte))
 
 
+ENTONNOIR = '<svg class="t6-ic" viewBox="0 0 24 24"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z" fill="currentColor"/></svg>'
+COUCHES = ('<svg class="t6-ic" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z" fill="currentColor"/>'
+           '<path d="M3.5 12.5L12 17l8.5-4.5M3.5 16.5L12 21l8.5-4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>')
+ETOILE = '<svg class="t6-ic t6-or" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.2l-5.9 3.3 1.4-6.6-5-4.5 6.6-.7z" fill="currentColor"/></svg>'
+
+
 def _liste_initiale():
     lignes = sorted(AUTRES + [b for b in BROUILLONS if b not in AUTRES], key=_jour, reverse=True)
     lat = panneau_lateral([('▰ CATÉGORIE', [('Tous', '', True), ('Entrant', '61', False), ('Interne', '22', False),
                                             ('Sortant', '52', False)]),
                            ('≡ STATUT', [('Archivé', '50', False), ('Brouillon', '4', False), ('Nouveau', '16', False),
                                          ('En traitement', '54', False), ('Rejeté', '11', False)])], 't6-lat')
-    filtres = ('<div class="t6-dd masque" id="t6-filtres"><div class="t6-col"><div class="t6-h">▼ Filtres</div>%s<hr>%s<hr>'
+    filtres = ('<div class="t6-dd masque" id="t6-filtres"><div class="t6-col"><div class="t6-h">%s Filtres</div>%s<hr>%s<hr>'
                '<div class="t6-it">Ajouter un filtre personnalisé</div></div>'
-               '<div class="t6-col"><div class="t6-h">◆ Regrouper par</div>%s<hr><div class="t6-it">Ajouter un groupe personnal…</div></div>'
-               '<div class="t6-col"><div class="t6-h">★ Favoris</div><div class="t6-it">Enregistrer la recherche a…</div></div></div>'
-               % (''.join('<div class="t6-it" id="t6-f%d">%s</div>' % (i, e(n)) for i, n in
+               '<div class="t6-col"><div class="t6-h">%s Regrouper par</div>%s<hr><div class="t6-it">Ajouter un groupe personnalisé</div></div>'
+               '<div class="t6-col"><div class="t6-h">%s Favoris</div><div class="t6-it">Enregistrer la recherche actuelle</div></div></div>'
+               % (ENTONNOIR, ''.join('<div class="t6-it" id="t6-f%d">%s</div>' % (i, e(n)) for i, n in
                           enumerate(['Brouillons', 'Traités', 'En retard (SLA)', 'Mes courriers', 'Reçus ce mois'])),
-                  ''.join('<div class="t6-it">%s</div>' % e(n) for n in ['Entrants', 'Sortants', 'Internes']),
-                  ''.join('<div class="t6-it">%s</div>' % e(n) for n in ['Type', 'Statut', 'Priorité', 'Service'])))
+                  ''.join('<div class="t6-it">%s</div>' % e(n) for n in ['Entrants', 'Sortants', 'Internes']), COUCHES,
+                  ''.join('<div class="t6-it">%s</div>' % e(n) for n in ['Type', 'Statut', 'Priorité', 'Service']), ETOILE))
     return vue('t6-liste', panneau_liste('Courriers', '1-80 / 135', ident='t6', recherche_id='t6-rech') + lat
                + liste(base.COL_COURRIERS, [base.ligne_courrier('t6-l%d' % i, *l) for i, l in enumerate(lignes)]) + filtres,
                initiale=True).replace('class="vue initiale"', 'class="vue initiale avec-lateral"', 1)
@@ -123,7 +129,7 @@ def _liste_brouillons():
                            ('≡ STATUT', [('Brouillon', '5', False)])])
     return vue('t6-brouillons', panneau_liste('Courriers', '1-5 / 5', facettes=[('≡', 'Brouillons')])
                + lat + liste(base.COL_COURRIERS, [base.ligne_courrier('t6-b%d' % i, *l) for i, l in enumerate([CAPTURE] + BROUILLONS)])
-               ).replace('class="vue"', 'class="vue avec-lateral"', 1)
+               ).replace('class="vue"', 'class="vue avec-lateral"', 1).replace('<span class="k">≡</span>', '<span class="k">%s</span>' % ENTONNOIR, 1)
 
 
 def _fiche():
@@ -246,7 +252,11 @@ CSS = """
   font-size: 13.5px; box-shadow: 0 10px 24px rgba(0,0,0,.25); }
 #app-6 .t6-dd, #app-6b .t6-dd { position: absolute; z-index: 30; background: #fff; border: 1px solid #DEE2E6; border-radius: 4px;
   box-shadow: 0 10px 26px rgba(0,0,0,.16); font-size: 12.5px; color: #212529; }
-#t6-filtres { left: 300px; top: 50px; width: 548px; display: grid; grid-template-columns: 1.15fr 1.1fr 1fr; padding: 10px 0; }
+#t6-filtres { left: 300px; top: 50px; width: 580px; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.15fr) minmax(0, 0.95fr);
+  padding: 10px 0; }
+#app-6 .t6-ic { width: 11px; height: 11px; display: inline-block; vertical-align: -1px; margin-right: 3px; }
+#app-6 .t6-or { color: #F3B700; }
+#t6-brouillons .facette .k { display: inline-flex; align-items: center; } #t6-brouillons .facette .k .t6-ic { margin: 0; }
 #t6-filtres .t6-col { padding: 0 14px; } #t6-filtres .t6-col + .t6-col { border-left: 1px solid #E9ECEF; }
 #app-6 .t6-h { font-weight: 600; font-size: 13px; margin: 2px 0 6px; }
 #app-6 .t6-it, #app-6b .t6-it { padding: 4px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -254,6 +264,7 @@ CSS = """
 #app-6b .t6-menu { position: relative; }
 #t6-cfg { left: -10px; top: 29px; width: 178px; padding: 6px 0; font-size: 12px; }
 #t6-cfg .t6-it { padding: 5px 14px; }
+#t6-chatter .ch-bts .bt { padding: 0 6px; font-size: 11px; }
 #t6-mail .t6-mc { min-width: 0; }
 #t6-mail .av svg { width: 20px; height: 20px; }
 #t6-mail .t6-bulle { margin-top: 3px; padding: 6px 8px; border: 1px solid #A8D8E2; border-radius: 6px; background: #E3F3F6; font-size: 11px;
@@ -305,7 +316,7 @@ TUTO = {
          'texte': "Tout e-mail envoyé à l'adresse dédiée crée un courrier en brouillon, sans aucune ressaisie.",
          'voix': "Un client envoie sa réclamation à l'adresse dédiée, courrier arobase votre domaine, avec la facture en "
                  "pièce jointe. Côté Aïte Courrier, Carine n'a rien à saisir : elle filtre les brouillons, et le courrier "
-                 "est déjà là, créé dès l'arrivée de l'e-mail.",
+                 "est déjà là, créé automatiquement depuis l'e-mail.",
          'gestes': [texte('#pr-url', 'webmail.horizon-services.test'), montrer('#t6-wm', y=0, d=0.4, avec=True),
                     zoom('#t6-wm-carte', s=1.25, d=0.8), clic('#t6-wm-a', fx=0.15), saisir('t6-wm-a', ALIAS, d=1.2),
                     bulle('#t6-wm-a', "L'adresse dédiée", cote='droite', fx=0.62, d=2.0),
@@ -324,15 +335,14 @@ TUTO = {
                     anneau('#t6-objet', d=1.0), bulle('#t6-objet', "Le sujet de l'e-mail", cote='droite', d=1.8),
                     anneau('#t6-exp', d=0.8), anneau('#t6-mail-exp', d=0.8), anneau('#t6-contact', d=0.8),
                     bulle('#t6-typev', 'Type par défaut', cote='droite', d=1.8), dezoom(d=0.6),
-                    anneau('#t6-mail', d=1.2), bulle('#t6-mail .t6-bulle', "Le message d'origine", cote='dessous', fx=0.3, d=2.0)]},
+                    anneau('#t6-mail', d=1.2), bulle('#t6-mail .t6-bulle', "L'e-mail d'origine", cote='dessous', fx=0.3, d=2.0)]},
         {'titre': 'Pièces jointes, puis circuit',
          'texte': "Les pièces jointes deviennent des documents versionnés ; il ne reste qu'à qualifier et lancer.",
          'voix': "Ses pièces jointes sont devenues des documents du courrier, chacun en version 1 ; les petites images, "
                  "comme les logos de signature, sont écartées. Il ne reste qu'à qualifier : Carine choisit le service "
                  "destinataire, puis lance le circuit. La référence est attribuée.",
-         'gestes': [defiler('#t6-defil', y=-110, d=0.8), curseur('#t6-d1', fx=0.62, fy=0.9, d=0.7, avec=True),
-                    zoom('#t6-docs', s=1.35, d=0.8),
-                    anneau('#t6-docs', d=1.0), bulle('#t6-d1-v', 'Version v1', cote='dessous', d=1.8), dezoom(d=0.6),
+         'gestes': [defiler('#t6-defil', y=-110, d=0.8), zoom('#t6-docs', s=1.35, d=0.8), curseur('#t6-d0', fx=0.4, d=0.5),
+                    anneau('#t6-docs', d=1.0), bulle('#t6-d1-v', 'Version v1', cote='dessous', fx=0.9, d=1.8), dezoom(d=0.6),
                     anneau('#t6-pj2', d=1.0), bulle('#t6-pj2', 'Image de 3 Ko : écartée', cote='dessous', fx=0.3, d=2.0),
                     defiler('#t6-defil', y=0, d=0.7), clic('#t6-service', fx=0.3), choisir('t6-service', 'Finance et comptabilité'),
                     clic('#t6-lancer'),
@@ -345,7 +355,7 @@ TUTO = {
          'texte': "Configuration › Types de courrier. Prérequis : un serveur de messagerie entrant.",
          'voix': "Le paramétrage tient en une case : dans Configuration, Types de courrier, l'administrateur coche Type par "
                  "défaut, capture e-mail. Sans ce choix, le premier type entrant s'applique. Prérequis : un serveur de "
-                 "messagerie entrant.",
+                 "messagerie entrant, qui relève cette boîte.",
          'gestes': [montrer('#app-6b', y=0, d=0.4), pause(0.3), clic('#app-6b-m4'), montrer('#t6-cfg', y=6, d=0.25),
                     clic('#t6-cfg0', fx=0.3), cacher('#t6-cfg', d=0.15), aller('t6-types'),
                     cacher('#t6a-liste', d=0.25, avec=True), clic('#t6t-l1', fx=0.15), aller('t6-type'),

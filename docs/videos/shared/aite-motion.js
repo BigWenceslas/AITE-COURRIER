@@ -129,7 +129,9 @@
       var dy = decalage(plan, p.el, o.t);
       var cam = camera(P, plan, etat, p.el);
       var q = projeter(cam, p.l + p.w * (o.fx === undefined ? 1 : o.fx), p.t + dy + p.h * (o.fy === undefined ? 0.5 : o.fy));
-      tl.set(o.sel, { x: q.x + (o.dx || 0), y: q.y + (o.dy || 0) }, o.t);
+      /* L'alignement de la bulle (à gauche : -100 %, dessous : centrée) passe par
+         xPercent / yPercent : un `translate` CSS serait écrasé par GSAP. */
+      tl.set(o.sel, { x: q.x + (o.dx || 0), y: q.y + (o.dy || 0), xPercent: o.xp || 0, yPercent: o.yp || 0 }, o.t);
       tl.fromTo(o.sel, { autoAlpha: 0, scale: 0.85 }, { autoAlpha: 1, scale: 1, duration: 0.35, ease: 'back.out(1.8)', immediateRender: false }, o.t);
       tl.to(o.sel, { autoAlpha: 0, duration: 0.25 }, o.t + o.d);
     },

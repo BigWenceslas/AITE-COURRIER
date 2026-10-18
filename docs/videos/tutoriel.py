@@ -122,7 +122,9 @@ class Tutoriel(presentation.Presentation):
             if g.get('ax') is not None:
                 fx = g['ax']
             self.bulles_actives.append((ident, t + g['d']))
-            self.op(op='etiquette', sel='#' + ident, cle=self.cible(g['sel']), fx=fx, fy=fy, dx=dx, dy=dy, t=t, d=g['d'])
+            xp, yp = {'droite': (0, -50), 'gauche': (-100, -50), 'dessous': (-50, 0)}[g['cote']]
+            self.op(op='etiquette', sel='#' + ident, cle=self.cible(g['sel']), fx=fx, fy=fy, dx=dx, dy=dy, xp=xp, yp=yp,
+                    t=t, d=g['d'])
             return 0.4
         return super()._poser(g, t)
 

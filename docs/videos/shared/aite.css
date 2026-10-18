@@ -493,13 +493,13 @@ img { display: block; }
 .leg.tuto { top: 250px; }
 .leg.tuto .ln { width: 74px; height: 74px; border-radius: 22px; background: var(--violet); color: #fff; display: flex; align-items: center;
   justify-content: center; font-family: var(--titre); font-size: 38px; font-weight: 700; margin-bottom: 26px; box-shadow: 0 14px 30px rgba(142,42,142,.3); }
-.bulle-tuto { position: absolute; left: 0; top: 0; translate: 0 -50%; padding: 12px 18px; border-radius: 12px; background: #1C1620; color: #fff;
+.bulle-tuto { position: absolute; left: 0; top: 0; padding: 12px 18px; border-radius: 12px; background: #1C1620; color: #fff;
   font-size: 21px; font-weight: 500; white-space: nowrap; box-shadow: 0 14px 30px rgba(0,0,0,.28); z-index: 50; }
 .bulle-tuto i { position: absolute; left: -8px; top: 50%; margin-top: -8px; border-right: 9px solid #1C1620; border-top: 8px solid transparent;
   border-bottom: 8px solid transparent; }
-.bulle-tuto.dessous { translate: -50% 0; } .bulle-tuto.dessous i { left: 50%; top: -8px; margin: 0 0 0 -8px; border-right: 8px solid transparent;
+.bulle-tuto.dessous i { left: 50%; top: -8px; margin: 0 0 0 -8px; border-right: 8px solid transparent;
   border-left: 8px solid transparent; border-bottom: 9px solid #1C1620; border-top: 0; }
-.bulle-tuto.gauche { translate: -100% -50%; } .bulle-tuto.gauche i { left: auto; right: -8px; border-right: 0; border-left: 9px solid #1C1620; }
+.bulle-tuto.gauche i { left: auto; right: -8px; border-right: 0; border-left: 9px solid #1C1620; }
 /* bénéfices */
 .carte.gain .gi { width: 64px; height: 64px; border-radius: 18px; background: var(--violet); display: flex; align-items: center; justify-content: center; }
 .carte.gain .gi svg { width: 34px; height: 34px; }

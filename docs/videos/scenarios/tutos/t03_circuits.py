@@ -44,7 +44,7 @@ Modèle visuel : base demo18 (MuK), captures t03_*.
 """
 
 import demo
-from ecrans import (ICONES, activite, bande, bouton, bouton_stat, c_html, c_lien, c_num, c_puce, case, champ, chatter,
+from ecrans import (ICONES, activite, bande, bouton, bouton_stat, c_html, c_num, c_puce, case, champ, chatter,
                     e, entree, fenetre, feuille, grille2, liste, message, onglets, panneau_fiche, panneau_lateral,
                     panneau_liste, puce, statusbar, table, v, vue)
 from scenarios import presentation as base
@@ -99,13 +99,8 @@ ZONE = ' data-layout-allow-overlap data-layout-allow-occlusion'
 
 
 def bulle_g(sel, texte, largeur, s=1.0, d=2.2, **kw):
-    """Une bulle à gauche de ``sel`` (``largeur`` : sa largeur en pixels
-    de l'interface ; ``s`` : le zoom en cours). La bulle se pose depuis son
-    bord gauche (son décalage de -100 % ne survit pas au placement) : on
-    recule l'ancre de la largeur estimée de la bulle pour que sa pointe
-    touche le bord gauche de la cible."""
-    w = 36 + 9.6 * len(texte)
-    return bulle(sel, texte, cote='gauche', fx=round((6 - w) / (largeur * ECHELLE * s), 3), d=d, **kw)
+    """Une bulle à gauche de ``sel`` (``largeur`` et ``s`` : conservés pour les appels existants)."""
+    return bulle(sel, texte, cote='gauche', d=d, **kw)
 
 
 def tags(roles):
@@ -342,7 +337,7 @@ TUTO = {
          'gestes': [montrer('#app-3b', y=0, d=0.4), clic('#t3-drop', decale=0.3), montrer('#t3-ddf', y=-8, d=0.3),
                     survol('#t3-f-retard', decale=0.2), clic('#t3-f-retard', decale=0.1), cacher('#t3-ddf', d=0.15),
                     aller('t3-retard'), survol('#t3-r0', decale=0.3), clic('#t3-r0', fx=0.35), aller('t3-fiche'),
-                    curseur('#t3-msg-q', fx=0.7, fy=0.8, d=0.6),
+                    curseur('#t3-msg-q', fx=0.9, fy=0.2, d=0.6),
                     zoom('#t3-msg-esc', s=1.55, fx=0.62, fy=0.52, d=0.8),
                     anneau('#t3-msg-rel', d=2.2), bulle_g('#t3-msg-rel', "L'équipe est relancée", 211, 1.55, avec=True),
                     anneau('#t3-msg-esc', d=2.2), bulle_g('#t3-msg-esc', 'Escalade, 24 h plus tard', 211, 1.55, avec=True),
