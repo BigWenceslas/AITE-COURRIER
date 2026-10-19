@@ -1,0 +1,24 @@
+TITRE
+COMMENT RÉPONDRE À UN COURRIER EN QUELQUES CLICS AVEC AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Répondre à un courrier sans quitter l'application : un modèle de réponse fusionne la référence et l'objet du courrier, le PDF est produit à l'en-tête de la société, versé dans un courrier sortant lié et envoyé à l'expéditeur par e-mail. Tutoriel AITE Courrier pour Odoo 18.
+
+0:00 Le problème
+0:15 La solution : Répondre avec un modèle, en quelques clics
+0:25 Étape 1 — Répondre, puis choisir un modèle
+0:40 Étape 2 — Retoucher, régler, générer
+0:57 Étape 3 — Le PDF, dans un courrier sortant
+1:15 Étape 4 — Trois modèles livrés, à adapter
+1:31 Ce que vous y gagnez
+1:39 Demander une démonstration
+
+Durée : 1 min 47 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, modèle de réponse, courrier sortant, réponse courrier, publipostage Odoo, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

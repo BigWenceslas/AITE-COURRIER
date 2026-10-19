@@ -1,0 +1,24 @@
+TITRE
+COMMENT RETROUVER UN COURRIER PAR LE CONTENU DE SES PIÈCES AVEC AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Recherche plein texte et OCR : AITE Courrier extrait le texte des PDF et, si Tesseract est installé, celui des numérisations, en tâche de fond. Un mot tapé dans la recherche « Contenu des pièces » retrouve le courrier, dans le respect des règles de confidentialité. Tutoriel AITE Courrier pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Chercher dans le contenu des pièces
+0:26 Étape 1 — Chercher dans le contenu
+0:39 Étape 2 — Le courrier retrouvé
+0:52 Étape 3 — L'état d'indexation
+1:08 Étape 4 — Couche texte, OCR et relance
+1:24 Ce que vous y gagnez
+1:33 Demander une démonstration
+
+Durée : 1 min 40 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, recherche plein texte, OCR, Tesseract, indexation PDF, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

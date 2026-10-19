@@ -1,0 +1,24 @@
+TITRE
+COMMENT FAIRE SIGNER UN COURRIER ÉLECTRONIQUEMENT AVEC AITE COURRIER (ODOO 18 COMMUNITY)
+
+DESCRIPTION
+Une étape « Signature requise » dans le circuit, une demande envoyée par e-mail, une signature dans le navigateur sans ouvrir de session, et le PDF signé versé en nouvelle version du courrier, avec la trace au journal d'audit. Signature électronique simple, adossée au module OCA sign_oca. Tutoriel AITE Courrier pour Odoo 18.
+
+0:00 Le problème
+0:15 La solution : Signer un courrier, sans parapheur
+0:23 Étape 1 — Une étape qui exige la signature
+0:36 Étape 2 — Bloqué, puis demander la signature
+0:54 Étape 3 — La signataire signe dans son navigateur
+1:10 Étape 4 — Le PDF signé revient au courrier
+1:28 Ce que vous y gagnez
+1:37 Demander une démonstration
+
+Durée : 1 min 45 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, signature électronique, sign_oca, OCA, Odoo Community, parapheur électronique, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

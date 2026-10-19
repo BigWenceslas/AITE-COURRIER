@@ -1,0 +1,23 @@
+TITRE
+COMMENT VOS PARTENAIRES DÉPOSENT ET SUIVENT LEURS COURRIERS EN LIGNE : LE PORTAIL AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Le portail des tiers d'AITE Courrier : dépôt de demandes avec pièces jointes, suivi étape par étape et cachet de traitement, sans un appel. Tutoriel pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Déposer et suivre en ligne
+0:25 Étape 1 — Son espace, ses courriers
+0:35 Étape 2 — Déposer une demande
+0:54 Étape 3 — Suivre, jusqu'au cachet
+1:07 Ce que vous y gagnez
+1:15 Demander une démonstration
+
+Durée : 1 min 22 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, portail Odoo, portail client, suivi de demande, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala
