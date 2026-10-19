@@ -342,7 +342,7 @@ TUTO = {
                  "comme les logos de signature, sont écartées. Il ne reste qu'à qualifier : Carine choisit le service "
                  "destinataire, puis lance le circuit. La référence est attribuée.",
          'gestes': [defiler('#t6-defil', y=-110, d=0.8), zoom('#t6-docs', s=1.35, d=0.8), curseur('#t6-d0', fx=0.4, d=0.5),
-                    anneau('#t6-docs', d=1.0), bulle('#t6-d1-v', 'Version v1', cote='dessous', fx=0.9, d=1.8), dezoom(d=0.6),
+                    anneau('#t6-docs', d=1.0), bulle('#t6-d1-v', 'Une version : la v1', cote='dessous', fx=0.9, d=1.8), dezoom(d=0.6),
                     anneau('#t6-pj2', d=1.0), bulle('#t6-pj2', 'Image de 3 Ko : écartée', cote='dessous', fx=0.3, d=2.0),
                     defiler('#t6-defil', y=0, d=0.7), clic('#t6-service', fx=0.3), choisir('t6-service', 'Finance et comptabilité'),
                     clic('#t6-lancer'),

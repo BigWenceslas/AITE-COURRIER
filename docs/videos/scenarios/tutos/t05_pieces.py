@@ -73,7 +73,7 @@ TUTO = {
          'voix': "L'espace documentaire réunit toutes les pièces jointes aux courriers, regroupées par dossier : les devis, "
                  "les factures, la direction. Chaque type de courrier peut avoir son dossier par défaut. Estelle déplie "
                  "les devis, et ouvre le plus récent.",
-         'gestes': [anneau('#c3-g0', d=1.2), bulle('#c3-g0', 'Les pièces, par dossier', cote='droite', fx=0.35, d=2.2),
+         'gestes': [anneau('#c3-g0', d=2.2), bulle('#c3-g0', 'Les pièces, par dossier', cote='droite', fx=0.35, d=2.2, avec=True),
                     anneau('#c3-g1', d=1.0), survol('#c3-g0'), clic('#c3-g0', fx=0.2), texte('#t5-chev', '▾', avec=True),
                     animer('#t5-devis', {'height': 0, 'autoAlpha': 0}, {'height': 93, 'autoAlpha': 1}, d=0.4, avec=True),
                     survol('#t5-p0', decale=0.3), classe('#c3-g0', retirer=['survol'], avec=True), clic('#t5-p0', fx=0.3), aller('c3-fiche')]},
@@ -82,13 +82,14 @@ TUTO = {
                  "personnes autorisées à voir ce courrier, partout dans l'application.",
          'gestes': [zoom('#c3-conf', s=1.7, fx=0.55, d=0.9), anneau('#c3-conf', d=1.6),
                     bulle('#c3-conf', 'Héritée du courrier', cote='dessous', d=2.4), dezoom(d=0.7)]},
-        {'titre': 'Des versions empilées', 'texte': "La dernière en tête ; les précédentes restent consultables. Verrouillée, la pièce ne bouge plus.",
+        {'titre': 'Des versions empilées', 'texte': "La dernière en tête ; les précédentes restent consultables. Verrouillée, la pièce n'est plus modifiable.",
          'voix': "Ses versions s'empilent, la dernière en tête, chacune avec son fichier, sa taille et son auteur. Rien "
                  "n'est écrasé. La colonne Indexation suit l'extraction du texte, pour la recherche plein texte. "
                  "Et une pièce verrouillée ne se modifie plus.",
-         'gestes': [zoom('#c3-versions', s=1.4, d=0.9), anneau('#c3-versions', d=1.8),
-                    bulle('#c3-v2', 'La dernière version en tête', cote='dessous', fx=0.3, d=2.4), dezoom(d=0.7),
-                    anneau('#c3-ruban', d=1.4), bulle('#c3-ruban', 'Verrouillée', cote='gauche', fx=0.15, d=2.0)]},
+         'gestes': [zoom('#c3-versions', s=1.4, fx=0.68, d=0.9), anneau('#c3-versions', d=1.8),
+                    bulle('#c3-v2', 'La dernière version en tête', cote='droite', fx=0.36, d=2.4), dezoom(d=0.7),
+                    anneau('#c3-versions .tt span:last-child', d=1.8),
+                    anneau('#c3-ruban', d=1.4), bulle('#c3-ruban', 'Verrouillée', cote='gauche', fx=0.15, d=2.0, avec=True)]},
         {'titre': 'Prévisualiser en un clic', 'texte': "Prévisualiser ouvre la dernière version : le PDF s'affiche directement.",
          'voix': "Enfin, Prévisualiser ouvre la dernière version dans un onglet : le PDF s'affiche directement, sans "
                  "téléchargement. Chaque version reste aussi téléchargeable.",

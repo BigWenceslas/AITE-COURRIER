@@ -29,6 +29,8 @@ Sources :
 version réel, bouton « Doublons », onglet « Relations »).
 """
 
+import re
+
 import demo
 from ecrans import ICONES, e, table
 from scenarios import chapitres_ecm as ecm
@@ -57,6 +59,17 @@ _rel = ('<div class="t14-rel masque" id="t14-rel">%s<div class="t14-sep">Documen
     table([('Document source', '1fr'), ('Relation', '150px'), ('Note', '1fr')],
           [{'id': 't14-l2', 'cellules': ['Avenant n° 2 — climatisation', 'a pour annexe', '']}], identifiant='t14-inv', ajouter=False)))
 _ecran = _ecran.replace('<div class="o-table" id="c11-versions">', _rel + '<div class="o-table" id="c11-versions">', 1)
+# confidentialité « Interne » : un document Confidentiel n'est accessible qu'à son propriétaire et à son créateur
+# (aite_ecm_document._check_document_access), et l'assistante n'est ni l'un ni l'autre
+_ecran = _ecran.replace('>Confidentiel<', '>Interne<', 1)
+# pas de « Lancer le circuit » : seul le type Procédure / instruction a un circuit livré (aite_ecm_workflow)
+_ecran = re.sub(r'<span class="bt prim" id="c11-circ\d?">.*?Lancer le circuit</span>', '', _ecran)
+assert 'c11-circ' not in _ecran and 'Confidentiel<' not in _ecran
+# l'assistante ne voit ni « Conservation » ni « Preuve et archivage » (menus réservés à l'archiviste, au manager, à
+# l'administrateur et à l'audit : aite_ecm_records, aite_ecm_sae)
+_ecran = _ecran.replace('<span class="menu" id="app-11-m3">Conservation</span>', '', 1)
+_ecran = _ecran.replace('<span class="menu" id="app-11-m4">Preuve et archivage</span>', '', 1)
+assert 'id="app-11-m3"' not in _ecran and 'id="app-11-m4"' not in _ecran
 assert 't14-rel' in _ecran and 't14-doub' in _ecran and 't14-og-r' in _ecran and 'lecteur réseau' in _ecran
 
 CSS = """
@@ -122,13 +135,13 @@ TUTO = {
         {'titre': 'Relations et doublons',
          'texte': "Relier les documents entre eux (remplace, fait référence à…) ; le bouton Doublons repère le même fichier.",
          'voix': "Enfin, l'onglet Relations relie les documents entre eux : ce contrat remplace celui de l'an dernier, et "
-                 "l'avenant y renvoie. Le bouton Doublons, lui, signale un autre document qui contient exactement le même "
+                 "l'avenant lui est rattaché en annexe. Le bouton Doublons, lui, signale un autre document qui contient exactement le même "
                  "fichier.",
          'gestes': [clic('#t14-og-r'), classe('#t14-og-v', retirer=['actif'], avec=True), classe('#t14-og-r', ajouter=['actif'], avec=True),
                     cacher('#c11-versions', d=0.2), montrer('#t14-rel', y=10), defiler('#c11-doc .o-feuille', -130, d=0.7),
                     zoom('#t14-rel', s=1.2, fx=0.5, fy=0.5, d=0.8),
-                    bulle('#t14-l0', 'Il remplace le contrat 2025', cote='droite', fx=0.47, d=2.2),
-                    bulle('#t14-l2', "L'avenant y renvoie", cote='dessous', fx=0.3, d=2.0), dezoom(d=0.6),
+                    bulle('#t14-l0', 'Il remplace le contrat 2025', cote='dessous', fx=0.3, d=2.2),
+                    bulle('#t14-l2', "L'avenant, en annexe", cote='dessous', fx=0.3, d=2.0), dezoom(d=0.6),
                     clic('#t14-doub', d=0.7), bulle('#t14-doub', 'Même fichier, ailleurs', cote='dessous', d=2.2)]},
     ],
     'benefices': {

@@ -122,7 +122,7 @@ def pieces(p, etats):
             c_html('<span class="ell" id="%s-p%d-doc">%s</span>' % (p, i, e(doc) if fourni else '')),
             c_html('<span id="%s-p%d-val">%s</span>' % (p, i, interrupteur(valide))),
             c_html('<span>%s</span>' % puce(st, genre, '%s-p%d-et' % (p, i))),
-            c_html('<span class="ell t16-nom%s">%s</span>' % (classe_l, e(consigne))),
+            c_html('<span class="ell t16-nom%s" id="%s-p%d-con">%s</span>' % (classe_l, p, i, e(consigne))),
             c_html('<span class="t16-act%s" id="%s-p%d-bt"><span class="f">%sFournir</span><span class="o">%sOuvrir</span></span>'
                    % (' ok' if fourni else '', p, i, FOURNIR, ICONES['oeil'])),
             c_html('<span class="t16-corb">%s</span>' % ICONES['corbeille'])]})
@@ -280,6 +280,7 @@ def fournir(i, nom, compl_de, compl_a, manq=None, ndoc=None, avec=True):
     g = [texte('#t16a-p%d-doc' % i, nom, avec=avec), etat('#t16a-p%d-et' % i, 'Fournie', 'info', avec=True),
          classe('#t16a-p%d-bt' % i, ajouter=['ok'], avec=True),
          classe('#t16a-p%d-nom' % i, retirer=['rouge'], avec=True), classe('#t16a-p%d-typ' % i, retirer=['rouge'], avec=True),
+         classe('#t16a-p%d-con' % i, retirer=['rouge'], avec=True),
          animer('#t16a-jg', {'width': '%d%%' % compl_de}, {'width': '%d%%' % compl_a}, d=0.5, avec=True),
          compter('#t16a-jv', compl_de, compl_a, d=0.5, apres=' %', avec=True)]
     if manq is not None:
@@ -297,7 +298,7 @@ TUTO = {
     'adresse': ADRESSE % 'ecm',
     'accroche': {
         'question': 'Ce dossier est-il *vraiment* *complet ?*',
-        'sous': "Checklists papier, pièces éparpillées, relances au hasard : on découvre qu'il manque une pièce au moment de décider.",
+        'sous': "Pièces éparpillées, relances au hasard.",
         'personnage': (COMPTA[0], 'Comptabilité', COMPTA[2]),
         'chaos': [('doc', 'RIB, version 2 ?'), ('alerte', 'Pièce manquante'), ('bulle', "Tu as reçu l'attestation ?"),
                   ('note', 'Checklist'), ('dossier', 'Chemise « Agréments »'), ('lettre', 'Relance fournisseur'),
@@ -345,7 +346,7 @@ TUTO = {
                    + [pause(0.3)] + fournir(3, PIECES[3][4], 40, 60, None, '3', avec=False)
                    + [clic('#t16a-p0-val', fx=0.5), classe('#t16a-p0-val .inter', ajouter=['on'], avec=True),
                       etat('#t16a-p0-et', 'Validée', 'vert', avec=True), classe('#t16a-p0-nom', ajouter=['verte'], avec=True),
-                      classe('#t16a-p0-typ', ajouter=['verte'], avec=True),
+                      classe('#t16a-p0-typ', ajouter=['verte'], avec=True), classe('#t16a-p0-con', ajouter=['verte'], avec=True),
                       zoom('#t16a-compl', s=1.6, fx=0.45, fy=0.5, d=0.8),
                       bulle('#t16a-jv', '3 pièces sur 5', cote='droite', d=2.0), anneau('#t16a-manq-l', d=1.2), dezoom(d=0.6)]},
         {'titre': 'Ouvrir le dossier : le circuit démarre',
@@ -383,7 +384,7 @@ TUTO = {
         'voix': "Des pièces attendues dès la création, une complétude toujours à jour, et une clôture impossible tant que "
                 "l'essentiel manque.",
         'cartes': [('cible', '5 pièces', 'Une liste attendue', "Le type de dossier fixe les pièces, obligatoires ou non."),
-                   ('trace', 'Complétude', 'Calculée, pas estimée', "Chaque pièce fournie fait monter le taux, sans calcul."),
+                   ('trace', 'Complétude', 'Calculée, pas estimée', "Chaque pièce fournie fait monter le taux, sans calcul à la main."),
                    ('bouclier', 'Clôturer', 'Une clôture contrôlée', "Refusée tant qu'une pièce obligatoire manque, sauf manager.")],
     },
     'cta': cta('ecm', 'Le dossier *complet,* avant *tout.*', "Aïte E C M : le dossier complet, avant tout."),

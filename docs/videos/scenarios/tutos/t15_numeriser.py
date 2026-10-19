@@ -33,6 +33,10 @@ Sources :
   scannés », « Propriétaire des documents importés », « Délai avant import
   (s) », 30 par défaut) et « Scan vers e-mail et appareil photo » (« Adresse
   de scan vers e-mail ») ; bloc « Documents » (« Réservation et corbeille ») ;
+  application réservée à base.group_system, ouverte par ECM › Configuration ›
+  Paramètres (action_aite_ecm_settings) : l'administrateur doit avoir les
+  droits d'administration d'Odoo (le rôle Administrateur AITE Courrier seul ne
+  suffit pas) ;
 - data/aite_ecm_capture_data.xml : tâche « AITE ECM : import du dossier de
   dépôt (scanner) » toutes les 5 minutes ; alias ``ecm-scan``, sans valeurs
   par défaut (document sans dossier : « Sans classement ») ;
@@ -56,6 +60,8 @@ REF_SCAN = 'DOC-2026-00361'
 TITRE_SCAN = 'Numérisation du 13/10/2026 10:42'
 FICHIER_SCAN = 'scan_20261013_094212.pdf'      # heure UTC dans le nom du fichier, heure locale dans le titre
 ALIAS = 'ecm-scan@aite-demo.test'
+# ECM › Configuration › Paramètres (action_aite_ecm_settings, menu réservé à base.group_system)
+URL_PARAM = 'courrier.aite-demo.test/odoo/action-aite_ecm_document.action_aite_ecm_settings'
 
 CAMERA = ('<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 '
           '012-2h3.5zm3 4.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zm0 2a2.5 2.5 0 110 5 2.5 2.5 0 010-5z"/></svg>')
@@ -119,12 +125,14 @@ def carte(c, pos, masque=False):
 
 def barre_outils(p, admin=False):
     return ('<div class="x-tb"><span class="bt prim" id="%s-charger">%sCharger</span>'
-            '<span class="bt second" id="%s-num">%sNumériser</span><span class="x-lk">Nouveau document</span>%s'
+            '<span class="bt second" id="%s-num">%sNumériser</span><span class="x-lk">Nouveau document</span>%s%s'
             '<span class="x-depot masque" id="%s-depot">Dépôt en cours…</span>'
             '<span class="x-droite"><span class="x-rech"><span class="x-lp">%s</span><span class="x-ph ell">Rechercher (titre, '
             'référence, fichier, contenu)…</span></span><span class="x-sel">Plus récents <i>▾</i></span>'
             '<span class="x-vues"><span class="actif">%s</span><span>%s</span></span></span></div>'
-            % (p, CHARGER, p, CAMERA, '<span class="x-lk">Nouveau dossier</span>' if admin else '', p, LOUPE, GRILLE, LISTE))
+            % (p, CHARGER, p, CAMERA, '<span class="x-lk">Nouveau dossier</span>' if admin else '',
+               # « Partager » : affiché quand un document avec fichier est inspecté
+               '' if admin else '<span class="x-lk masque" id="%s-part">Partager</span>' % p, p, LOUPE, GRILLE, LISTE))
 
 
 def lateral(p, arbre, sans):
@@ -194,7 +202,10 @@ def ecran_agent():
     cartes = [carte(c, i) for i, c in enumerate(CARTES_AGR)] + [carte(NOUVEAU_SCAN, 0, masque=True)]
     exp = explorateur('t15-exp', 't15a', ARBRE_AGENT, ('2', False), ['Achats et fournisseurs', 'Agréments fournisseurs'],
                       '4 / 4 document(s)', cartes, extra=inspecteur(), initiale=True)
-    html = fenetre('ECM', MENUS, [exp], AGENT[1], AGENT[2], calques=telephone() + toast('t15-notif', 'Numérisation enregistrée : %s' % REF_SCAN),
+    # l'agent courrier ne voit ni « Conservation » ni « Preuve et archivage » (menus réservés à l'archiviste, au
+    # manager, à l'administrateur et à l'audit : aite_ecm_records, aite_ecm_sae)
+    menus = [m for m in MENUS if m not in ('Conservation', 'Preuve et archivage')]
+    html = fenetre('ECM', menus, [exp], AGENT[1], AGENT[2], calques=telephone() + toast('t15-notif', 'Numérisation enregistrée : %s' % REF_SCAN),
                    ident='app-15a')
     return html
 
@@ -390,7 +401,7 @@ TUTO = {
     'adresse': ADRESSE % 'ecm',
     'accroche': {
         'question': 'Ce papier, comment le *faire* *entrer ?*',
-        'sous': "Photocopies, scans perdus sur une clé, PDF renommés à la main : le papier reste en marge du fonds documentaire.",
+        'sous': "Scans perdus sur une clé, PDF renommés à la main.",
         'personnage': (AGENT[0], 'Agent courrier', AGENT[2]),
         'chaos': [('doc', 'scan0001.pdf'), ('bulle', 'Tu l\'as scanné où ?'), ('dossier', 'Clé USB du copieur'),
                   ('note', 'À classer ?'), ('lettre', 'Attestation papier'), ('alerte', 'Original introuvable'),
@@ -438,16 +449,16 @@ TUTO = {
                     zoom('#t15-k9', s=1.7, fx=0.42, fy=0.45, d=0.8),
                     bulle('#t15-k9 .x-titre', 'Un seul PDF, en brouillon', cote='droite', d=2.4),
                     dezoom(d=0.6), clic('#t15-k9', fx=0.5, fy=0.3), classe('#t15-k9', ajouter=['sel'], avec=True),
-                    montrer('#t15-insp', y=0, d=0.35),
+                    montrer('#t15-insp', y=0, d=0.35), montrer('#t15a-part', y=0, d=0.3, avec=True),
                     zoom('#t15-i-dos', s=1.6, fx=0.6, fy=0.5, d=0.8), anneau('#t15-i-dos', d=1.2),
                     bulle('#t15-i-dos', 'Le dossier ouvert', cote='gauche', d=2.2), dezoom(d=0.6)]},
         {'titre': 'Le dossier de dépôt du copieur',
          'texte': "Le copieur numérise vers un dossier du serveur ; toutes les 5 minutes, ses fichiers deviennent des documents.",
-         'voix': "Pour les gros volumes, le copieur numérise vers un dossier du serveur. Martin, l'administrateur, "
-                 "choisit la destination, le type et le propriétaire. Toutes les cinq minutes, une tâche planifiée "
+         'voix': "Pour les gros volumes, le copieur numérise vers un dossier du serveur. Dans les paramètres, réservés "
+                 "aux administrateurs d'Odoo, Martin choisit la destination, le type et le propriétaire. Toutes les cinq minutes, une tâche planifiée "
                  "importe les fichiers posés depuis au moins trente secondes : ils deviennent des documents, titrés "
                  "d'après leur nom.",
-         'gestes': [texte('#pr-url', 'courrier.aite-demo.test/odoo/settings'), montrer('#app-15b', y=0, d=0.4, avec=True),
+         'gestes': [texte('#pr-url', URL_PARAM), montrer('#app-15b', y=0, d=0.4, avec=True),
                     zoom('#t15-hot', s=1.45, fx=0.42, fy=0.5, d=0.8),
                     clic('#t15-rep', fx=0.3, d=0.5), saisir('t15-rep', '/srv/scans', d=0.6),
                     clic('#t15-dest', fx=0.3, d=0.5), choisir('t15-dest', 'Finance et comptabilité / Factures fournisseurs 2026'),
@@ -456,13 +467,13 @@ TUTO = {
                     bulle('#t15-delai', 'Fichier stable depuis 30 s', cote='droite', fx=0.5, d=2.0),
                     dezoom(d=0.6), clic('#t15-enr'), aller('t15-fac'), texte('#pr-url', ADRESSE % 'ecm', avec=True),
                     anneau('#t15-f0', d=1.2),
-                    bulle('#t15-f0 .x-titre', 'Importé : Facture_Delta_0412', cote='droite', d=2.4, avec=True)]},
+                    bulle('#t15-f0 .x-titre', 'Fichier : Facture_Delta_0412', cote='droite', d=2.4, avec=True)]},
         {'titre': 'Le scan vers e-mail',
          'texte': "Chaque pièce jointe reçue sur l'adresse ecm-scan devient un document, titré d'après l'objet du message.",
          'voix': "Troisième porte : l'e-mail. Le copieur envoie ses P D F à l'adresse ecm-scan : chaque pièce jointe "
                  "devient un document, titré d'après l'objet du message, qui attend dans Sans classement, prêt à être "
                  "rangé.",
-         'gestes': [aller('t15-set'), texte('#pr-url', 'courrier.aite-demo.test/odoo/settings', avec=True),
+         'gestes': [aller('t15-set'), texte('#pr-url', URL_PARAM, avec=True),
                     zoom('#t15-mailset', s=1.5, fx=0.55, fy=0.45, d=0.8), anneau('#t15-alias', d=1.4),
                     bulle('#t15-alias', 'Une pièce, un document', cote='dessous', d=2.4), dezoom(d=0.6),
                     aller('t15-fac'), texte('#pr-url', ADRESSE % 'ecm', avec=True), clic('#t15b-sans', fx=0.4), aller('t15-sans'),
@@ -474,7 +485,7 @@ TUTO = {
         'voix': "Le papier entre par la porte la plus simple, arrive à sa place avec sa référence, et ne dort plus "
                 "sur une clé.",
         'cartes': [('eclair', 'Numériser', 'Depuis le mobile', "Une photo devient un PDF, rangé dans le dossier ouvert."),
-                   ('temps', '5 min', 'Le copieur importé', "Le dossier de dépôt est relevé toutes les cinq minutes."),
+                   ('temps', '5 min', 'Depuis le copieur', "Le dossier de dépôt est relevé toutes les cinq minutes."),
                    ('doc', 'ecm-scan@', 'Par e-mail', "Chaque pièce jointe reçue devient un document du fonds.")],
     },
     'cta': cta('ecm', 'Le papier, *rangé* dès *l\'entrée.*', "Aïte E C M : le papier, rangé dès l'entrée."),

@@ -232,6 +232,7 @@ class Tutoriel(presentation.Presentation):
         self.op(op='fromTo', sel='#pr-badge', de={'autoAlpha': 0, 'y': -14},
                 a={'autoAlpha': 1, 'y': 0, 'duration': 0.5, 'immediateRender': True}, t=round(tb + 0.7, 3))
         self.op(op='set', sel='#curseur', vars={'autoAlpha': 1, 'x': 1450, 'y': 1000}, t=round(tb + 0.8, 3))
+        self.op(op='fromTo', sel='#fond .signature', de={'autoAlpha': 0}, a={'autoAlpha': 1, 'duration': 0.4}, t=round(tb + 0.5, 3))
         # -- les étapes
         k = tb + 1.1
         legendes = []
@@ -329,6 +330,10 @@ class Tutoriel(presentation.Presentation):
         s = self.s
         t = self.scene_accroche(0.0)
         self.chapitres = [(0.0, 'Le problème')]
+        # la signature du fond n'a rien à faire sous les scènes pleines (révélation,
+        # aperçu violet, appel à l'action) : masquée, elle n'est plus prise pour
+        # un texte illisible par le contrôle de contraste
+        self.op(op='set', sel='#fond .signature', vars={'autoAlpha': 0}, t=round(t - 0.3, 3))
         t = self.scene_revelation(t)
         self.chapitres.append((t, 'La solution : ' + s['apercu']['titre'].replace('*', '')))
         t = self.scene_produit(t)
@@ -337,6 +342,7 @@ class Tutoriel(presentation.Presentation):
         self.chapitres.append((t, 'Ce que vous y gagnez'))
         t = self.scene_benefices(t)
         self.chapitres.append((t, 'Demander une démonstration'))
+        self.op(op='set', sel='#fond .signature', vars={'autoAlpha': 0}, t=round(t, 3))
         t = self.scene_cta(t)
         total = round(t, 2)
         self.couches.append('<div id="couche-curseur" class="clip" data-start="0" data-duration="%.3f" data-track-index="9">'

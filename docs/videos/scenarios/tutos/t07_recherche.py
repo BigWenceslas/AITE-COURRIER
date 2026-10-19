@@ -23,8 +23,9 @@ Sources :
   plein texte (OCR) », toutes les 10 minutes) ;
 - aite_courrier_ged/views/aite_courrier_document_views.xml:30-92 (fiche de la
   pièce : « Prévisualiser », « Finaliser », états, champs, « Téléverser une
-  nouvelle version », textes d'aide, onglet « Versions », colonnes des
-  versions) ; models/aite_courrier_document.py:100-132 (« Confidentialité
+  nouvelle version », bouton du champ binaire « Charger votre fichier »
+  (Odoo, relevé dans la base), textes d'aide, onglet « Versions », colonnes
+  des versions) ; models/aite_courrier_document.py:100-132 (« Confidentialité
   (héritée) », « Verrouillé », « Nombre de versions », « Fichier à
   téléverser ») ; models/aite_courrier_document_version.py:23-40 (« Version »,
   « Nom du fichier », « Extension », « Taille (octets) », « Téléversé par »,
@@ -163,7 +164,8 @@ def _piece():
              + grille2([champ('Courrier', v(REF, True)), champ('Dossier', ''), champ('Étiquettes', '')],
                        [champ('Confidentialité (héritée)', v('Interne', True)), champ('Nombre de versions', v('2')),
                         champ('Verrouillé', case(False), aide=True)])
-             + sec_titre('Téléverser une nouvelle version') + champ('Fichier à téléverser', '')
+             + sec_titre('Téléverser une nouvelle version')
+             + champ('Fichier à téléverser', '<span class="bt prim t7-charger">Charger votre fichier</span>')
              + '<div class="t7-aide">Formats acceptés : PDF, DOCX, XLSX, images (JPG, PNG, TIFF), e-mails (EML, MSG) — 50 Mo maximum.</div>'
              + '<div class="t7-aide">Cliquez <b>Prévisualiser</b> (en-tête) pour ouvrir la dernière version dans un onglet — le PDF '
                's\'affiche directement. Chaque version est aussi téléchargeable ou ouvrable ci-dessous.</div>'
@@ -200,6 +202,7 @@ CSS = """
 #t7-dlg .t7-titre { font-size: 22px; margin: 8px 0 8px; }
 #t7-dlg .champ { min-height: 24px; padding: 2px 0; }
 #t7-dlg .sec-t { margin: 8px 0 4px; }
+#t7-dlg .t7-charger { font-size: 11.5px; padding: 3px 9px; }
 #t7-dlg .t7-aide { color: #6C757D; font-size: 11.5px; line-height: 1.45; margin: 3px 0; }
 #t7-dlg .onglets { margin-top: 6px; }
 #t7-dlg .o-table .tt, #t7-dlg .o-table .tl { font-size: 11.5px; column-gap: 7px; }
@@ -264,7 +267,7 @@ TUTO = {
          'voix': "La colonne Indexation suit chaque version de la pièce. La version 1 est indexée : son texte est extrait. "
                  "La version 2, déposée il y a quelques minutes, est en attente : une tâche planifiée passe toutes les "
                  "dix minutes, en arrière-plan. Personne n'attend.",
-         'gestes': [zoom('#t7-versions', s=1.2, fx=0.5, fy=0.62, d=0.9), anneau('#t7-versions .tt > span:nth-child(9)', d=1.4),
+         'gestes': [zoom('#t7-versions', s=1.12, fx=0.5, fy=0.62, d=0.9), anneau('#t7-versions .tt > span:nth-child(9)', d=1.4),
                     anneau('#t7-v1-ix', d=1.2), bulle('#t7-v1-ix', 'Texte extrait', cote='dessous', d=2.4), pause(1.6),
                     anneau('#t7-v2 > span:nth-child(8)', d=1.2), anneau('#t7-v2-ix', d=1.2),
                     bulle_g('#t7-v2-ix', 'Au prochain passage', 66, 1.2, d=2.8), pause(2.4)]},

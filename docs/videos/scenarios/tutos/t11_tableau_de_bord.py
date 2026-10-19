@@ -5,17 +5,32 @@ Sources : aite_courrier/static/src/xml (indicateurs « En cours », « En retard
 (SLA) », « Reçus ce mois », « Archivés ce mois », « Taux de rejet », « Délai
 moyen de traitement », « Charge par étape (en cours) », « Répartition par
 catégorie »), menu « Tableau de bord » réservé aux managers et à l'audit ;
-recette SC12. Écran : présentation, chapitre 10.
+recette SC12 ; aite_courrier/models/aite_courrier_dashboard.py
+(get_dashboard_data : taux de rejet = rejetés / (rejetés + archivés), arrondi
+au dixième ; délai moyen = de la création à l'étape finale des courriers
+archivés, en jours, au dixième ; le gabarit affiche « <valeur>% » et
+« <valeur> j », sans décimale quand elle est nulle) ; aite_courrier_core/
+models/aite_courrier.py (_cron_check_sla_overdue : relance des habilités de
+l'étape, puis escalade au manager du service, 24 h après l'échéance par
+défaut) ; action « Analyse du courrier » en graphique, tableau croisé et
+liste (aite_courrier_dashboard_views.xml). Écran : présentation, chapitre 10 ;
+taux de rejet et délai moyen affichés comme dans le gabarit (« 18% »,
+« 6 j » : 11 rejetés pour 50 archivés, comme dans la liste des courriers ;
+d'où 32 archivés ce mois, et non 52, plus que le total des archivés).
 """
 
 import demo
 from scenarios import presentation as base
 from scenarios.tutos import ADRESSE, COURRIER, cta, etape, youtube
-from moteur import anneau
+from moteur import anneau, compter, curseur
 from tutoriel import bulle, dezoom, zoom
 
 MANAGER = demo.PERSONNES['manager']
 CH = base.CH10
+# Le gabarit OWL écrit « {{ reject_rate }}% » et « {{ avg_days }} j » : pas
+# d'espace avant %, et une valeur ronde s'affiche sans décimale.
+ECRAN = CH['ecran'].replace('>0 %<', '>0%<', 1)
+assert ECRAN != CH['ecran']
 
 TUTO = {
     'slug': 'tuto-11-le-tableau-de-bord',
@@ -27,8 +42,8 @@ TUTO = {
         'question': 'Combien de courriers *attendent,* et *où ?*',
         'sous': 'Sans chiffres, impossible de savoir qui est débordé, ni quels dossiers dorment.',
         'personnage': (MANAGER[0], 'Manager', MANAGER[2]),
-        'chaos': [('alerte', 'Retards ?'), ('bulle', 'On en a combien en cours ?'), ('doc', 'Tableau Excel à jour ?'),
-                  ('note', 'Délai moyen : ?'), ('dossier', 'Piles de dossiers'), ('bulle', 'Qui est débordé ?'),
+        'chaos': [('note', 'Délai moyen : ?'), ('bulle', 'On en a combien en cours ?'), ('doc', 'Tableau Excel à jour ?'),
+                  ('alerte', 'Retards ?'), ('dossier', 'Piles de dossiers'), ('bulle', 'Qui est débordé ?'),
                   ('lettre', 'Courriers du mois'), ('alerte', 'Comité demain')],
         'voix': "Demain, comité de direction. Combien de courriers en cours ? Combien en retard ? Qui est débordé ? "
                 "Sans chiffres fiables, impossible de répondre.",
@@ -40,15 +55,19 @@ TUTO = {
         'voix': "Le tableau de bord rassemble six indicateurs clés, les retards sur les délais, et la charge de chaque "
                 "étape du circuit.",
     },
-    'ecran': CH['ecran'], 'vue_initiale': 'c10-tb',
+    'ecran': ECRAN, 'vue_initiale': 'c10-tb',
     'etapes': [
         etape(CH, 0, "L'activité d'un coup d'œil", "En cours, en retard, reçus et archivés du mois, taux de rejet, délai moyen.",
               "Paul ouvre le tableau de bord. L'essentiel s'affiche d'un coup d'œil : les courriers en cours, ceux qui "
-              "dépassent leur délai, les reçus et les archivés du mois, le taux de rejet et le délai moyen de traitement."),
+              "dépassent leur délai, les reçus et les archivés du mois, le taux de rejet et le délai moyen de traitement.",
+              retirer=(3, 4, 5),
+              inserer={6: [compter('#c10-t3-n', 0, 32, d=0.9, avec=True, decale=0.15),
+                           compter('#c10-t4-n', 0, 18, d=0.9, apres='%', avec=True, decale=0.15),
+                           compter('#c10-t5-n', 0, 6, d=0.9, apres=' j', avec=True, decale=0.15)]}),
         {'titre': 'Les retards remontent seuls', 'texte': "« En retard (SLA) » : les courriers qui ont dépassé le délai de leur étape.",
-         'voix': "La tuile En retard compte les courriers qui ont dépassé le délai de leur étape. Ces retards remontent "
-                 "seuls : une tâche planifiée relance, puis escalade les courriers en retard. Et le délai moyen mesure "
-                 "le temps réel de traitement.",
+         'voix': "La tuile En retard compte les courriers qui ont dépassé le délai de leur étape. Et ces retards ne "
+                 "dorment pas : une tâche planifiée relance les personnes habilitées, puis alerte le manager. Le délai "
+                 "moyen, lui, mesure le temps réel de traitement, de la création à l'archivage.",
          'gestes': [zoom('#c10-t1', s=1.8, d=0.9), anneau('#c10-t1', d=1.6), bulle('#c10-t1', 'Délai dépassé', cote='dessous', d=2.2),
                     dezoom(d=0.6), zoom('#c10-t5', s=1.8, d=0.8), anneau('#c10-t5', d=1.4),
                     bulle('#c10-t5', 'Temps réel de traitement', cote='dessous', d=2.2), dezoom(d=0.7)]},
@@ -56,7 +75,8 @@ TUTO = {
               "La charge par étape montre où les courriers attendent, et donc où renforcer l'équipe. À droite, la "
               "répartition entre courriers entrants, sortants et internes. Analyse détaillée ouvre l'analyse complète, "
               "en graphique ou en tableau croisé.",
-              avant=[zoom('#c10-charge', s=1.45, d=0.8)], apres=[dezoom(d=0.7)]),
+              avant=[zoom('#c10-charge', s=1.45, d=0.8)], inserer={2: [dezoom(d=0.7)]},
+              apres=[curseur('#app-10 .tb-h .bt.prim', d=0.7), anneau('#app-10 .tb-h .bt.prim', d=1.4)]),
     ],
     'benefices': {
         'titre': 'Décider sur des *chiffres.*',

@@ -12,7 +12,9 @@ Sources :
   « ECM › … », « … / … document(s) », « Effacer les filtres », « Tout
   sélectionner » ; cartes (référence · type, étiquettes, date, statut) ;
   inspecteur (« Fiche », « Aperçu », « Télécharger », « Nouvelle version »,
-  « Réserver », « Partager », « Corbeille » ; « Fichier », « Versions »,
+  « Réserver », « Lancer le circuit » — type à circuit actif, ici
+  Procédure / instruction, aite_ecm_workflow —, « Finaliser » — brouillon
+  avec fichier —, « Partager », « Corbeille » ; « Fichier », « Versions »,
   « Type », « Dossier », « Étiquettes », « Confidentialité »,
   « Propriétaire », « Modifié ») ;
 - data/aite_ecm_data.xml : 7 dossiers livrés (Direction générale,
@@ -27,7 +29,7 @@ Sources :
   version seulement en Brouillon (« Téléverser une nouvelle version »,
   « Ajouter la version ») ;
 - models/aite_ecm_folder.py (« Chemin », « Lecture effective »,
-  « Documents ») ; droits hérités du parent.
+  « Documents ») ; un dossier sans restriction propre hérite de son parent.
 Écrans : explorateur reconstruit ici (modèle : base demo18, captures
 t13_*), puis présentation, chapitre 4 (scenarios/presentation.py, CH4).
 """
@@ -126,11 +128,12 @@ def ecran_explorateur():
             '<div class="t13-it1">%s</div><div class="t13-is">%s · Brouillon</div>'
             '<div class="t13-ib" id="t13-ib"><span class="bt prim petit">Fiche</span><span class="bt second petit">Aperçu</span>'
             '<span class="bt second petit">Télécharger</span><span class="bt second petit">Nouvelle version</span>'
-            '<span class="bt second petit">Réserver</span><span class="bt second petit" id="t13-ipart">Partager</span>'
+            '<span class="bt second petit">Réserver</span><span class="bt prim petit">Lancer le circuit</span>'
+            '<span class="bt vert petit">Finaliser</span><span class="bt second petit" id="t13-ipart">Partager</span>'
             '<span class="bt t13-corb petit">Corbeille</span></div>'
             '<dl class="t13-dl" id="t13-dl"><dt>Fichier</dt><dd>Procedure_recette_documents.pdf <em>(212 Ko)</em></dd>'
             '<dt>Versions</dt><dd>1</dd><dt>Type</dt><dd>Procédure / instruction</dd>'
-            '<dt>Dossier</dt><dd>Qualité et procédures / Procédures en vigueur</dd>'
+            '<dt>Dossier</dt><dd>Qualité et procédures</dd><dt>Étiquettes</dt><dd><em>—</em></dd>'
             '<dt>Confidentialité</dt><dd>Interne</dd><dt>Propriétaire</dt><dd>%s</dd><dt>Modifié</dt><dd>13/10/2026</dd></dl></div>'
             % (ZONE, PDF, e(QUAL[0][1]), QUAL[0][0], e(ARCHI[0])))
     qual = vue('t13-qual', barre_outils('t13b')
@@ -146,6 +149,10 @@ ECRAN4 = CH['ecran'].replace('<div class="o-app muk" id="app-4">', '<div class="
 # une zone sur la colonne « Lecture effective » du plan de classement
 ECRAN4 = ECRAN4.replace('<div class="vue" id="c4-plan" data-groupe="odoo">',
                         '<div class="vue" id="c4-plan" data-groupe="odoo"><div class="t13-zone" id="t13-le"%s></div>' % ZONE, 1)
+
+# le bouton du champ binaire d'Odoo 18 en français : « Charger votre fichier » (web/i18n/fr.po, « Upload your file »)
+ECRAN4 = ECRAN4.replace('Téléverser votre fichier', 'Charger votre fichier', 1)
+assert 'Charger votre fichier' in ECRAN4
 
 CSS = """
 #app-13 .t13-tb { height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 12px; background: #fff; border-bottom: 1px solid #DEE2E6; }
@@ -232,7 +239,7 @@ TUTO = {
     'ecran': ecran_explorateur() + ECRAN4, 'vue_initiale': 't13-tous',
     'etapes': [
         {'titre': "L'Explorateur ECM",
-         'texte': "Documents › Explorateur : l'arborescence à gauche, les documents en cartes, l'aperçu à droite.",
+         'texte': "Documents › Explorateur : l'arborescence à gauche, les documents en cartes, le détail à droite.",
          'voix': "Jules, l'archiviste, ouvre l'Explorateur. À gauche, l'arborescence du plan de classement ; en haut, de quoi "
                  "charger des fichiers, numériser, créer un document ou un dossier. Il ouvre Qualité et procédures, et "
                  "sélectionne une procédure : ses informations s'affichent, avec ses actions, dont Partager.",
@@ -249,8 +256,8 @@ TUTO = {
         etape(CH, 1, 'Liste et plan de classement',
               "La liste des documents, puis le plan de classement et ses droits de lecture effectifs.",
               "La liste des documents donne la même vue en colonnes : référence, type, dossier, statut. Le plan de classement, "
-              "lui, montre les droits effectifs : le contentieux est réservé aux managers, et un sous-dossier hérite des droits "
-              "de son parent.",
+              "lui, montre les droits effectifs : le contentieux est réservé aux managers, et un sous-dossier sans règle propre "
+              "hérite des droits de son parent.",
               avant=[montrer('#app-4', y=0, d=0.4), texte('#pr-url', ADRESSE % 'ecm'), anneau('#c4-l4', d=1.4, decale=0.3)],
               inserer={2: [zoom('#c4-le4', s=1.2, fx=0.62, fy=0.42, d=0.8)]},
               apres=[bulle('#c4-le4', 'Réservé aux managers', cote='gauche', d=2.2), dezoom(d=0.6)]),
@@ -272,7 +279,7 @@ TUTO = {
         'voix': "Un explorateur pour tout retrouver, un plan de classement qui porte les droits, et des versions qui ne "
                 "s'écrasent plus jamais.",
         'cartes': [('cible', '7 dossiers', 'Un plan livré', "Sept dossiers et six types de documents, prêts à l'emploi."),
-                   ('cadenas', 'Droits hérités', 'La bonne lecture', "Les droits d'un dossier valent pour ses sous-dossiers."),
+                   ('cadenas', 'Droits hérités', 'La bonne lecture', "Un sous-dossier sans règle propre hérite des droits de son parent."),
                    ('doc', 'DOC-2026-00360', 'Tout est versionné', "Une référence unique, des versions numérotées, jusqu'à 100 Mo.")],
     },
     'cta': cta('ecm', 'Vos documents, enfin *à* *leur* *place.*', "Aïte E C M : vos documents, enfin à leur place."),

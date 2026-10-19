@@ -60,9 +60,9 @@ TUTO = {
         {'titre': 'Rejeter ou commenter', 'texte': "Un rejet exige son motif ; un commentaire informe sans changer d'étape.",
          'voix': "Deux autres gestes complètent le circuit. Rejeter arrête le courrier, et le motif est alors obligatoire. "
                  "Commenter ajoute une note au courrier, sans le faire changer d'étape.",
-         'gestes': [zoom('#c2-rej', s=1.6, fx=0.4, fy=0.3, d=0.8), anneau('#c2-rej', d=1.4),
-                    bulle('#c2-rej', 'Motif obligatoire', cote='dessous', d=2.2), anneau('#c2-com', d=1.4),
-                    bulle('#c2-com', "Une note, sans changer d'étape", cote='dessous', d=2.4), dezoom(d=0.7)]},
+         'gestes': [zoom('#c2-rej', s=1.6, fx=0.4, fy=0.3, d=0.8), anneau('#c2-rej', d=2.4),
+                    bulle('#c2-rej', 'Motif obligatoire', cote='dessous', d=2.4, avec=True), anneau('#c2-com', d=2.6),
+                    bulle('#c2-com', "Une note, sans changer d'étape", cote='dessous', d=2.6, avec=True), dezoom(d=0.7)]},
     ],
     'benefices': {
         'titre': 'Des décisions *tracées,* sans effort.',
