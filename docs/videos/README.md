@@ -13,6 +13,16 @@ française :
 | `ecm` — AITE ECM, six chapitres | `scenarios/ecm.py` | `livrees/aite-ecm-presentation.mp4` |
 | `suite` — Courrier et ECM réunis, onze chapitres | `scenarios/suite.py` | `livrees/aite-suite-courrier-ecm.mp4` |
 
+Et une **série de 21 tutoriels marketing**, une vidéo par fonctionnalité
+(1 min 20 à 1 min 50, format « explainer », thème MuK, musique de fond
+synthétisée) : `tutoriels.py`, scénarios dans `scenarios/tutos/` (voir son
+`README.md`), vidéos, vignettes et fiches YouTube dans `livrees/tutoriels/`.
+
+```
+python3 docs/videos/tutoriels.py 07 --planche   # un tutoriel : voix, check, planche contact
+python3 docs/videos/tutoriels.py --tout --rendu  # toute la série
+```
+
 Méthode et moteur : skill `aite-motion-design-1` (moteur des guides vidéo
 PGest), adapté ici à une longue vidéo à chapitres.
 

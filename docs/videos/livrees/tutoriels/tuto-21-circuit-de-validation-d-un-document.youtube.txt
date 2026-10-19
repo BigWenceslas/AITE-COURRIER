@@ -1,0 +1,24 @@
+TITRE
+COMMENT FAIRE VALIDER UN DOCUMENT PAR UN CIRCUIT AVEC AITE ECM (ODOO 18)
+
+DESCRIPTION
+Lancer le circuit d'un document en brouillon, traiter l'étape, prévenir le valideur, approuver, puis retrouver l'historique dans l'onglet Circuit : le document est finalisé automatiquement en fin de circuit. Tutoriel AITE ECM pour Odoo 18.
+
+0:00 Le problème
+0:15 La solution : Faire valider un document, étape par étape
+0:26 Étape 1 — Lancer le circuit
+0:42 Étape 2 — Traiter et transmettre
+0:58 Étape 3 — Le manager approuve
+1:16 Étape 4 — L'historique, et la remise à zéro
+1:30 Ce que vous y gagnez
+1:39 Demander une démonstration
+
+Durée : 1 min 48 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE ECM, circuit de validation, workflow documentaire, validation de procédure, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

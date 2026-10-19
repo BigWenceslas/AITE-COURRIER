@@ -1,0 +1,23 @@
+TITRE
+COMMENT PROTÉGER ET TRACER VOS COURRIERS : CONFIDENTIALITÉ ET JOURNAL D'AUDIT AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Quatre niveaux de confidentialité, un journal d'audit en ajout seul qui trace chaque action et chaque refus : la sécurité d'AITE Courrier. Tutoriel pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Protéger, et tout tracer
+0:25 Étape 1 — Le journal d'audit
+0:37 Étape 2 — La source, et les refus
+0:51 Étape 3 — Le cloisonnement
+1:10 Ce que vous y gagnez
+1:18 Demander une démonstration
+
+Durée : 1 min 25 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, journal d'audit, confidentialité, sécurité Odoo, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

@@ -1,0 +1,24 @@
+TITRE
+COMMENT PARTAGER UN DOCUMENT EN TOUTE SÉCURITÉ AVEC AITE ECM (ODOO 18)
+
+DESCRIPTION
+Un lien de partage qui expire après sept jours par défaut, un nombre de téléchargements limité, un filigrane daté sur le PDF, chaque accès compté et inscrit au journal d'audit, et une désactivation en un clic. Tutoriel AITE ECM pour Odoo 18.
+
+0:00 Le problème
+0:13 La solution : Partager, sans perdre le contrôle
+0:22 Étape 1 — Partager, en un clic
+0:37 Étape 2 — Vos règles, puis le lien
+0:52 Étape 3 — Ce que voit le destinataire
+1:07 Étape 4 — Suivre, tracer, désactiver
+1:24 Ce que vous y gagnez
+1:32 Demander une démonstration
+
+Durée : 1 min 40 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE ECM, partage sécurisé, lien de partage, filigrane PDF, GED Odoo, journal d'audit, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

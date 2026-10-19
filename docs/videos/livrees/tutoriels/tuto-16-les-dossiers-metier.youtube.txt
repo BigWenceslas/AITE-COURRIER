@@ -1,0 +1,24 @@
+TITRE
+COMMENT GÉRER DES DOSSIERS MÉTIER COMPLETS AVEC AITE ECM (ODOO 18)
+
+DESCRIPTION
+Un dossier métier connaît ses pièces attendues : le type « Agrément fournisseur » les installe à la création, chaque pièce fournie fait monter la complétude, le circuit d'agrément se lance à l'ouverture, et la clôture est refusée tant qu'une pièce obligatoire manque. Tutoriel AITE ECM pour Odoo 18.
+
+0:00 Le problème
+0:15 La solution : Des dossiers qui se savent complets
+0:25 Étape 1 — Un type, et ses pièces attendues
+0:42 Étape 2 — Fournir : la complétude suit
+1:00 Étape 3 — Ouvrir le dossier : le circuit démarre
+1:14 Étape 4 — Clôturer ? Pas sans ses pièces
+1:29 Ce que vous y gagnez
+1:37 Demander une démonstration
+
+Durée : 1 min 46 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE ECM, dossier métier, complétude, agrément fournisseur, GED Odoo, workflow, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

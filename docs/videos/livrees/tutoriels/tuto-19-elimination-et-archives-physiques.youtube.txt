@@ -1,0 +1,24 @@
+TITRE
+COMMENT ÉLIMINER DES ARCHIVES ET SUIVRE LES ARCHIVES PHYSIQUES AVEC AITE ECM (ODOO 18)
+
+DESCRIPTION
+Bordereau d'élimination (rassembler les documents échus, soumettre, valider, exécuter), certificat de destruction déposé dans l'ECM, boîtes d'archives physiques et suivi des prêts. Tutoriel AITE ECM pour Odoo 18.
+
+0:00 Le problème
+0:15 La solution : Éliminer sans rien perdre de la preuve
+0:26 Étape 1 — Rassembler les documents échus
+0:39 Étape 2 — Soumettre, puis valider
+0:52 Étape 3 — Exécuter l'élimination
+1:08 Étape 4 — Les archives physiques
+1:27 Ce que vous y gagnez
+1:35 Demander une démonstration
+
+Durée : 1 min 43 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE ECM, bordereau d'élimination, certificat de destruction, archives physiques, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

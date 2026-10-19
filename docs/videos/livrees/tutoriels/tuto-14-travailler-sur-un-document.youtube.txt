@@ -1,0 +1,24 @@
+TITRE
+COMMENT RÉSERVER, MODIFIER DANS WORD ET VERSIONNER UN DOCUMENT AVEC AITE ECM (ODOO 18)
+
+DESCRIPTION
+Réserver un document avant de le modifier, l'ouvrir dans Word par le lecteur réseau WebDAV, versionner chaque enregistrement, libérer, et restaurer depuis la corbeille avant la purge. Relations entre documents et doublons. Tutoriel AITE ECM pour Odoo 18.
+
+0:00 Le problème
+0:15 La solution : Modifier sans rien perdre
+0:24 Étape 1 — Réserver avant de modifier
+0:38 Étape 2 — Ouvrir dans Office
+0:54 Étape 3 — Libérer, et la corbeille sans risque
+1:08 Étape 4 — Relations et doublons
+1:22 Ce que vous y gagnez
+1:33 Demander une démonstration
+
+Durée : 1 min 41 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE ECM, réservation document, WebDAV, Word Odoo, versions, corbeille, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

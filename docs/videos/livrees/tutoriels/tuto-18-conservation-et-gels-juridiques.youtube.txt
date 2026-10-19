@@ -1,0 +1,24 @@
+TITRE
+COMMENT GÉRER LA CONSERVATION ET LES GELS JURIDIQUES AVEC AITE ECM (ODOO 18)
+
+DESCRIPTION
+Règles de conservation (durée, point de départ, sort final), documents échus repérés pour l'archiviste et gel juridique qui bloque modification, corbeille et élimination. Tutoriel AITE ECM, la gestion documentaire d'AITE Consulting pour Odoo 18.
+
+0:00 Le problème
+0:17 La solution : Garder ce qu'il faut, aussi longtemps qu'il faut
+0:28 Étape 1 — Des règles de conservation
+0:44 Étape 2 — Les documents échus, repérés
+1:00 Étape 3 — Le gel juridique
+1:14 Étape 4 — Rien ne bouge sous gel
+1:29 Ce que vous y gagnez
+1:38 Demander une démonstration
+
+Durée : 1 min 46 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE ECM, records management, durée de conservation, gel juridique, OHADA, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

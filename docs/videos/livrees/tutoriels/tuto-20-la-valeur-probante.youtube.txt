@@ -1,0 +1,24 @@
+TITRE
+COMMENT PROUVER L'INTÉGRITÉ DE VOS DOCUMENTS AVEC AITE ECM (ODOO 18)
+
+DESCRIPTION
+Journal de preuve scellé et chaîné (SHA-256, horodatage), vérification d'intégrité et attestation, copie de préservation PDF/A et export de paquet d'archives (bordereau inspiré du SEDA 2.1), dans l'esprit de NF Z42-013 / ISO 14641. Tutoriel AITE ECM pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Prouver qu'un document n'a pas changé
+0:29 Étape 1 — Le journal de preuve
+0:45 Étape 2 — Vérifier l'intégrité
+1:01 Étape 3 — Copie PDF/A et export
+1:17 Étape 4 — Produire le paquet d'archives
+1:33 Ce que vous y gagnez
+1:41 Demander une démonstration
+
+Durée : 1 min 49 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE ECM, valeur probante, archivage électronique, SEDA, PDF/A, intégrité, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala
