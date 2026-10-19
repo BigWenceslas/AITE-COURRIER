@@ -1,0 +1,23 @@
+TITRE
+COMMENT PILOTER L'ACTIVITÉ COURRIER AVEC LE TABLEAU DE BORD AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Courriers en cours, retards sur les délais, taux de rejet, délai moyen, charge par étape : le tableau de bord d'AITE Courrier pour piloter votre service courrier. Tutoriel pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Piloter d'un coup d'œil
+0:22 Étape 1 — L'activité d'un coup d'œil
+0:35 Étape 2 — Les retards remontent seuls
+0:51 Étape 3 — Où le courrier attend
+1:06 Ce que vous y gagnez
+1:13 Demander une démonstration
+
+Durée : 1 min 21 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, tableau de bord Odoo, indicateurs, SLA, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala
