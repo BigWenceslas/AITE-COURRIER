@@ -1,0 +1,24 @@
+TITRE
+COMMENT GÉRER LES PIÈCES ET LES VERSIONS DE VOS COURRIERS AVEC AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+L'espace documentaire d'AITE Courrier : les pièces classées par dossier, la confidentialité héritée du courrier, les versions empilées sans jamais rien écraser. Tutoriel pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Chaque pièce, toutes ses versions
+0:25 Étape 1 — L'espace documentaire
+0:39 Étape 2 — Une confidentialité héritée
+0:49 Étape 3 — Des versions empilées
+1:04 Étape 4 — Prévisualiser en un clic
+1:15 Ce que vous y gagnez
+1:23 Demander une démonstration
+
+Durée : 1 min 31 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, GED Odoo, versions de documents, pièces jointes, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

@@ -33,6 +33,11 @@ Sources :
   fenêtre : « Action — <réf.> ») ;
 - addons/aite_courrier_workflow/models/aite_workflow_step.py:128
   (can_user_act : rôle de l'étape, et utilisateurs nommés s'il y en a).
+Odoo 18 : résumé d'activité entre guillemets droits, « Dû dans N jours : »,
+« Recherche avancée... » sous la liste d'un champ relation, « Envoyer
+message » ; dates et heures affichées avec les secondes ; libellé d'une
+transition dans un champ relation : « <libellé> (<de> → <vers>) »
+(aite_courrier_workflow/models/aite_workflow_transition.py:54-61).
 Modèle visuel : base demo18 (MuK), captures t21_* (assistante puis manager,
 document de test lancé, transmis et approuvé).
 """
@@ -45,7 +50,7 @@ from moteur import anneau, cacher, choisir, classe, clic, fermer, montrer, ouvri
 from tutoriel import bulle, dezoom, zoom
 
 P = demo.PERSONNES
-ASSIST, MANAGER = P['assistante'], P['manager']
+ASSIST, MANAGER, AGENT = P['assistante'], P['manager'], P['agent']
 MENUS_A = ['Documents', 'Dossiers métier', 'Plan de classement', 'Analyse']
 MENUS_M = ['Documents', 'Dossiers métier', 'Plan de classement', 'Conservation', 'Preuve et archivage', 'Analyse', 'Configuration']
 ZONE = ' data-layout-allow-overlap data-layout-allow-occlusion'
@@ -55,6 +60,11 @@ CIRCUIT = 'Procédure — rédaction, vérification, approbation'
 ONGLETS = ['Versions', 'Relations', 'Accès', 'Conservation', 'Preuve', 'Circuit', 'Description']
 ALEA = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
         'stroke-linejoin="round"><path d="M3 7h4l10 10h4M17 21l4-4-4-4M3 17h4l3-3M14 10l3-3h4M17 3l4 4-4 4"/></svg>')
+
+
+def guillemets(html):
+    """Le résumé d'une activité s'affiche entre guillemets droits (mail, Odoo 18)."""
+    return html.replace('<b>« ', '<b>"', 1).replace(' »</b>', '"</b>', 1)
 
 
 def bt_traiter(ident):
@@ -70,8 +80,8 @@ def bandeau_circuit(ident, etape, echeance, masque):
 def versions(prefixe):
     return table([('Version', '60px'), ('Nom du fichier', '1fr'), ('Commentaire de version', '1fr'), ('Taille (octets)', '96px'),
                   ('Téléversé par', '110px'), ('Date', '120px')],
-                 [{'id': prefixe + '-v1', 'cellules': ['v1', 'Procedure_courrier_entrant.docx', 'Version initiale', c_num('52 418'),
-                                                       ASSIST[0], '13/10/2026 09:58']}], identifiant=prefixe + '-vers', ajouter=False)
+                 [{'id': prefixe + '-v1', 'cellules': ['v1', 'Procedure_courrier_entrant.pdf', 'Version initiale', c_num('52 418'),
+                                                       ASSIST[0], '13/10/2026 09:58:13']}], identifiant=prefixe + '-vers', ajouter=False)
 
 
 def corps_doc(prefixe, bandeau_html, onglet, contenu):
@@ -79,7 +89,7 @@ def corps_doc(prefixe, bandeau_html, onglet, contenu):
             + '<div class="ref-l">Référence</div><div class="ref-v moyen">%s</div><div class="titre-doc t21-h2">%s</div>' % (REF, e(TITRE))
             + grille2([champ('Type', v('Procédure / instruction'), prefixe + '-type'),
                        champ('Dossier de classement', v('Qualité et procédures / Procédures en vigueur'))],
-                      [champ('Propriétaire', v(ASSIST[0])), champ('Fichier', v('Procedure_courrier_entrant.docx'))])
+                      [champ('Propriétaire', v(ASSIST[0])), champ('Fichier', v('Procedure_courrier_entrant.pdf'))])
             + onglets(ONGLETS, onglet, prefixe + '-og') + contenu)
 
 
@@ -118,24 +128,28 @@ def ecran_assistante():
          bouton('t21-part2', 'Partager', 'second')]
     c = [bouton('t21-res3', 'Réserver', 'second', 'cadenas'), bouton('t21-prev3', 'Prévisualiser', 'second', 'oeil'),
          bouton('t21-corb3', 'Corbeille', 'second', 'corbeille'), bouton('t21-part3', 'Partager', 'second')]
+    # une activité par personne des rôles de l'étape Rédaction (agents, assistantes)
     acts = ('<div class="ch-sep t21-ap" id="t21-aps">▾ Activités planifiées</div>'
-            + activite('[Circuit] Rédaction — %s' % REF, ASSIST[0], 'Étape « Rédaction » à traiter.', ASSIST[2], ASSIST[1],
-                       't21-act0', masque=False).replace("Aujourd'hui :", 'Dû dans 3 jours :'))
+            + guillemets(activite('[Circuit] Rédaction — %s' % REF, ASSIST[0], 'Étape « Rédaction » à traiter.', ASSIST[2],
+                                  ASSIST[1], 't21-act0', masque=False).replace("Aujourd'hui :", 'Dû dans 3 jours :'))
+            + guillemets(activite('[Circuit] Rédaction — %s' % REF, AGENT[0], 'Étape « Rédaction » à traiter.', AGENT[2],
+                                  AGENT[1], 't21-act1', masque=False).replace("Aujourd'hui :", 'Dû dans 3 jours :')))
     ch = chatter([message(ASSIST[0], ASSIST[2], '• Rédaction → <span class="lien">Vérification</span> <i>(Étape courante)</i>',
                           '15:06', 't21-m2', masque=True),
                   message(ASSIST[0], ASSIST[2], 'Circuit « %s » lancé — étape « Rédaction ».' % e(CIRCUIT), '10:42', 't21-m1'),
                   message(ASSIST[0], ASSIST[2], 'Version v1 déposée.', '09:58')],
-                 activites=acts, identifiant='t21-ach', suivre='Suivre')
+                 activites=acts, identifiant='t21-ach', suivre='Suivre').replace('Envoyer un message', 'Envoyer message', 1)
     doc2 = fiche('t21-doc2', 't21b', bande(b, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 0, 't21-sb2'), 't21-b', c),
-                 bandeau_circuit('t21-bc', 'Rédaction', '16/10/2026 10:42', False), versions('t21b'), ch)
-    wiz = action_wizard('t21-wa', 'Rédaction', ['Transmettre pour vérification (Rédaction → Vérification)', 'Recherche avancée…'])
+                 bandeau_circuit('t21-bc', 'Rédaction', '16/10/2026 10:42:15', False), versions('t21b'), ch)
+    wiz = action_wizard('t21-wa', 'Rédaction', ['Transmettre pour vérification (Rédaction → Vérification)', 'Recherche avancée...'])
     return fenetre('ECM', MENUS_A, [doc, doc2], ASSIST[1], ASSIST[2], calques=wiz, ident='app-21a')
 
 
 # ---------------------------------------------------------- le manager --
-HISTO = [('Approuvée', '13/10/2026 16:31', '', '00:00', MANAGER[0], '', ''),
-         ('Vérification', '13/10/2026 15:06', '13/10/2026 16:31', '01:25', MANAGER[0], 'Approuver', ''),
-         ('Rédaction', '13/10/2026 10:42', '13/10/2026 15:06', '04:24', ASSIST[0], 'Transmettre pour vérification',
+HISTO = [('Approuvée', '13/10/2026 16:31:40', '', '00:00', MANAGER[0], '', ''),
+         ('Vérification', '13/10/2026 15:06:31', '13/10/2026 16:31:40', '01:25', MANAGER[0], 'Approuver (Vérification → Approuvée)', ''),
+         ('Rédaction', '13/10/2026 10:42:15', '13/10/2026 15:06:31', '04:24', ASSIST[0],
+          'Transmettre pour vérification (Rédaction → Vérification)',
           'Rédaction terminée, prête pour relecture.')]
 
 
@@ -147,11 +161,11 @@ def ecran_manager():
     hist = [message(ASSIST[0], ASSIST[2], '• Rédaction → <span class="lien">Vérification</span> <i>(Étape courante)</i>', '15:06'),
             message(ASSIST[0], ASSIST[2], 'Circuit « %s » lancé — étape « Rédaction ».' % e(CIRCUIT), '10:42')]
     acts = ('<div class="ch-sep t21-ap" id="t21-maps">▾ Activités planifiées</div>'
-            + activite('[Circuit] Vérification — %s' % REF, MANAGER[0], 'Étape « Vérification » à traiter.', MANAGER[2],
-                       MANAGER[1], 't21-mact', masque=False).replace("Aujourd'hui :", 'Dû dans 2 jours :'))
+            + guillemets(activite('[Circuit] Vérification — %s' % REF, MANAGER[0], 'Étape « Vérification » à traiter.',
+                                  MANAGER[2], MANAGER[1], 't21-mact', masque=False).replace("Aujourd'hui :", 'Dû dans 2 jours :')))
     doc = fiche('t21-mdoc', 't21m', bande(a, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 0, 't21-msb0'), 't21-mb0'),
-                bandeau_circuit('t21-mbc', 'Vérification', '15/10/2026 15:06', False), versions('t21m'),
-                chatter(hist, activites=acts, suivre='Suivre'), initiale=True)
+                bandeau_circuit('t21-mbc', 'Vérification', '15/10/2026 15:06:31', False), versions('t21m'),
+                chatter(hist, activites=acts, suivre='Suivre').replace('Envoyer un message', 'Envoyer message', 1), initiale=True)
     # le même document en fin de circuit : finalisé
     b = [bouton('t21-reset2', 'Réinitialiser le circuit', 'second'), bouton('t21-march', 'Archiver', 'second'),
          bouton('t21-mbr', 'Remettre en brouillon', 'second'), bouton('t21-mprev2', 'Prévisualiser', 'second', 'oeil'),
@@ -164,11 +178,11 @@ def ecran_manager():
               [{'id': 't21-h%d' % i, 'cellules': list(h)} for i, h in enumerate(HISTO)], identifiant='t21-histo', ajouter=False)))
     contenu = ('<div class="t21-panes"><div class="t21-pane" id="t21-pv">%s</div>%s</div>' % (versions('t21n'), circuit))
     ch2 = chatter([message(MANAGER[0], MANAGER[2], '• Vérification → <span class="lien">Approuvée</span> <i>(Étape courante)</i>',
-                           '16:31', 't21-mm2')] + hist, identifiant='t21-mch', suivre='Suivre')
+                           '16:31', 't21-mm2')] + hist, identifiant='t21-mch', suivre='Suivre').replace('Envoyer un message', 'Envoyer message', 1)
     doc2 = fiche('t21-mdoc2', 't21n', bande(b, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 1, 't21-msb'), 't21-mb'), '',
                  contenu, ch2)
     wiz = action_wizard('t21-wm', 'Vérification', ['Retour au rédacteur (Vérification → Rédaction)',
-                                                   'Approuver (Vérification → Approuvée)', 'Recherche avancée…'])
+                                                   'Approuver (Vérification → Approuvée)', 'Recherche avancée...'])
     html = fenetre('ECM', MENUS_M, [doc, doc2], MANAGER[1], MANAGER[2], calques=wiz, ident='app-21m')
     return html.replace('<div class="o-app muk" id="app-21m">', '<div class="o-app muk masque" id="app-21m">', 1)
 
@@ -198,6 +212,8 @@ CSS = """
 #app-21m .o-bande .groupe-bt { gap: 3px; }
 #app-21m .t21-panes { display: grid; } #app-21m .t21-panes > .t21-pane { grid-area: 1 / 1; }
 #app-21m .o-table .tl { height: auto; min-height: 28px; padding-top: 4px; padding-bottom: 4px; }
+#app-21a .o-chatter .ch-bts .bt, #app-21m .o-chatter .ch-bts .bt { padding-left: 6px; padding-right: 6px; }
+#app-21a .o-chatter .ch-bts .suivre, #app-21m .o-chatter .ch-bts .suivre { display: none; }
 #app-21m .o-table .tl .ell { white-space: normal; }
 """
 
@@ -233,7 +249,7 @@ TUTO = {
                  "le type, Procédure ou instruction, désigne le circuit, rédaction, vérification, approbation. Le document "
                  "entre à l'étape Rédaction, avec son échéance.",
          'gestes': [anneau('#t21a-type', d=1.2, decale=0.3), clic('#t21-lancer'), aller('t21-doc2', decale=0.2),
-                    zoom('#t21-bc', s=1.6, fx=0.5, fy=0.35, d=0.8), anneau('#t21-bc', d=1.4),
+                    zoom('#t21-bc', s=1.3, fx=0.5, fy=0.35, d=0.8), anneau('#t21-bc', d=1.4),
                     bulle('#t21-bc-ech', 'Rédaction : 72 h', cote='dessous', d=2.2, avec=True), dezoom(d=0.7),
                     anneau('#t21-act0', d=1.4)]},
         {'titre': 'Traiter et transmettre',
@@ -244,11 +260,11 @@ TUTO = {
          'gestes': [clic('#t21-traiter'), ouvrir('t21-wa'), anneau('#t21-wa-action', d=1.0),
                     clic('#t21-wa-t', fx=0.3), montrer('#t21-wa-dd', y=-6, d=0.25), survol('#t21-wa-o0', decale=0.2),
                     clic('#t21-wa-o0', fx=0.3), cacher('#t21-wa-dd', d=0.15),
-                    choisir('t21-wa-t', 'Transmettre pour vérification', avec=True),
+                    choisir('t21-wa-t', 'Transmettre pour vérification (Rédaction → Vérification)', avec=True),
                     clic('#t21-wa-c', fx=0.2), saisir('t21-wa-c', 'Rédaction terminée, prête pour relecture.', d=1.6),
                     clic('#t21-wa-ok'), fermer('t21-wa'), texte('#t21-bc-et', 'Vérification', decale=0.2),
-                    texte('#t21-bc-ech', '15/10/2026 15:06', avec=True), cacher('#t21-b-a', d=0.2),
-                    montrer('#t21-b-b', y=0, avec=True), cacher('#t21-act0', d=0.2, avec=True), cacher('#t21-aps', d=0.2, avec=True),
+                    texte('#t21-bc-ech', '15/10/2026 15:06:31', avec=True), cacher('#t21-b-a', d=0.2),
+                    montrer('#t21-b-b', y=0, avec=True), cacher('#t21-act0', d=0.2, avec=True), cacher('#t21-act1', d=0.2, avec=True), cacher('#t21-aps', d=0.2, avec=True),
                     montrer('#t21-m2', y=10), anneau('#t21-bc', d=1.4)]},
         {'titre': 'Le manager approuve',
          'texte': "Prévenu par une activité, le manager approuve ; à l'étape finale, le document est finalisé.",
@@ -259,7 +275,7 @@ TUTO = {
                     ouvrir('t21-wm'), clic('#t21-wm-t', fx=0.3), montrer('#t21-wm-dd', y=-6, d=0.25),
                     anneau('#t21-wm-o0', d=1.2), bulle('#t21-wm-o0', 'Commentaire obligatoire', cote='droite', d=2.0, avec=True),
                     survol('#t21-wm-o1', decale=0.6), clic('#t21-wm-o1', fx=0.3), cacher('#t21-wm-dd', d=0.15),
-                    choisir('t21-wm-t', 'Approuver', avec=True), clic('#t21-wm-ok'), fermer('t21-wm'),
+                    choisir('t21-wm-t', 'Approuver (Vérification → Approuvée)', avec=True), clic('#t21-wm-ok'), fermer('t21-wm'),
                     aller('t21-mdoc2', decale=0.2), zoom('#t21-msb', s=1.7, fx=0.6, fy=0.3, d=0.8),
                     bulle('#t21-msb-1', 'Finalisé', cote='dessous', d=1.8), dezoom(d=0.7)]},
         {'titre': "L'historique, et la remise à zéro",

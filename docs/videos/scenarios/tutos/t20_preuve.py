@@ -39,6 +39,12 @@ Sources (addons/aite_ecm_sae) :
   encadré manifest.xml / journal de preuve, « Produire le paquet »,
   « Paquet prêt », « Fermer » ; contenu du ZIP (manifest.xml, content/,
   journal_de_preuve.json, LISEZMOI.txt) ; un sceau « export » par document.
+Droits : l'auditrice (rôle Audit, lecture seule sur les documents) consulte
+le journal de preuve, mais « Vérifier l'intégrité » publie un message dans le
+fil du document (écriture requise : AccessError constatée sur demo18) — la
+vérification est donc faite par l'archiviste. Après « Produire le paquet »,
+l'action renvoyée n'a pas de nom : la boîte prend le titre « Odoo » (web,
+action_service.js).
 Écran de départ : présentation, chapitre 6 (refait ici : fiche du sceau
 complétée, onglet Preuve réel). Modèle visuel : captures t20_*.
 """
@@ -69,15 +75,14 @@ EVTS = [('12/10/2026 16:02:11', 'DOC-2026-00317', "Dépôt d'une version", 'v1',
         ('12/10/2026 16:40:27', 'DOC-2026-00318', "Dépôt d'une version", 'v1', COMPTA[0], 'Facture_F-2026-6402.pdf'),
         ('12/10/2026 17:05:03', 'DOC-2026-00318', 'Finalisation', 'v1', COMPTA[0], 'Finalisé'),
         ('13/10/2026 08:31:44', 'DOC-2026-00319', "Dépôt d'une version", 'v1', AGENT[0], 'Demande_de_partenariat.pdf'),
-        ('13/10/2026 09:02:19', PV['reference'], "Dépôt d'une version", 'v2', MANAGER[0], PV['fichier']),
-        ('13/10/2026 09:04:52', PV['reference'], 'Finalisation', 'v2', MANAGER[0], 'Finalisé'),
+        ('13/10/2026 09:02:19', PV['reference'], "Dépôt d'une version", 'v1', MANAGER[0], PV['fichier']),
+        ('13/10/2026 09:04:52', PV['reference'], 'Finalisation', 'v1', MANAGER[0], 'Finalisé'),
         ('13/10/2026 09:15:08', 'DOC-2026-00311', 'Archivage', 'v1', ARCHI[0], 'Archivé'),
         ('13/10/2026 09:20:36', 'DOC-2026-00290', "Vérification d'intégrité", 'v2', ARCHI[0], 'Vérification : intègre'),
         ('13/10/2026 09:31:57', 'DOC-2026-00321', "Dépôt d'une version", 'v1', ASSIST[0], 'Note_de_service_conges.pdf'),
         ('13/10/2026 09:48:12', 'DOC-2026-00271', "Export d'archives", 'v1', ARCHI[0], "Paquet d'archives « Transfert du 2026-10-12 »")]
 HASH = [empreinte('sceau', str(i)) for i in range(len(EVTS))]
-FIN = PV['reference'] + '|v2|finalisation'
-SEAL = {'hash': HASH[5], 'prec': HASH[4], 'fichier': empreinte('fichier', 'PV v2'), 'jeton': empreinte('jeton', HASH[5])}
+SEAL = {'hash': HASH[5], 'prec': HASH[4], 'fichier': empreinte('fichier', 'PV v1'), 'jeton': empreinte('jeton', HASH[5])}
 
 
 def hexa(h, ident=None):
@@ -97,15 +102,15 @@ def poser_menu(html, app, n, dd):
             + html[fin:])
 
 
-def onglet_preuve(prefixe, pdfa):
+def onglet_preuve(prefixe, pdfa, personne):
     """L'onglet Preuve d'un document (views/aite_ecm_document_views.xml)."""
     sceaux = [('13/10/2026 09:02:19', "Dépôt d'une version", 'v1', MANAGER[0], 'PV_conseil_septembre.pdf', HASH[4]),
-              ('13/10/2026 09:04:52', 'Finalisation', 'v2', MANAGER[0], 'Finalisé', HASH[5]),
-              ('13/10/2026 09:52:30', 'Archivage', 'v2', ARCHI[0], 'Archivé', empreinte('arch'))]
+              ('13/10/2026 09:04:52', 'Finalisation', 'v1', MANAGER[0], 'Finalisé', HASH[5]),
+              ('13/10/2026 09:52:30', 'Archivage', 'v1', ARCHI[0], 'Archivé', empreinte('arch'))]
     lignes = [{'id': '%s-s%d' % (prefixe, i), 'cellules': [h, ev, ve, par, de, c_html(hexa(hs[:20] + '…'))]}
               for i, (h, ev, ve, par, de, hs) in enumerate(sceaux)]
     lignes.append({'id': prefixe + '-snew', 'masque': True,
-                   'cellules': ['13/10/2026 10:36:57', "Vérification d'intégrité", 'v2', AUDIT[0], 'Vérification : intègre',
+                   'cellules': ['13/10/2026 10:36:57', "Vérification d'intégrité", 'v1', personne[0], 'Vérification : intègre',
                                 c_html(hexa(empreinte('verif')[:20] + '…'))]})
     bts = bouton(prefixe + '-verif', "Vérifier l'intégrité", 'prim', 'verifie') + bouton(prefixe + '-attest', "Attestation d'intégrité", 'second', 'pdf')
     if pdfa:
@@ -128,9 +133,11 @@ def fiche_pv(ident, prefixe, personne, pdfa, ch=''):
              + grille2([champ('Type', v('Procès-verbal / compte rendu')), champ('Dossier de classement', v('Direction générale / Procès-verbaux'))],
                        [champ('Propriétaire', v(MANAGER[0])), champ('Fichier', v(PV['fichier']))])
              + onglets(['Versions', 'Relations', 'Accès', 'Conservation', 'Preuve', 'Description'], 4)
-             + onglet_preuve(prefixe, pdfa))
-    bts = [bouton(prefixe + '-prev', 'Prévisualiser', 'second', 'oeil'), bouton(prefixe + '-corb', 'Corbeille', 'second', 'corbeille')]
-    return vue(ident, panneau_fiche('Documents', PV['titre'], '1 / 1', boutons_stat=bouton_stat('Sceaux', '3', 'sceau'))
+             + onglet_preuve(prefixe, pdfa, personne))
+    bts = [bouton(prefixe + '-prev', 'Prévisualiser', 'second', 'oeil'), bouton(prefixe + '-corb', 'Corbeille', 'second', 'corbeille'),
+           bouton(prefixe + '-part', 'Partager', 'second')]
+    return vue(ident, panneau_fiche('Documents', PV['titre'], '1 / 1',
+                                    boutons_stat=bouton_stat('Sceaux', '3', 'sceau', prefixe + '-sx'))
                + '<div class="o-corps"><div class="o-gauche">%s%s</div>%s</div>' % (
                    bande(bts, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 2, prefixe + '-sb'), prefixe + '-b'),
                    feuille(corps), ch))
@@ -146,10 +153,10 @@ def ecran_audit():
                            ('Par', '100px'), ('Détail', '1fr'), ('Empreinte du sceau', '240px')], lignes, ident='t20-lst'),
                   initiale=True)
     donnees = ('{"content_sha256": "%s", "detail": "Finalisé", "document_id": 320, "event": "final", "previous_hash": "%s", '
-               '"reference": "%s", "timestamp": "2026-10-13 09:04:52", "user": "paul.ebogo", "version": "v2"}'
+               '"reference": "%s", "timestamp": "2026-10-13 08:04:52", "user": "paul.ebogo", "version": "v1"}'
                % (SEAL['fichier'], SEAL['prec'], PV['reference']))
     corps = (grille2([champ('Référence', v(PV['reference'])), champ('Document', v(PV['titre'], True)),
-                      champ('Événement', v('Finalisation')), champ('Version (libellé)', v('v2')), champ('Par', v(MANAGER[0], True))],
+                      champ('Événement', v('Finalisation')), champ('Version (libellé)', v('v1')), champ('Par', v(MANAGER[0], True))],
                      [champ('Horodatage', v('13/10/2026 09:04:52'), 't20-horo'), champ('Source', v('Interne (clé du serveur)')),
                       champ('Empreinte du fichier', hexa(SEAL['fichier'])),
                       champ('Empreinte du sceau précédent', hexa(SEAL['prec']), 't20-prec'),
@@ -159,17 +166,17 @@ def ecran_audit():
              + sec_titre("Jeton d'horodatage") + '<div class="t20-texte">%s</div>' % hexa(SEAL['jeton'], 't20-jeton'))
     sceau = vue('t20-sceau', panneau_fiche('Journal de preuve', '', '6 / 80', nouveau=False)
                 + '<div class="o-corps"><div class="o-gauche t20-sans-bande">%s</div></div>' % feuille(corps))
-    ch = chatter([message(AUDIT[0], AUDIT[2], "Vérification d'intégrité : document intègre, chaîne de preuve cohérente.",
-                          '10:36', 't20-mv', masque=True)], identifiant='t20-ach', suivre='Suivre')
-    doc = fiche_pv('t20-doc', 't20a', AUDIT, False, ch)
     dd = menu_deroulant('t20-dda', ['Journal de preuve'])
-    html = fenetre('ECM', MENUS, [journal, sceau, doc], AUDIT[1], AUDIT[2], ident='app-20a')
+    html = fenetre('ECM', MENUS, [journal, sceau], AUDIT[1], AUDIT[2], ident='app-20a')
     return poser_menu(html, 'app-20a', 4, dd)
 
 
 # ------------------------------------------------------- l'archiviste --
 def ecran_archiviste():
-    doc = fiche_pv('t20-doc2', 't20b', ARCHI, True)
+    ch = chatter([message(ARCHI[0], ARCHI[2], "Vérification d'intégrité : document intègre, chaîne de preuve cohérente.",
+                          '10:36', 't20-mv', masque=True)], identifiant='t20-bch', suivre='Suivre')
+    ch = ch.replace('Envoyer un message', 'Envoyer message', 1)
+    doc = fiche_pv('t20-doc2', 't20b', ARCHI, True, ch)
     doc = doc.replace('class="vue" id="t20-doc2"', 'class="vue initiale" id="t20-doc2"', 1)
     corps = (champ('Nom du transfert', entree('t20-nom', '', 'Transfert du 2026-10-13'))
              + champ('Périmètre', entree('t20-scope', '', 'Documents sélectionnés'), 't20-scope-c')
@@ -211,7 +218,9 @@ CSS = """
 #app-20a .t20-info, #app-20b .t20-info { background: #D7EEF3; color: #1F2D3D; margin: 8px 0 4px; line-height: 1.45; }
 #app-20a .o-table .tl, #app-20b .o-table .tl { font-size: 11.5px; }
 #app-20b .modale .entree { width: 100%; }
-#app-20b .modale .champ { padding: 4px 0; }
+#app-20b .modale .champ { padding: 4px 0; grid-template-columns: 210px 1fr; }
+#app-20b .o-chatter .ch-bts .bt { padding-left: 6px; padding-right: 6px; }
+#app-20b .o-chatter .ch-bts .suivre { display: none; }
 #app-20b .t20-zip { font-size: 12.5px; }
 #app-20a .o-table .t20-hex, #app-20b .o-table .t20-hex { white-space: nowrap; }
 #app-20a #t20-sceau .champ { grid-template-columns: 200px 1fr; }
@@ -257,22 +266,23 @@ TUTO = {
                     dezoom(d=0.7), anneau('#t20-donnees', d=1.4)]},
         {'titre': "Vérifier l'intégrité",
          'texte': "Empreintes recalculées : « Intègre ». L'attestation d'intégrité se télécharge en PDF.",
-         'voix': "Sur un procès-verbal, onglet Preuve, elle clique sur Vérifier l'intégrité : les empreintes sont "
-                 "recalculées, le document est intègre et la chaîne cohérente. L'attestation se télécharge en PDF. "
-                 "Et chaque semaine, toute la chaîne est revérifiée automatiquement.",
-         'gestes': [aller('t20-doc'), anneau('#t20a-preuve', d=1.0, decale=0.2), clic('#t20a-verif'),
-                    etat('#t20a-integ', 'Intègre', 'vert', decale=0.2), texte('#t20a-quand', '13/10/2026 10:36:57', avec=True),
-                    montrer('#t20a-snew', y=6), montrer('#t20-mv', y=10, avec=True),
-                    zoom('#t20a-integ-c', s=1.6, fx=0.35, fy=0.35, d=0.8),
-                    bulle('#t20a-integ', 'Intègre', cote='droite', d=1.8), dezoom(d=0.7),
-                    anneau('#t20a-attest', d=1.2), bulle('#t20a-attest', 'Attestation PDF', cote='dessous', d=1.8, avec=True),
-                    anneau('#app-20a .t20-info', d=1.6)]},
+         'voix': "Sur ce procès-verbal, onglet Preuve, Jules, l'archiviste, clique sur Vérifier l'intégrité : les "
+                 "empreintes sont recalculées, le document est intègre et la chaîne cohérente. L'attestation se "
+                 "télécharge en P D F. Et chaque semaine, toute la chaîne est revérifiée automatiquement.",
+         'gestes': [montrer('#app-20b', y=0, d=0.4), anneau('#t20b-preuve', d=1.0, decale=0.2), clic('#t20b-verif'),
+                    etat('#t20b-integ', 'Intègre', 'vert', decale=0.2), texte('#t20b-quand', '13/10/2026 10:36:57', avec=True),
+                    texte('#t20b-dernier', empreinte('verif'), avec=True), texte('#t20b-sx i', '4', avec=True),
+                    montrer('#t20b-snew', y=6), montrer('#t20-mv', y=10, avec=True),
+                    zoom('#t20b-integ-c', s=1.6, fx=0.35, fy=0.35, d=0.8),
+                    bulle('#t20b-integ', 'Intègre', cote='droite', d=1.8), dezoom(d=0.7),
+                    anneau('#t20b-attest', d=1.2), bulle('#t20b-attest', 'Attestation PDF', cote='dessous', d=1.8, avec=True),
+                    anneau('#app-20b .t20-info', d=1.6)]},
         {'titre': 'Copie PDF/A et export',
          'texte': "L'archiviste peut créer la copie de préservation PDF/A, puis ouvre l'export de paquet d'archives.",
-         'voix': "Jules, l'archiviste, dispose en plus de Créer la copie PDF/A : une copie de préservation, produite par "
+         'voix': "Jules dispose aussi de Créer la copie PDF/A : une copie de préservation, produite par "
                  "LibreOffice, qui doit être installé sur le serveur. Pour verser un fonds, il ouvre Export de paquet "
                  "d'archives et choisit le périmètre : ici, le dossier des procès-verbaux.",
-         'gestes': [montrer('#app-20b', y=0, d=0.4), anneau('#t20b-pdfa', d=1.2, decale=0.3),
+         'gestes': [anneau('#t20b-pdfa', d=1.2, decale=0.3),
                     bulle('#t20b-pdfa', 'Avec LibreOffice', cote='dessous', d=2.2, avec=True), pause(1.2),
                     clic('#app-20b-m4'), montrer('#t20-ddb', y=-8, d=0.3), survol('#t20-ddb-2', decale=0.2),
                     clic('#t20-ddb-2', decale=0.1), cacher('#t20-ddb', d=0.15), ouvrir('t20-wiz'),
@@ -286,7 +296,7 @@ TUTO = {
                  "d'archivage tiers, ou prouver ce qui a été conservé.",
          'gestes': [zoom('#t20-xinfo', s=1.4, d=0.8), anneau('#t20-xinfo', d=2.0),
                     bulle('#t20-xinfo', 'Bordereau SEDA 2.1', cote='dessous', fx=0.3, d=2.2, avec=True), dezoom(d=0.7),
-                    clic('#t20-produire'), cacher('#t20-xinfo', d=0.25, decale=0.4), animer('#t20-produire', {'autoAlpha': 1}, {'autoAlpha': 0, 'width': 0, 'paddingLeft': 0, 'paddingRight': 0}, d=0.25, avec=True),
+                    clic('#t20-produire'), texte('#t20-wiz .mt span', 'Odoo', decale=0.4), cacher('#t20-xinfo', d=0.25, avec=True), animer('#t20-produire', {'autoAlpha': 1}, {'autoAlpha': 0, 'width': 0, 'paddingLeft': 0, 'paddingRight': 0}, d=0.25, avec=True),
                     montrer('#t20-pret', y=0), zoom('#t20-pret-c', s=1.3, fx=0.5, d=0.8),
                     bulle('#t20-zip', 'Le paquet, prêt', cote='droite', d=2.2), dezoom(d=0.7)]},
     ],

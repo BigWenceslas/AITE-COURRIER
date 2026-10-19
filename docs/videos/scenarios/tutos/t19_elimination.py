@@ -179,6 +179,8 @@ CSS = """
 #app-19m .t19-det { position: relative; display: inline-block; }
 #app-19m .t19-det-on { position: absolute; left: 0; top: 0; }
 #app-19m .t19-msg { font-size: 13px; line-height: 1.5; }
+#app-19a .o-chatter .ch-bts .bt, #app-19m .o-chatter .ch-bts .bt { padding-left: 6px; padding-right: 6px; }
+#app-19a .o-chatter .ch-bts .suivre, #app-19m .o-chatter .ch-bts .suivre { display: none; }
 #app-19a .t19-ch-vide { margin-top: 14px; text-align: center; color: #6C757D; font-size: 12px; }
 """
 
@@ -189,7 +191,7 @@ TUTO = {
     'serie': dict(ECM, numero=19),
     'adresse': ADRESSE % 'ecm',
     'accroche': {
-        'question': 'Qui a *détruit* ces archives, et *pourquoi ?*',
+        'question': 'Qui a *détruit* ces *archives ?*',
         'sous': "Cartons jetés sans trace, boîtes empruntées jamais rendues : les archives papier se perdent en silence.",
         'personnage': (ARCHI[0], 'Archiviste', ARCHI[2]),
         'chaos': [('dossier', 'Carton « 2014 »'), ('bulle', 'On peut les jeter ?'), ('alerte', 'Boîte introuvable'),

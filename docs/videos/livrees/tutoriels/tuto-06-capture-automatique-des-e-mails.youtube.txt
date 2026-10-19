@@ -1,0 +1,24 @@
+TITRE
+COMMENT TRANSFORMER AUTOMATIQUEMENT VOS E-MAILS EN COURRIERS AVEC AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Tout e-mail envoyé à l'adresse dédiée crée un courrier en brouillon, déjà rempli : objet, expéditeur, type par défaut. Ses pièces jointes deviennent des documents versionnés, et chaque capture est tracée au journal d'audit. Tutoriel AITE Courrier pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Vos e-mails deviennent des courriers
+0:25 Étape 1 — Un e-mail, un brouillon
+0:42 Étape 2 — Un brouillon déjà rempli
+0:55 Étape 3 — Pièces jointes, puis circuit
+1:12 Étape 4 — Le type par défaut
+1:29 Ce que vous y gagnez
+1:36 Demander une démonstration
+
+Durée : 1 min 44 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, capture e-mail, alias e-mail Odoo, pièces jointes, courrier électronique, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

@@ -275,6 +275,8 @@ CSS = """
 #app-18a .t18-bts .bt .ic svg, #app-18m .bt .ic svg { width: 12px; height: 12px; }
 #app-18a .t18-bts .bt .ic svg path, #app-18a .t18-bts .bt .ic svg circle { stroke: #343A40; }
 #app-18a .t18-bts .bt .ic svg[fill="#5B4C93"] { fill: #343A40; }
+#app-18m .o-chatter .ch-bts .bt { padding-left: 6px; padding-right: 6px; }
+#app-18m .o-chatter .ch-bts .suivre { display: none; }
 #app-18a .t18-msg, #app-18m .t18-msg { font-size: 13px; line-height: 1.5; }
 """
 

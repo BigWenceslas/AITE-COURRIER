@@ -78,7 +78,7 @@ def fiche_document():
              + table([('Version', '60px'), ('Nom du fichier', '1fr'), ('Commentaire de version', '1fr'), ('Taille (octets)', '100px'),
                       ('Téléversé par', '120px'), ('Date', '130px')],
                      [{'id': 't17-v1', 'cellules': ['v1', FICHIER, 'Version pour signature', c_num('217 088'), MANAGER[0],
-                                                   '12/10/2026 16:05']}], ajouter=False))
+                                                   '12/10/2026 16:05:42']}], ajouter=False))
     stats = (bouton_stat('Sceaux', '1', 'sceau') + '<span class="masque" id="t17-stat-p">%s</span>'
              % bouton_stat('Partages', '1', 'document'))
     return vue('t17-doc', panneau_fiche('Documents', TITRE, '5 / 257', boutons_stat=stats)

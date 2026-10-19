@@ -263,10 +263,12 @@ def fiche(identifiant, cp, bande_html, feuille_html, chatter='', initiale=False)
 
 def chatter(messages, activites='', identifiant=None, suivre='Suivi'):
     """Le fil de discussion à droite de la fiche."""
-    return ('<div class="o-chatter"%s><div class="ch-bts"><span class="bt prim petit">Envoyer un message</span>'
+    muk = THEME == 'muk'
+    return ('<div class="o-chatter"%s><div class="ch-bts"><span class="bt prim petit">%s</span>'
             '<span class="bt second petit">Note</span><span class="bt second petit">Activités</span>'
             '<span class="suivre">%s</span></div>%s<div class="ch-sep">Aujourd\'hui</div>%s</div>'
-            % (_id(identifiant), e(suivre), activites, ''.join(messages)))
+            % (_id(identifiant), 'Envoyer message' if muk else 'Envoyer un message', '' if muk else e(suivre), activites,
+               ''.join(messages)))
 
 
 def message(auteur, couleur, texte_html, heure='10:29', identifiant=None, masque=False):
@@ -277,7 +279,7 @@ def message(auteur, couleur, texte_html, heure='10:29', identifiant=None, masque
 
 def activite(titre, pour, texte, couleur, initiale, identifiant=None, masque=True):
     return ('<div class="act%s"%s><span class="av" style="background:%s">%s<em>✓</em></span><div>'
-            '<div class="at"><b class="auj">Aujourd\'hui :</b> <b>« %s »</b> pour %s</div><div class="tx">%s</div></div></div>'
+            '<div class="at"><b class="auj">Aujourd\'hui :</b> <b>"%s"</b> pour %s</div><div class="tx">%s</div></div></div>'
             % (' masque' if masque else '', _id(identifiant), couleur, e(initiale), e(titre), e(pour), e(texte)))
 
 

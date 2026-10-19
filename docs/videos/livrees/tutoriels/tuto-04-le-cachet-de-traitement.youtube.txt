@@ -1,0 +1,24 @@
+TITRE
+COMMENT PROUVER QU'UN COURRIER A ÉTÉ TRAITÉ : LE CACHET DE TRAITEMENT AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Au bout de son circuit, chaque courrier reçoit un cachet de traitement : ruban « Traité », visas de chaque étape, et la même preuve pour le tiers sur son portail. Tutoriel AITE Courrier pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Un cachet qui prouve le traitement
+0:23 Étape 1 — Retrouver les courriers traités
+0:34 Étape 2 — Traité, au premier coup d'œil
+0:44 Étape 3 — Les visas de chaque étape
+0:59 Étape 4 — Le tiers voit le même cachet
+1:11 Ce que vous y gagnez
+1:20 Demander une démonstration
+
+Durée : 1 min 27 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, cachet de traitement, portail tiers, preuve de traitement, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala
