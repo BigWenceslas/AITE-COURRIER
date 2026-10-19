@@ -352,10 +352,10 @@ TUTO = {
                     cacher('#t6-bande-a', d=0.2), montrer('#t6-bande-b', y=0, avec=True), montrer('#t6-sb', y=0, avec=True),
                     anneau('#t6-ref', d=1.2), anneau('#t6-sb', d=1.2)]},
         {'titre': 'Le type par défaut',
-         'texte': "Configuration › Types de courrier. Prérequis : un serveur de messagerie entrant.",
+         'texte': "Configuration › Types de courrier. En auto-hébergement, un serveur de messagerie entrant relève la boîte.",
          'voix': "Le paramétrage tient en une case : dans Configuration, Types de courrier, l'administrateur coche Type par "
-                 "défaut, capture e-mail. Sans ce choix, le premier type entrant s'applique. Prérequis : un serveur de "
-                 "messagerie entrant, qui relève cette boîte.",
+                 "défaut, capture e-mail. Sans ce choix, le premier type entrant s'applique. Sur un serveur auto-hébergé, "
+                 "un serveur de messagerie entrant relève cette boîte.",
          'gestes': [montrer('#app-6b', y=0, d=0.4), pause(0.3), clic('#app-6b-m4'), montrer('#t6-cfg', y=6, d=0.25),
                     clic('#t6-cfg0', fx=0.3), cacher('#t6-cfg', d=0.15), aller('t6-types'),
                     cacher('#t6a-liste', d=0.25, avec=True), clic('#t6t-l1', fx=0.15), aller('t6-type'),

@@ -68,7 +68,7 @@ TUTO = {
         'titre': 'Des décisions *tracées,* sans effort.',
         'voix': "Le bon geste est fait par la bonne personne, chaque étape est tracée, et même les refus sont gardés "
                 "au journal d'audit.",
-        'cartes': [('equipe', 'Rôles habilités', 'La bonne personne', "Seuls les rôles habilités à l'étape font avancer le courrier."),
+        'cartes': [('equipe', 'Habilitations', 'La bonne personne', "Seuls les rôles habilités à l'étape font avancer le courrier."),
                    ('trace', 'Historique', 'Chaque étape tracée', "Entrée, sortie, intervenant, transition et commentaire."),
                    ('bouclier', 'Audit', 'Les refus aussi', "Une tentative non autorisée est tracée au journal d'audit.")],
     },

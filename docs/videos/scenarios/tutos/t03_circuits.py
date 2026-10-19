@@ -225,8 +225,9 @@ def ecran_manager():
     stats = bouton_stat('Historique expéditeur', '', 'histo') + bouton_stat('Documents ECM', '1')
     fiche = vue('t3-fiche', panneau_fiche('Courriers', RETARD['reference'], '1 / 7', nouveau=False, boutons_stat=stats)
                 + '<div class="o-corps"><div class="o-gauche">%s%s</div>%s</div>' % (
-                    bande([bouton('t3-traiter', 'Traiter', 'prim'), bouton('t3-rej', 'Rejeter', 'second'),
-                           bouton('t3-com', 'Commenter', 'second'), bouton('t3-rep', 'Répondre', 'second', 'retour')],
+                    # le manager n'a pas de rôle à l'étape Qualification : ni « Traiter » ni
+                    # « Rejeter » (aite_courrier_validation/views/aite_courrier_views.xml:14-20)
+                    bande([bouton('t3-com', 'Commenter', 'second'), bouton('t3-rep', 'Répondre', 'second', 'retour')],
                           statusbar(ETAPES, 1, 't3-sb'), 't3-bande'), feuille(corps), ch))
     html = fenetre('Courrier', base.MENUS_COURRIER, [tous, retard, fiche], MANAGER[1], MANAGER[2], ident='app-3b')
     return html.replace('<div class="o-app muk" id="app-3b">', '<div class="o-app muk masque" id="app-3b">', 1)
@@ -316,9 +317,9 @@ TUTO = {
                     anneau('#t3-e4-fin', d=1.8), bulle_g('#t3-e4-fin', 'Étape finale', 62, 1.45, d=1.8, avec=True),
                     dezoom(d=0.7)]},
         {'titre': 'Avancer, ou revenir en arrière',
-         'texte': "Les transitions relient les étapes : en avant, ou en arrière avec un commentaire obligatoire.",
+         'texte': "Les transitions relient les étapes : en avant, ou en arrière, ici avec un commentaire obligatoire.",
          'voix': "L'onglet Transitions relie les étapes. En avant, le courrier progresse. En arrière, il revient pour "
-                 "correction, avec un commentaire obligatoire. Tout se règle ici, sans développement.",
+                 "correction, avec un commentaire exigé dans les circuits livrés. Tout se règle ici, sans développement.",
          'gestes': [clic('#t3-og-1'), classe('#t3-og-0', retirer=['actif'], avec=True), classe('#t3-og-1', ajouter=['actif'], avec=True),
                     cacher('#t3-pe', d=0.2), montrer('#t3-pt', y=10),
                     curseur('#t3-t4-lib', fx=0.85, fy=0.6, d=0.6),

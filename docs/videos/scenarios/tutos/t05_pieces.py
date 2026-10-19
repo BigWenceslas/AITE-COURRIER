@@ -4,17 +4,45 @@
 Sources : aite_courrier_ged/views (espace documentaire, « Prévisualiser »,
 « Finaliser », onglet « Versions », ruban « Verrouillé », confidentialité
 héritée), aite_courrier_ocr (colonne d'indexation, recherche plein texte) ;
-recette SC03. Écran : présentation, chapitre 3.
+aite_courrier_ged/models/aite_courrier_document.py (dossier par défaut du
+type de courrier, ``default_folder_id`` ; verrouillage si finalisé, archivé ou
+courrier archivé ; liste grisée si verrouillé) ; recette SC03. Écran :
+présentation, chapitre 3, avec le groupe « Devis » déplié dans le module (un
+clic sur un groupe le déplie, il n'ouvre pas de fiche).
 """
 
 import demo
 from scenarios import presentation as base
-from scenarios.tutos import ADRESSE, COURRIER, cta, etape, youtube
-from moteur import anneau, curseur
+from ecrans import c_num, e, puce
+from scenarios.tutos import ADRESSE, COURRIER, cta, youtube
+from moteur import anneau, animer, classe, clic, curseur, survol, texte, vue as aller
 from tutoriel import bulle, dezoom, zoom
 
 ASSIST = demo.PERSONNES['assistante']
 CH = base.CH3
+
+# Le groupe « Devis » déplié : ses premières pièces (fictives), la plus récente
+# en tête ; une pièce verrouillée est grisée (decoration-muted="is_locked").
+GABARIT = '28px 1fr 110px 90px 70px 100px 150px 70px'
+PIECES = [("Devis D-2026-3468 — mise en place d'un ERP", 'COUR-2026-0107', '2', 'Secret', 'Brouillon', True),
+          ('Devis D-2026-5120 — rénovation des bureaux', 'COUR-2026-0112', '1', 'Interne', 'Finalisé', True),
+          ("Devis D-2026-7840 — mise en place d'un ERP", 'COUR-2026-0079', '1', 'Interne', 'Brouillon', True)]
+
+
+def _ligne(i, nom, courrier, nb, conf, etat, gris):
+    return ('<div class="ligne%s" id="t5-p%d" style="grid-template-columns:%s"><span class="cb"></span>'
+            '<span class="ell" style="padding-left:14px">%s</span><span class="ell">%s</span><span class="ell">Devis</span>'
+            '<span class="ell">pdf</span>%s<span class="ell">%s</span><span>%s</span></div>'
+            % (' gris' if gris else '', i, GABARIT, e(nom), e(courrier), c_num(nb)[0], e(conf), puce(etat)))
+
+
+ECRAN = CH['ecran']
+_G0 = '<span class="ell"><b>▸</b> Devis (38)</span>'
+assert _G0 in ECRAN
+ECRAN = ECRAN.replace(_G0, '<span class="ell"><b id="t5-chev">▸</b> Devis (38)</span>', 1)
+_FIN_G0 = ECRAN.index('<div class="ligne grp" id="c3-g1"')
+ECRAN = (ECRAN[:_FIN_G0] + '<div id="t5-devis" style="height:0;overflow:hidden;opacity:0;visibility:hidden">%s</div>'
+         % ''.join(_ligne(i, *p) for i, p in enumerate(PIECES)) + ECRAN[_FIN_G0:])
 
 TUTO = {
     'slug': 'tuto-05-les-pieces-et-leurs-versions',
@@ -26,7 +54,7 @@ TUTO = {
         'question': 'Quelle est la *bonne* version de ce *devis ?*',
         'sous': 'Pièces jointes perdues dans les e-mails, fichiers « final_v3_def » : la bonne version introuvable.',
         'personnage': (ASSIST[0], 'Assistante', ASSIST[2]),
-        'chaos': [('doc', 'devis_final_v3.pdf'), ('bulle', 'Tu as la dernière version ?'), ('doc', 'devis_final_DEF.pdf'),
+        'chaos': [('doc', 'devis_final_v3.pdf'), ('bulle', 'La dernière version ?'), ('doc', 'devis_final_DEF.pdf'),
                   ('alerte', 'Fichier écrasé'), ('lettre', 'Pièce jointe perdue'), ('note', 'Qui l\'a modifié ?'),
                   ('dossier', 'Dossier partagé'), ('bulle', 'C\'est confidentiel, non ?')],
         'voix': "Le devis final, version trois, ou version définitive ? Entre les pièces jointes et les dossiers "
@@ -39,12 +67,16 @@ TUTO = {
         'voix': "Les pièces des courriers sont rangées par dossier, elles héritent de la confidentialité de leur courrier, "
                 "et leurs versions s'empilent : rien n'est jamais écrasé.",
     },
-    'ecran': CH['ecran'], 'vue_initiale': 'c3-liste',
+    'ecran': ECRAN, 'vue_initiale': 'c3-liste',
     'etapes': [
-        etape(CH, 0, "L'espace documentaire", "Toutes les pièces des courriers, regroupées par dossier.",
-              "L'espace documentaire réunit toutes les pièces jointes aux courriers, regroupées par dossier : les devis, "
-              "les factures, la direction. Le dossier se choisit tout seul, selon le type du courrier. Estelle ouvre un devis.",
-              avant=[bulle('#c3-g0', 'Un dossier par type de pièce', cote='droite', fx=0.35, d=2.2)]),
+        {'titre': "L'espace documentaire", 'texte': "Toutes les pièces des courriers, regroupées par dossier.",
+         'voix': "L'espace documentaire réunit toutes les pièces jointes aux courriers, regroupées par dossier : les devis, "
+                 "les factures, la direction. Chaque type de courrier peut avoir son dossier par défaut. Estelle déplie "
+                 "les devis, et ouvre le plus récent.",
+         'gestes': [anneau('#c3-g0', d=1.2), bulle('#c3-g0', 'Les pièces, par dossier', cote='droite', fx=0.35, d=2.2),
+                    anneau('#c3-g1', d=1.0), survol('#c3-g0'), clic('#c3-g0', fx=0.2), texte('#t5-chev', '▾', avec=True),
+                    animer('#t5-devis', {'height': 0, 'autoAlpha': 0}, {'height': 93, 'autoAlpha': 1}, d=0.4, avec=True),
+                    survol('#t5-p0', decale=0.3), classe('#c3-g0', retirer=['survol'], avec=True), clic('#t5-p0', fx=0.3), aller('c3-fiche')]},
         {'titre': 'Une confidentialité héritée', 'texte': "La pièce suit la confidentialité de son courrier : ici, Secret.",
          'voix': "La pièce hérite de la confidentialité de son courrier : ici, Secret. Elle n'est donc visible que des "
                  "personnes autorisées à voir ce courrier, partout dans l'application.",

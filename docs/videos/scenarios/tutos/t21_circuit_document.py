@@ -98,31 +98,38 @@ def action_wizard(ident, etape, options):
 
 
 # ------------------------------------------------------- l'assistante --
+def fiche(ident, prefixe, bande_html, bandeau_html, contenu, ch, initiale=False):
+    corps = corps_doc(prefixe, bandeau_html, 0, contenu)
+    return vue(ident, panneau_fiche('Documents', TITRE, '1 / 1', boutons_stat=bouton_stat('Sceaux', '1', 'sceau'))
+               + '<div class="o-corps"><div class="o-gauche">%s%s</div>%s</div>' % (bande_html, feuille(corps), ch), initiale)
+
+
 def ecran_assistante():
+    # le brouillon, avant le lancement
     a = [bouton('t21-lancer', 'Lancer le circuit', 'prim', 'lecture'), bouton('t21-fin', 'Finaliser', 'prim'),
          bouton('t21-res', 'Réserver', 'second', 'cadenas'), bouton('t21-prev', 'Prévisualiser', 'second', 'oeil'),
          bouton('t21-corb', 'Corbeille', 'second', 'corbeille'), bouton('t21-part', 'Partager', 'second')]
+    ch0 = chatter([message(ASSIST[0], ASSIST[2], 'Version v1 déposée.', '09:58')], suivre='Suivre')
+    doc = fiche('t21-doc', 't21a', bande(a, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 0, 't21-sb'), 't21-b0'), '',
+                versions('t21a'), ch0, initiale=True)
+    # le même document, circuit lancé (étape Rédaction), puis transmis
     b = [bt_traiter('t21-traiter'), bouton('t21-res2', 'Réserver', 'second', 'cadenas'),
          bouton('t21-prev2', 'Prévisualiser', 'second', 'oeil'), bouton('t21-corb2', 'Corbeille', 'second', 'corbeille'),
          bouton('t21-part2', 'Partager', 'second')]
     c = [bouton('t21-res3', 'Réserver', 'second', 'cadenas'), bouton('t21-prev3', 'Prévisualiser', 'second', 'oeil'),
          bouton('t21-corb3', 'Corbeille', 'second', 'corbeille'), bouton('t21-part3', 'Partager', 'second')]
-    corps = corps_doc('t21a', bandeau_circuit('t21-bc', 'Rédaction', '16/10/2026 10:42', True), 0, versions('t21a'))
-    acts = ('<div class="ch-sep t21-ap masque" id="t21-aps">▾ Activités planifiées</div>'
+    acts = ('<div class="ch-sep t21-ap" id="t21-aps">▾ Activités planifiées</div>'
             + activite('[Circuit] Rédaction — %s' % REF, ASSIST[0], 'Étape « Rédaction » à traiter.', ASSIST[2], ASSIST[1],
-                       't21-act0').replace("Aujourd'hui :", 'Dû dans 3 jours :'))
+                       't21-act0', masque=False).replace("Aujourd'hui :", 'Dû dans 3 jours :'))
     ch = chatter([message(ASSIST[0], ASSIST[2], '• Rédaction → <span class="lien">Vérification</span> <i>(Étape courante)</i>',
                           '15:06', 't21-m2', masque=True),
-                  message(ASSIST[0], ASSIST[2], 'Circuit « %s » lancé — étape « Rédaction ».' % e(CIRCUIT), '10:42', 't21-m1',
-                          masque=True),
+                  message(ASSIST[0], ASSIST[2], 'Circuit « %s » lancé — étape « Rédaction ».' % e(CIRCUIT), '10:42', 't21-m1'),
                   message(ASSIST[0], ASSIST[2], 'Version v1 déposée.', '09:58')],
                  activites=acts, identifiant='t21-ach', suivre='Suivre')
-    doc = vue('t21-doc', panneau_fiche('Documents', TITRE, '1 / 1', boutons_stat=bouton_stat('Sceaux', '1', 'sceau'))
-              + '<div class="o-corps"><div class="o-gauche">%s%s</div>%s</div>' % (
-                  bande(a, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 0, 't21-sb'), 't21-b', [b, c]),
-                  feuille(corps), ch), initiale=True)
+    doc2 = fiche('t21-doc2', 't21b', bande(b, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 0, 't21-sb2'), 't21-b', c),
+                 bandeau_circuit('t21-bc', 'Rédaction', '16/10/2026 10:42', False), versions('t21b'), ch)
     wiz = action_wizard('t21-wa', 'Rédaction', ['Transmettre pour vérification (Rédaction → Vérification)', 'Recherche avancée…'])
-    return fenetre('ECM', MENUS_A, [doc], ASSIST[1], ASSIST[2], calques=wiz, ident='app-21a')
+    return fenetre('ECM', MENUS_A, [doc, doc2], ASSIST[1], ASSIST[2], calques=wiz, ident='app-21a')
 
 
 # ---------------------------------------------------------- le manager --
@@ -133,9 +140,19 @@ HISTO = [('Approuvée', '13/10/2026 16:31', '', '00:00', MANAGER[0], '', ''),
 
 
 def ecran_manager():
+    # le document à l'étape Vérification, l'activité du manager en attente
     a = [bt_traiter('t21-mtraiter'), bouton('t21-reset', 'Réinitialiser le circuit', 'second'),
          bouton('t21-mres', 'Réserver', 'second', 'cadenas'), bouton('t21-mprev', 'Prévisualiser', 'second', 'oeil'),
          bouton('t21-mcorb', 'Corbeille', 'second', 'corbeille'), bouton('t21-mpart', 'Partager', 'second')]
+    hist = [message(ASSIST[0], ASSIST[2], '• Rédaction → <span class="lien">Vérification</span> <i>(Étape courante)</i>', '15:06'),
+            message(ASSIST[0], ASSIST[2], 'Circuit « %s » lancé — étape « Rédaction ».' % e(CIRCUIT), '10:42')]
+    acts = ('<div class="ch-sep t21-ap" id="t21-maps">▾ Activités planifiées</div>'
+            + activite('[Circuit] Vérification — %s' % REF, MANAGER[0], 'Étape « Vérification » à traiter.', MANAGER[2],
+                       MANAGER[1], 't21-mact', masque=False).replace("Aujourd'hui :", 'Dû dans 2 jours :'))
+    doc = fiche('t21-mdoc', 't21m', bande(a, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 0, 't21-msb0'), 't21-mb0'),
+                bandeau_circuit('t21-mbc', 'Vérification', '15/10/2026 15:06', False), versions('t21m'),
+                chatter(hist, activites=acts, suivre='Suivre'), initiale=True)
+    # le même document en fin de circuit : finalisé
     b = [bouton('t21-reset2', 'Réinitialiser le circuit', 'second'), bouton('t21-march', 'Archiver', 'second'),
          bouton('t21-mbr', 'Remettre en brouillon', 'second'), bouton('t21-mprev2', 'Prévisualiser', 'second', 'oeil'),
          bouton('t21-mcorb2', 'Corbeille', 'second', 'corbeille'), bouton('t21-mpart2', 'Partager', 'second')]
@@ -145,24 +162,14 @@ def ecran_manager():
         table([('Étape', '86px'), ('Entrée', '108px'), ('Sortie', '108px'), ('Durée (h)', '56px'), ('Par', '96px'),
                ('Transition', '1fr'), ('Commentaire', '1fr')],
               [{'id': 't21-h%d' % i, 'cellules': list(h)} for i, h in enumerate(HISTO)], identifiant='t21-histo', ajouter=False)))
-    contenu = ('<div class="t21-panes"><div class="t21-pane" id="t21-pv">%s</div>%s</div>' % (versions('t21m'), circuit))
-    corps = corps_doc('t21m', bandeau_circuit('t21-mbc', 'Vérification', '15/10/2026 15:06', False), 0, contenu)
-    acts = ('<div class="ch-sep t21-ap" id="t21-maps">▾ Activités planifiées</div>'
-            + activite('[Circuit] Vérification — %s' % REF, MANAGER[0], 'Étape « Vérification » à traiter.', MANAGER[2],
-                       MANAGER[1], 't21-mact', masque=False).replace("Aujourd'hui :", 'Dû dans 2 jours :'))
-    ch = chatter([message(MANAGER[0], MANAGER[2], '• Vérification → <span class="lien">Approuvée</span> <i>(Étape courante)</i>',
-                          '16:31', 't21-mm2', masque=True),
-                  message(ASSIST[0], ASSIST[2], '• Rédaction → <span class="lien">Vérification</span> <i>(Étape courante)</i>',
-                          '15:06'),
-                  message(ASSIST[0], ASSIST[2], 'Circuit « %s » lancé — étape « Rédaction ».' % e(CIRCUIT), '10:42')],
-                 activites=acts, identifiant='t21-mch', suivre='Suivre')
-    doc = vue('t21-mdoc', panneau_fiche('Documents', TITRE, '1 / 1', boutons_stat=bouton_stat('Sceaux', '1', 'sceau'))
-              + '<div class="o-corps"><div class="o-gauche">%s%s</div>%s</div>' % (
-                  bande(a, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 0, 't21-msb'), 't21-mb', b),
-                  feuille(corps), ch), initiale=True)
+    contenu = ('<div class="t21-panes"><div class="t21-pane" id="t21-pv">%s</div>%s</div>' % (versions('t21n'), circuit))
+    ch2 = chatter([message(MANAGER[0], MANAGER[2], '• Vérification → <span class="lien">Approuvée</span> <i>(Étape courante)</i>',
+                           '16:31', 't21-mm2')] + hist, identifiant='t21-mch', suivre='Suivre')
+    doc2 = fiche('t21-mdoc2', 't21n', bande(b, statusbar(['Brouillon', 'Finalisé', 'Archivé'], 1, 't21-msb'), 't21-mb'), '',
+                 contenu, ch2)
     wiz = action_wizard('t21-wm', 'Vérification', ['Retour au rédacteur (Vérification → Rédaction)',
                                                    'Approuver (Vérification → Approuvée)', 'Recherche avancée…'])
-    html = fenetre('ECM', MENUS_M, [doc], MANAGER[1], MANAGER[2], calques=wiz, ident='app-21m')
+    html = fenetre('ECM', MENUS_M, [doc, doc2], MANAGER[1], MANAGER[2], calques=wiz, ident='app-21m')
     return html.replace('<div class="o-app muk" id="app-21m">', '<div class="o-app muk masque" id="app-21m">', 1)
 
 
@@ -189,7 +196,6 @@ CSS = """
 #app-21a .t21-dd .it.survol, #app-21m .t21-dd .it.survol { background: #EEF3F6; }
 #app-21m .o-bande .bt { padding: 0 7px; font-size: 11.5px; gap: 4px; }
 #app-21m .o-bande .groupe-bt { gap: 3px; }
-#app-21m .o-bande .sb { font-size: 11px; padding: 0 4px 0 13px; }
 #app-21m .t21-panes { display: grid; } #app-21m .t21-panes > .t21-pane { grid-area: 1 / 1; }
 #app-21m .o-table .tl { height: auto; min-height: 28px; padding-top: 4px; padding-bottom: 4px; }
 #app-21m .o-table .tl .ell { white-space: normal; }
@@ -226,9 +232,7 @@ TUTO = {
          'voix': "Estelle, l'assistante, a rédigé une procédure, encore en brouillon. Elle clique sur Lancer le circuit : "
                  "le type, Procédure ou instruction, désigne le circuit, rédaction, vérification, approbation. Le document "
                  "entre à l'étape Rédaction, avec son échéance.",
-         'gestes': [anneau('#t21a-type', d=1.2, decale=0.3), clic('#t21-lancer'), cacher('#t21-b-a', d=0.2),
-                    montrer('#t21-b-b', y=0, avec=True), montrer('#t21-bc', y=-6), montrer('#t21-m1', y=10, avec=True),
-                    montrer('#t21-aps', y=6, avec=True), montrer('#t21-act0', y=6, avec=True),
+         'gestes': [anneau('#t21a-type', d=1.2, decale=0.3), clic('#t21-lancer'), aller('t21-doc2', decale=0.2),
                     zoom('#t21-bc', s=1.6, fx=0.5, fy=0.35, d=0.8), anneau('#t21-bc', d=1.4),
                     bulle('#t21-bc-ech', 'Rédaction : 72 h', cote='dessous', d=2.2, avec=True), dezoom(d=0.7),
                     anneau('#t21-act0', d=1.4)]},
@@ -243,8 +247,8 @@ TUTO = {
                     choisir('t21-wa-t', 'Transmettre pour vérification', avec=True),
                     clic('#t21-wa-c', fx=0.2), saisir('t21-wa-c', 'Rédaction terminée, prête pour relecture.', d=1.6),
                     clic('#t21-wa-ok'), fermer('t21-wa'), texte('#t21-bc-et', 'Vérification', decale=0.2),
-                    texte('#t21-bc-ech', '15/10/2026 15:06', avec=True), cacher('#t21-b-b', d=0.2),
-                    montrer('#t21-b-c', y=0, avec=True), cacher('#t21-act0', d=0.2, avec=True), cacher('#t21-aps', d=0.2, avec=True),
+                    texte('#t21-bc-ech', '15/10/2026 15:06', avec=True), cacher('#t21-b-a', d=0.2),
+                    montrer('#t21-b-b', y=0, avec=True), cacher('#t21-act0', d=0.2, avec=True), cacher('#t21-aps', d=0.2, avec=True),
                     montrer('#t21-m2', y=10), anneau('#t21-bc', d=1.4)]},
         {'titre': 'Le manager approuve',
          'texte': "Prévenu par une activité, le manager approuve ; à l'étape finale, le document est finalisé.",
@@ -256,18 +260,15 @@ TUTO = {
                     anneau('#t21-wm-o0', d=1.2), bulle('#t21-wm-o0', 'Commentaire obligatoire', cote='droite', d=2.0, avec=True),
                     survol('#t21-wm-o1', decale=0.6), clic('#t21-wm-o1', fx=0.3), cacher('#t21-wm-dd', d=0.15),
                     choisir('t21-wm-t', 'Approuver', avec=True), clic('#t21-wm-ok'), fermer('t21-wm'),
-                    cacher('#t21-mbc', d=0.3, decale=0.2), classe('#t21-msb-0', retirer=['actif'], avec=True),
-                    classe('#t21-msb-1', ajouter=['actif'], avec=True), cacher('#t21-mb-a', d=0.2, avec=True),
-                    montrer('#t21-mb-b', y=0, avec=True), cacher('#t21-maps', d=0.2, avec=True), cacher('#t21-mact', d=0.2, avec=True),
-                    montrer('#t21-mm2', y=10), zoom('#t21-msb', s=1.7, fx=0.6, fy=0.3, d=0.8),
+                    aller('t21-mdoc2', decale=0.2), zoom('#t21-msb', s=1.7, fx=0.6, fy=0.3, d=0.8),
                     bulle('#t21-msb-1', 'Finalisé', cote='dessous', d=1.8), dezoom(d=0.7)]},
         {'titre': "L'historique, et la remise à zéro",
          'texte': "L'onglet Circuit garde chaque étape ; un manager peut réinitialiser le circuit.",
          'voix': "L'onglet Circuit garde tout l'historique : chaque étape, son entrée, sa sortie, sa durée, l'intervenant, "
                  "la transition et le commentaire. Et si besoin, un manager peut réinitialiser le circuit, qui revient à "
                  "l'état non lancé.",
-         'gestes': [clic('#t21m-og-5'), classe('#t21m-og-0', retirer=['actif'], avec=True),
-                    classe('#t21m-og-5', ajouter=['actif'], avec=True), cacher('#t21-pv', d=0.2, avec=True),
+         'gestes': [clic('#t21n-og-5'), classe('#t21n-og-0', retirer=['actif'], avec=True),
+                    classe('#t21n-og-5', ajouter=['actif'], avec=True), cacher('#t21-pv', d=0.2, avec=True),
                     montrer('#t21-pc', y=10), anneau('#t21-stat', d=1.0),
                     zoom('#t21-histo', s=1.4, fy=0.5, d=0.8), anneau('#t21-histo', d=1.8),
                     bulle('#t21-h2', 'Qui, quand, quelle décision', cote='dessous', fx=0.5, d=2.4, avec=True), dezoom(d=0.7),

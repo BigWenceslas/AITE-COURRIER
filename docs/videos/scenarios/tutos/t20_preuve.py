@@ -248,8 +248,8 @@ TUTO = {
         {'titre': 'Le journal de preuve',
          'texte': "Chaque sceau : une empreinte SHA-256 du fichier, de l'événement et du sceau précédent, horodatée.",
          'voix': "Sandrine, l'auditrice, ouvre le journal de preuve. Chaque dépôt, finalisation, archivage ou élimination y "
-                 "laisse un sceau : une empreinte SHA-256 qui couvre le fichier, l'événement et l'empreinte du sceau "
-                 "précédent. Les sceaux forment une chaîne horodatée, que personne ne peut modifier.",
+                 "laisse un sceau : une empreinte SHA-256 du fichier, de l'événement et du sceau précédent. Une chaîne "
+                 "horodatée, et inaltérable.",
          'gestes': [anneau('#app-20a-m4', d=1.0, decale=0.2), anneau('#t20-lst', d=1.4), survol('#t20-l5', decale=0.2),
                     clic('#t20-l5', fx=0.3), aller('t20-sceau'), zoom('#t20-prec', s=1.45, fx=0.6, fy=0.4, d=0.8),
                     anneau('#t20-emp', d=1.2), bulle('#t20-prec', 'Chaînée au sceau précédent', cote='gauche', d=2.4, avec=True),

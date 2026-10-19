@@ -57,8 +57,8 @@ TUTO = {
                     bulle('#c2-cachet', 'Nom, fonction, date', cote='dessous', d=2.4), anneau('#c2-cachet', d=1.8), dezoom(d=0.7)]},
         {'titre': 'Le tiers voit le même cachet', 'texte': "Sur son portail : « Demande traitée », les fonctions et les dates.",
          'voix': "Le tiers, lui, voit le même cachet sur son portail : demande traitée, avec la fonction de chaque "
-                 "intervenant et la date de son visa. Ses noms restent internes : seule la fonction est publiée.",
-         'gestes': [texte('#pr-url', 'courrier.aite-demo.test/my/courriers'), cacher('#c8-compte', d=0.05),
+                 "intervenant et la date de son visa. Les noms, eux, restent internes : seule la fonction est publiée.",
+         'gestes': [texte('#pr-url', 'courrier.aite-demo.test/my/courriers/9'), cacher('#c8-compte', d=0.05),
                     montrer('#app-8', y=0, d=0.4), aller('c8-suivi'), pause(0.4), anneau('#c8-av', d=1.4),
                     zoom('#c8-cachet', s=1.7, d=0.9), anneau('#c8-cachet', d=1.6),
                     bulle('#c8-cachet', 'La fonction, pas le nom', cote='droite', d=2.4), dezoom(d=0.7)]},
