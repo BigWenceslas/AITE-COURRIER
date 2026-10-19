@@ -1,0 +1,24 @@
+TITRE
+COMMENT ENREGISTRER UN COURRIER ET LANCER SON CIRCUIT AVEC AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Un courrier arrive : en quelques clics, il reçoit sa référence unique, part dans son circuit de traitement, et chaque personne concernée est prévenue. Tutoriel AITE Courrier, l'application de gestion du courrier d'AITE Consulting pour Odoo 18.
+
+0:00 Le problème
+0:13 La solution : Enregistrer un courrier en quelques clics
+0:24 Étape 1 — Ouvrir la liste et créer
+0:35 Étape 2 — Saisir l'essentiel
+0:49 Étape 3 — Le circuit, avant même d'enregistrer
+1:01 Étape 4 — Enregistrer et lancer le circuit
+1:16 Ce que vous y gagnez
+1:24 Demander une démonstration
+
+Durée : 1 min 32 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, courrier entrant, circuit de traitement, référence courrier, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala
