@@ -140,7 +140,7 @@ TUTO = {
          'gestes': [clic('#t14-og-r'), classe('#t14-og-v', retirer=['actif'], avec=True), classe('#t14-og-r', ajouter=['actif'], avec=True),
                     cacher('#c11-versions', d=0.2), montrer('#t14-rel', y=10), defiler('#c11-doc .o-feuille', -130, d=0.7),
                     zoom('#t14-rel', s=1.2, fx=0.5, fy=0.5, d=0.8),
-                    bulle('#t14-l0', 'Il remplace le contrat 2025', cote='dessous', fx=0.3, d=2.2),
+                    bulle('#t14-l0', 'Remplace le contrat 2025', cote='droite', fx=0.76, d=2.2),
                     bulle('#t14-l2', "L'avenant, en annexe", cote='dessous', fx=0.3, d=2.0), dezoom(d=0.6),
                     clic('#t14-doub', d=0.7), bulle('#t14-doub', 'Même fichier, ailleurs', cote='dessous', d=2.2)]},
     ],
