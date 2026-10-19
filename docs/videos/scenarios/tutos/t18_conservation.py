@@ -19,8 +19,10 @@ Sources (addons/aite_ecm_records) :
   « Échue — sort final à appliquer », « Archive intermédiaire »…), :153-195
   (précision « Échue le %s — sort final : %s », gel → archive
   intermédiaire, « Gel juridique : %s »), :251-278 (« Conserver
-  définitivement », « Prolonger d'un an » : échéance + 1 an, « Prolongée
-  jusqu'au %s par %s »), :325-360 (écriture, corbeille et suppression
+  définitivement », « Prolonger d'un an » : affichés sur la fiche, mais non
+  démontrés — le recalcul quotidien (:214-218, cron) et « Recalculer tout le
+  fonds » repartent de la règle et réécrivent échéance et cycle : la vidéo
+  ne promet donc pas que ces décisions durent), :325-360 (écriture, corbeille et suppression
   refusées sous gel : « Gel juridique actif (%s) : impossible de mettre
   « %s » à la corbeille. ») ;
 - views/aite_ecm_retention_views.xml (liste, fiche, encadré « La règle
@@ -42,7 +44,8 @@ Sources (addons/aite_ecm_records) :
   et sa confirmation) ; aite_ecm_document/views/aite_ecm_menus.xml:26-28
   (Configuration réservée aux managers et administrateurs : c'est donc le
   manager qui ouvre les règles).
-Titres de boîtes « Confirmation » et « Opération invalide » : Odoo 18.
+Titres de boîtes « Confirmation » et « Opération invalide », bouton « Envoyer message » du
+fil de discussion : Odoo 18.
 Modèle visuel : base demo18 (MuK), captures t18_*.
 """
 
@@ -69,7 +72,7 @@ REGLES = [('OHADA-10', 'Pièces comptables — 10 ans (OHADA)', '10', 'Finalisat
 
 # La facture échue (fictive) : finalisée le 21/10/2015, échue le 21/10/2025.
 FACT = {'reference': 'DOC-2015-00412', 'titre': 'Facture F-2015-0412 — %s' % demo.FOURNISSEUR, 'depart': '21/10/2015',
-        'echeance': '21/10/2025', 'prolongee': '21/10/2026', 'iso': '2025-10-21', 'iso2': '2026-10-21',
+        'echeance': '21/10/2025', 'iso': '2025-10-21',
         'fichier': 'Facture_F-2015-0412.pdf', 'boite': 'Factures fournisseurs 2015'}
 FACT2 = {'reference': 'DOC-2014-00931', 'titre': 'Facture F-2014-0931 — %s' % demo.FOURNISSEUR, 'echeance': '03/06/2024'}
 GEL = {'nom': 'Contrôle fiscal 2026', 'ref': 'CF-2026-07', 'demande': 'Direction financière', 'date': '13/10/2026',
@@ -153,7 +156,7 @@ def ecran_manager():
                  + '<div class="masque" id="t18-levee">%s<div class="t18-texte t18-vide"></div></div>' % sec_titre('Motif de la levée')
                  + onglets(['Périmètre']) + perim)
     ch = chatter([message(MANAGER[0], MANAGER[2], 'Gel posé sur %s document(s).' % GEL['docs'], '10:42', 't18-gmsg', masque=True)],
-                 identifiant='t18-gch', suivre='Suivre')
+                 identifiant='t18-gch', suivre='Suivre').replace('Envoyer un message', 'Envoyer message', 1)
     gel = vue('t18-gel', panneau_fiche('Gels juridiques', GEL['nom'], '1 / 1',
                                        boutons_stat=bouton_stat('Documents gelés', GEL['docs'], 'cadenas'))
               + '<div class="o-corps"><div class="o-gauche">%s%s</div>%s</div>' % (
@@ -228,7 +231,7 @@ def ecran_archiviste():
     jaune = bandeau('<span class="t18-marteau">%s</span><b>Gel juridique actif</b> — %s. Ce document ne peut être ni modifié, '
                     'ni mis à la corbeille, ni détruit.' % (ICONES['marteau'], e(GEL['nom'])), 'jaune', 't18-bgel')
     doc2 = fiche_facture('t18-doc2', jaune, onglet_conservation(
-        't18-g', ('Archive intermédiaire', 'info'), 'Gel juridique : %s' % GEL['nom'], FACT['prolongee']), 't18-h')
+        't18-g', ('Archive intermédiaire', 'info'), 'Gel juridique : %s' % GEL['nom'], FACT['echeance']), 't18-h')
     conf = boite('t18-conf', 'Confirmation', 'Mettre ce document à la corbeille ? Il pourra être restauré avant purge automatique.',
                  [('t18-ok', 'Ok', 'prim'), ('t18-non', 'Annuler', 'second')])
     err = boite('t18-err', 'Opération invalide',
@@ -313,20 +316,17 @@ TUTO = {
                     anneau('#t18-d1', d=1.0), bulle('#t18-d3', 'Puis l\'élimination', cote='dessous', fx=0.3, d=2.0, avec=True),
                     dezoom(d=0.7), clic('#t18-recalc'), montrer('#t18-toast', y=-10, d=0.3), anneau('#t18-toast', d=1.4),
                     cacher('#t18-toast', d=0.3, decale=0.4)]},
-        {'titre': "À l'échéance, l'archiviste décide",
-         'texte': "Conservation › Documents échus ; sur la fiche : Conserver définitivement, ou Prolonger d'un an.",
-         'voix': "Jules, l'archiviste, ouvre les documents échus. Cette facture a dépassé ses dix ans : un bandeau rouge "
-                 "annonce son sort final. Dans l'onglet Conservation, il garde la main : conserver définitivement, ou "
-                 "prolonger d'un an.",
+        {'titre': "Les documents échus, repérés",
+         'texte': "Conservation › Documents échus, groupés par règle ; sur la fiche : règle, départ, échéance, sort final.",
+         'voix': "Jules, l'archiviste, ouvre les documents échus, regroupés par règle. Cette facture a dépassé ses dix "
+                 "ans : un bandeau rouge annonce son sort final, l'élimination. L'onglet Conservation détaille la règle, "
+                 "le départ et l'échéance : rien n'est laissé au hasard.",
          'gestes': [montrer('#app-18a', y=0, d=0.4), anneau('#app-18a-m3', d=1.0, decale=0.2),
                     anneau('#t18-elst .groupe', d=1.2), survol('#t18-e0'), clic('#t18-e0', fx=0.3), aller('t18-doc'),
-                    anneau('#t18-bechu', d=1.4), zoom('#t18-c-cycle-c', s=1.45, fx=0.4, fy=0.5, d=0.8),
+                    anneau('#t18-bechu', d=1.4), curseur('#t18-c-prec', avec=True), zoom('#t18-c-cycle-c', s=1.45, fx=0.4, fy=0.5, d=0.8),
                     anneau('#t18-c-cycle', d=1.2), bulle('#t18-c-cycle', 'Échue', cote='droite', d=1.6, avec=True),
-                    clic('#t18-c-prol'), texte('#t18-c-ech', FACT['prolongee'], decale=0.1),
-                    etat('#t18-c-cycle', 'Archive intermédiaire', 'info', avec=True),
-                    texte('#t18-c-prec', "Prolongée jusqu'au %s par %s" % (FACT['iso2'], ARCHI[0]), avec=True),
-                    bulle('#t18-c-ech', 'Un an de plus', cote='droite', d=2.0), dezoom(d=0.7),
-                    cacher('#t18-bechu', d=0.3)]},
+                    anneau('#t18-c-ech', d=1.2, decale=0.2),
+                    bulle('#t18-c-ech', 'Départ + 10 ans', cote='droite', d=2.0, avec=True), dezoom(d=0.7)]},
         {'titre': 'Le gel juridique',
          'texte': "Un contrôle, un litige : le manager pose le gel sur un dossier entier ou sur des documents choisis.",
          'voix': "Un contrôle fiscal s'annonce. Paul pose un gel juridique sur tout le dossier Finance et comptabilité, avec "
@@ -350,15 +350,15 @@ TUTO = {
     ],
     'benefices': {
         'titre': 'Garder, prouver, *éliminer* à temps.',
-        'voix': "Les durées sont tenues sans tableau à part, l'archiviste décide au bon moment, et un gel juridique "
-                "protège tout un dossier le temps d'un contrôle.",
+        'voix': "Les durées sont tenues sans tableau à part, les documents échus remontent d'eux-mêmes, et un gel "
+                "juridique protège tout un dossier le temps d'un contrôle.",
         'cartes': [('cible', '5 règles', 'Prêtes à l\'emploi', "Pièces comptables, contrats, personnel, procès-verbaux, procédures."),
                    ('temps', 'Échéances', 'Calculées chaque jour', "Durée, point de départ et sort final, document par document."),
                    ('bouclier', 'Gel juridique', 'Rien ne disparaît', "Ni modification, ni corbeille, ni élimination tant qu'il est actif.")],
     },
     'cta': cta('ecm', 'Vos archives, *sous* *contrôle.*', "Aïte E C M : vos archives, sous contrôle."),
     'youtube': youtube('COMMENT GÉRER LA CONSERVATION ET LES GELS JURIDIQUES AVEC AITE ECM (ODOO 18)',
-                       "Règles de conservation (durée, point de départ, sort final), documents échus, décision de "
+                       "Règles de conservation (durée, point de départ, sort final), documents échus repérés pour "
                        "l'archiviste et gel juridique qui bloque modification, corbeille et élimination. Tutoriel AITE ECM, "
                        "la gestion documentaire d'AITE Consulting pour Odoo 18.",
                        ['AITE ECM', 'records management', 'durée de conservation', 'gel juridique', 'OHADA']),

@@ -33,7 +33,9 @@ Sources (addons/aite_ecm_records) :
   des documents, « Notes ») ; views/aite_ecm_records_menus.xml (menu
   Conservation : « Documents échus », « Bordereaux d'élimination », « Gels
   juridiques », « Archives physiques »).
-Titre de boîte « Confirmation » : Odoo 18. Modèle visuel : base demo18
+Titre de boîte « Confirmation », fil de discussion (« Création d'un nouvel
+enregistrement... » avant enregistrement, puis « Bordereau d'élimination
+créé », « Envoyer message ») : Odoo 18 (mail). Modèle visuel : base demo18
 (MuK), captures t19_*.
 """
 
@@ -72,7 +74,7 @@ def poser_menu(html, app, n, dd):
             + html[fin:])
 
 
-def lignes_bordereau(prefixe, masque, detruit_id=False):
+def lignes_bordereau(prefixe, masque, detruit_id=False, ajouter=True):
     lignes = []
     for i, (ref, titre, ech) in enumerate(ECHUS):
         det = case(False)
@@ -82,17 +84,17 @@ def lignes_bordereau(prefixe, masque, detruit_id=False):
         lignes.append({'id': '%s-l%d' % (prefixe, i), 'masque': masque,
                        'cellules': [ref, titre, DOSSIER, REGLE, ech, c_html('<span>%s</span>' % det)]})
     return table([('Référence', '106px'), ('Titre', '1fr'), ('Dossier', '150px'), ('Règle appliquée', '150px'),
-                  ('Échéance', '72px'), ('Détruit', '42px')], lignes, identifiant=prefixe + '-tab')
+                  ('Échéance', '72px'), ('Détruit', '42px')], lignes, identifiant=prefixe + '-tab', ajouter=ajouter)
 
 
-def corps_bordereau(prefixe, nom, valide_par='', masque_lignes=False, detruit=False):
+def corps_bordereau(prefixe, nom, valide_par='', masque_lignes=False, detruit=False, ajouter=True):
     return ('<div class="titre-doc t19-h1" id="%s-nom">%s</div>' % (prefixe, nom)
             + grille2([champ('Date du bordereau', v('13/10/2026')), champ('Préparé par', v(ARCHI[0], True))],
                       [champ('Validé par', v(valide_par, True, prefixe + '-valpar')),
                        champ('Exécuté le', v('', identifiant=prefixe + '-exec-le')),
                        '<div class="masque" id="%s-cert">%s</div>' % (prefixe, champ(
                            'Certificat de destruction', v('Certificat de destruction %s' % NUM, True)))])
-            + lignes_bordereau(prefixe, masque_lignes, detruit)
+            + lignes_bordereau(prefixe, masque_lignes, detruit, ajouter)
             + sec_titre('Observations') + '<div class="t19-texte">Campagne d\'élimination annuelle.</div>')
 
 
@@ -105,7 +107,10 @@ def ecran_archiviste():
                          statusbar(['Projet', 'À valider', 'Validé', 'Exécuté'], 0, 't19-sb'), 't19-b',
                          [bouton('t19-ann2', 'Annuler', 'second')]),
                    feuille(corps_bordereau('t19', 'Nouveau', masque_lignes=True)),
-                   chatter([message(ARCHI[0], ARCHI[2], 'Création d\'un enregistrement…', '09:12')], suivre='Suivre')),
+                   chatter(['<div class="t19-ch-vide" id="t19-ch-vide">Création d\'un nouvel enregistrement...</div>',
+                            message(ARCHI[0], ARCHI[2], "Bordereau d'élimination créé", '09:12', 't19-cree', masque=True)],
+                           suivre='Suivre').replace('Envoyer un message', 'Envoyer message', 1)
+                   .replace('<div class="ch-sep">', '<div class="ch-sep masque" id="t19-sep">', 1)),
                initiale=True)
     # les archives physiques : la liste, puis la boîte
     cols = [('Code', '100px'), ('Libellé', '1fr'), ('Emplacement', '240px'), ('Emprunteur', '130px'), ('Retour prévu', '96px')]
@@ -143,14 +148,15 @@ def ecran_archiviste():
 
 # ---------------------------------------------------------- le manager --
 def ecran_manager():
-    ch = chatter([message(MANAGER[0], MANAGER[2], 'Bordereau validé : 2 document(s).', '10:05', 't19-mmsg', masque=True)],
-                 identifiant='t19-mch', suivre='Suivre')
+    ch = chatter([message(MANAGER[0], MANAGER[2], 'Bordereau validé : 2 document(s).', '10:05', 't19-mmsg', masque=True),
+                  message(ARCHI[0], ARCHI[2], "Bordereau d'élimination créé", '09:12')],
+                 identifiant='t19-mch', suivre='Suivre').replace('Envoyer un message', 'Envoyer message', 1)
     bord = vue('t19-mbord', panneau_fiche("Bordereaux d'élimination", NUM, '1 / 2')
                + '<div class="o-corps"><div class="o-gauche">%s%s</div>%s</div>' % (
                    bande([bouton('t19-val', 'Valider', 'prim'), bouton('t19-mann', 'Annuler', 'second')],
                          statusbar(['Projet', 'À valider', 'Validé', 'Exécuté'], 1, 't19-msb'), 't19-mb',
                          [[bouton('t19-exec', "Exécuter l'élimination", 'rouge'), bouton('t19-mann2', 'Annuler', 'second')], []]),
-                   feuille(corps_bordereau('t19-m', NUM, detruit=True)), ch), initiale=True)
+                   feuille(corps_bordereau('t19-m', NUM, detruit=True, ajouter=False)), ch), initiale=True)
     conf = assistant('t19-conf', 'Confirmation', '<div class="t19-msg">Les documents listés seront définitivement supprimés. '
                      'Un certificat sera généré. Confirmer ?</div>', [('t19-ok', 'Ok', 'prim'), ('t19-non', 'Annuler', 'second')],
                      haut=250, largeur=600)
@@ -173,6 +179,7 @@ CSS = """
 #app-19m .t19-det { position: relative; display: inline-block; }
 #app-19m .t19-det-on { position: absolute; left: 0; top: 0; }
 #app-19m .t19-msg { font-size: 13px; line-height: 1.5; }
+#app-19a .t19-ch-vide { margin-top: 14px; text-align: center; color: #6C757D; font-size: 12px; }
 """
 
 TUTO = {
@@ -207,6 +214,8 @@ TUTO = {
                  "N'y entrent que les documents échus dont le sort final est l'élimination, et qu'aucun gel juridique "
                  "ne protège.",
          'gestes': [anneau('#t19-sb-0', d=1.0, decale=0.3), clic('#t19-rass'), texte('#t19-nom', NUM, decale=0.2),
+                    cacher('#t19-ch-vide', d=0.1, avec=True), montrer('#t19-sep', y=0, avec=True),
+                    montrer('#t19-cree', y=6, avec=True),
                     texte('#t19-fil', NUM, avec=True), montrer('#t19-l0', y=10), montrer('#t19-l1', y=10, decale=0.15),
                     zoom('#t19-tab', s=1.4, fy=0.45, d=0.8), anneau('#t19-tab', d=1.6),
                     bulle('#t19-l1', 'Échus, à éliminer, hors gel', cote='dessous', fx=0.35, d=2.4, avec=True),
@@ -216,7 +225,8 @@ TUTO = {
          'voix': "Il le soumet à validation : le bordereau passe à l'état À valider. Paul, le manager, l'ouvre et clique "
                  "sur Valider. Son nom s'inscrit dans Validé par, et le fil de discussion garde la trace de la décision.",
          'gestes': [clic('#t19-soum'), classe('#t19-sb-0', retirer=['actif']), classe('#t19-sb-1', ajouter=['actif'], avec=True),
-                    cacher('#t19-b-a', d=0.2), montrer('#t19-b-b', y=0, avec=True), anneau('#t19-sb-1', d=1.0),
+                    cacher('#t19-b-a', d=0.2), montrer('#t19-b-b', y=0, avec=True), cacher('#t19-tab .ajout', d=0.2, avec=True),
+                    anneau('#t19-sb-1', d=1.0),
                     montrer('#app-19m', y=0, d=0.4, decale=0.4), anneau('#t19-msb-1', d=1.0, decale=0.2),
                     clic('#t19-val'), classe('#t19-msb-1', retirer=['actif']), classe('#t19-msb-2', ajouter=['actif'], avec=True),
                     cacher('#t19-mb-a', d=0.2), montrer('#t19-mb-b', y=0, avec=True),
@@ -230,7 +240,7 @@ TUTO = {
          'gestes': [clic('#t19-exec'), ouvrir('t19-conf'), zoom('#t19-conf', s=1.3, d=0.7), anneau('#t19-conf .t19-msg', d=1.4),
                     dezoom(d=0.6), clic('#t19-ok'), fermer('t19-conf'),
                     classe('#t19-msb-2', retirer=['actif']), classe('#t19-msb-3', ajouter=['actif'], avec=True),
-                    cacher('#t19-mb-b', d=0.2), texte('#t19-m-exec-le', '13/10/2026 10:21', avec=True),
+                    cacher('#t19-mb-b', d=0.2), texte('#t19-m-exec-le', '13/10/2026 10:21:37', avec=True),
                     montrer('#t19-m-det0', y=0, d=0.2), montrer('#t19-m-det1', y=0, d=0.2, decale=0.1),
                     montrer('#t19-m-cert', y=0), zoom('#t19-m-cert', s=1.6, fx=0.55, fy=0.4, d=0.8),
                     bulle('#t19-m-cert', 'Certificat déposé dans l\'ECM', cote='gauche', d=2.4),

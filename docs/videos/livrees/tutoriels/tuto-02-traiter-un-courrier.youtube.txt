@@ -1,0 +1,24 @@
+TITRE
+COMMENT TRAITER UN COURRIER ET FAIRE AVANCER SON CIRCUIT AVEC AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Traiter, rejeter, commenter : le manager fait avancer le courrier d'étape en étape, et l'historique garde la trace de chaque décision. Tutoriel AITE Courrier pour Odoo 18.
+
+0:00 Le problème
+0:14 La solution : Faire avancer le circuit, en un geste
+0:24 Étape 1 — Sa file de travail
+0:36 Étape 2 — Traiter, en un seul geste
+0:51 Étape 3 — Un historique complet
+1:03 Étape 4 — Rejeter ou commenter
+1:15 Ce que vous y gagnez
+1:22 Demander une démonstration
+
+Durée : 1 min 30 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, circuit de validation, workflow Odoo, validation courrier, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala

@@ -7,8 +7,8 @@ Sources :
   expiration à J+7, fiche ouverte dans une fenêtre) ; champs « Libellé »,
   « Document », « Destinataire (info) », « Lien », « Expire le »,
   « Téléchargements max. » (0 = illimité), « Consultation seule »,
-  « Filigrane » (coché par défaut, forcé à la création pour les documents
-  Confidentiel / Secret), « Texte du filigrane » (« Diffusion contrôlée — AITE
+  « Filigrane » (coché par défaut, activé d'office à la création pour les
+  documents Confidentiel / Secret), « Texte du filigrane » (« Diffusion contrôlée — AITE
   ECM » par défaut), « Accès », « Dernier accès », « Valide » ; filigrane
   incrusté dans le PDF servi : texte, date du jour, 8 premiers caractères du
   jeton ; audit « Création d'un lien de partage » (« Lien xxxxxxxx — expire
@@ -130,14 +130,14 @@ def liste_partages():
     for i, (lib, doc, dest, exp, acc, mx, vo, fil, val) in enumerate(AUTRES, 1):
         lignes.append({'id': 't17-l%d' % i, 'classe': '' if val else 'gris',
                        'cellules': [lib, doc, dest, exp, c_num(acc), c_num(mx), c_html(case(vo)), c_html(case(fil)), c_html(case(val))]})
-    return vue('t17-liste', panneau_liste('Partages externes', '1-28 / 28', ident='t17p') + liste(cols, lignes))
+    return vue('t17-liste', panneau_liste('Partages externes', '1-6 / 6', ident='t17p') + liste(cols, lignes))
 
 
 def fiche_partage():
     corps = champs_partage('t17f', demo.TIERS_COURRIEL, '3', '1', '13/10/2026 11:05:12', True)
     ruban = '<span class="ruban rouge masque" id="t17-ruban"><b>DÉSACTIVÉ</b></span>'
     bd = bande([bouton('t17-desact', 'Désactiver', 'rouge')], '', 't17-pb', [])
-    return vue('t17-part', panneau_fiche('Partages externes', LIBELLE, '1 / 28')
+    return vue('t17-part', panneau_fiche('Partages externes', LIBELLE, '1 / 6')
                + '<div class="o-corps"><div class="o-gauche">%s%s</div></div>'
                % (bd, feuille(corps).replace('<div class="o-feuille">', '<div class="o-feuille">' + ruban, 1)))
 
@@ -186,7 +186,9 @@ JOURNAL = [('13/10/2026 11:05:12', 'Public user', 'Accès par lien de partage', 
 def ecran_audit():
     cols = [('Date/heure', '128px'), ('Utilisateur', '110px'), ('Action', '170px'), ('Type', '84px'), ('Objet', '116px'),
             ('Source', '76px'), ('Détails', '1fr')]
-    lignes = [{'id': 't17-j%d' % i, 'cellules': [d, u, a, c_html('<span>%s</span>' % puce('Information', 'gris')), o, s, det]}
+    lignes = [{'id': 't17-j%d' % i, 'cellules': [d, u, c_html('<span class="ell" id="t17-j%d-a">%s</span>' % (i, e(a))),
+                                                c_html('<span>%s</span>' % puce('Information', 'gris')), o, s,
+                                                c_html('<span class="ell" id="t17-j%d-d">%s</span>' % (i, e(det)))]}
               for i, (d, u, a, o, s, det) in enumerate(JOURNAL)]
     jr = vue('t17-journal', panneau_liste("Journal d'audit", '1-80 / 1 674', nouveau=False) + liste(cols, lignes), initiale=True)
     html = fenetre('Courrier', ['Tableau de bord', 'Courriers', 'Espace documentaire', 'Audit'], [jr], AUDIT[1], AUDIT[2],
@@ -267,13 +269,13 @@ TUTO = {
                  "activé d'office.",
          'gestes': [anneau('#t17-conf-l', d=1.4, decale=0.3), clic('#t17-partager'), ouvrir('t17-dlg'), pause(0.3),
                     zoom('#t17d-exp', s=1.5, fx=0.55, fy=0.35, d=0.8), anneau('#t17d-exp', d=1.2),
-                    bulle('#t17d-exp', 'J+7 par défaut', cote='droite', fx=0.62, d=2.2),
+                    bulle('#t17d-exp', 'J+7 par défaut', cote='droite', fx=0.74, d=2.2),
                     pause(0.6), anneau('#t17d-fil', d=1.2), bulle('#t17d-fil', "Activé d'office", cote='droite', fx=0.62, d=2.2),
                     dezoom(d=0.6)]},
         {'titre': 'Vos règles, puis le lien',
          'texte': "Destinataire pour mémoire, téléchargements limités ; le lien se copie et se transmet, sans e-mail.",
          'voix': "Il note le destinataire, pour mémoire, et limite le lien à trois téléchargements. En consultation "
-                 "seule, le P D F s'afficherait sans pouvoir être téléchargé. Aïte n'envoie aucun e-mail : Paul copie "
+                 "seule, le P D F s'afficherait dans le navigateur, sans téléchargement. Aïte n'envoie aucun e-mail : Paul copie "
                  "le lien, et le transmet lui-même.",
          'gestes': [clic('#t17d-dest', fx=0.2), saisir('t17d-dest', demo.TIERS_COURRIEL, d=1.2),
                     clic('#t17d-max', fx=0.2), texte('#t17d-max-val', '3', avec=True, decale=0.3),
@@ -287,8 +289,8 @@ TUTO = {
                  "d'expiration et les accès restants. Le P D F téléchargé porte en filigrane le texte choisi, la date "
                  "du jour, et le début du jeton du lien.",
          'gestes': [texte('#pr-url', 'courrier.aite-demo.test/ecm/share/' + JETON), montrer('#app-17p', y=0, d=0.4, avec=True),
-                    pause(0.3), zoom('#t17-carte', s=1.45, fx=0.5, fy=0.4, d=0.8),
-                    anneau('#t17-restant', d=1.2), bulle('#t17-restant', 'Expiration et quota', cote='droite', d=2.2),
+                    curseur('#t17-tele'), zoom('#t17-carte', s=1.45, fx=0.5, fy=0.4, d=0.8),
+                    anneau('#t17-restant', d=1.2), bulle('#t17-restant', 'Expiration et quota', cote='dessous', fx=0.85, d=2.2),
                     dezoom(d=0.6), clic('#t17-tele'), montrer('#t17-pdf', y=0, d=0.4), pause(0.3),
                     zoom('#t17-fil', s=1.5, fx=0.5, fy=0.5, d=0.8),
                     bulle('#t17-ancre', 'Texte, date et jeton', cote='dessous', d=2.2), dezoom(d=0.6)]},
@@ -301,9 +303,9 @@ TUTO = {
                     clic('#app-17a-m0', d=0.5), montrer('#t17-dd', y=-6, d=0.2), clic('#t17-dd3', fx=0.4, d=0.4),
                     cacher('#t17-dd', d=0.15), aller('t17-liste'),
                     bulle('#t17-l0-acc', '1 accès sur 3', cote='dessous', d=2.0), pause(1.8),
-                    montrer('#app-17c', y=0, d=0.4), anneau('#t17-j0', d=1.6),
-                    bulle('#t17-j0', 'Accès par lien de partage', cote='dessous', fx=0.3, d=2.2, avec=True),
-                    cacher('#app-17c', d=0.35), clic('#t17-l0', fx=0.2), aller('t17-part'),
+                    texte('#pr-url', ADRESSE % 'courrier'), montrer('#app-17c', y=0, d=0.4, avec=True), anneau('#t17-j0-a', d=1.6),
+                    bulle('#t17-j0-d', 'Accès n°1, par le lien', cote='dessous', fx=0.3, d=2.2, avec=True),
+                    cacher('#app-17c', d=0.35), texte('#pr-url', ADRESSE % 'ecm', avec=True), clic('#t17-l0', fx=0.2), aller('t17-part'),
                     clic('#t17-desact'), montrer('#t17-ruban', y=0, d=0.3), cacher('#t17-desact', d=0.2, avec=True),
                     classe('#t17f-valide .case', retirer=['on'], avec=True),
                     texte('#pr-url', 'courrier.aite-demo.test/ecm/share/' + JETON), montrer('#app-17p', y=0, d=0.4, avec=True),
