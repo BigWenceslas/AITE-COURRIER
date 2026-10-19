@@ -1,0 +1,24 @@
+TITRE
+COMMENT PARAMÉTRER LES CIRCUITS, LES DÉLAIS ET LES RELANCES AVEC AITE COURRIER (ODOO 18)
+
+DESCRIPTION
+Cinq circuits de traitement livrés, des étapes avec leurs rôles et leur délai en heures, des transitions en avant et en arrière : l'administrateur règle tout sans développement. En cas de retard, AITE Courrier relance l'équipe, puis escalade au manager. Tutoriel AITE Courrier pour Odoo 18.
+
+0:00 Le problème
+0:15 La solution : Des circuits qui tiennent leurs délais
+0:25 Étape 1 — Les circuits livrés
+0:39 Étape 2 — Des étapes, des rôles, des délais
+0:55 Étape 3 — Avancer, ou revenir en arrière
+1:08 Étape 4 — Relance, puis escalade
+1:27 Ce que vous y gagnez
+1:36 Demander une démonstration
+
+Durée : 1 min 44 s
+
+AITE Consulting — transformation digitale, dématérialisation et GED, ERP Odoo. Makepe Bloc F, Douala, Cameroun.
+Prenez rendez-vous pour une démonstration : https://aite-consulting.com/appointment
+Téléphone : +237 656 801 098 · E-mail : info@aite-consulting.com
+Le blog : https://aite-consulting.com/blog
+
+MOTS-CLÉS
+AITE Courrier, circuit de traitement, SLA, relance automatique, escalade, workflow Odoo, AITE Consulting, Odoo 18, Odoo Cameroun, GED, dématérialisation, gestion du courrier, gestion documentaire, tutoriel Odoo, Douala
